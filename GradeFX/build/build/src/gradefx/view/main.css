@@ -1,0 +1,103 @@
+/* empty cells */
+.table-view-empty > .virtual-flow > .clipped-container > .sheet > .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0.0;
+}
+.table-view-empty > .virtual-flow > .clipped-container > .sheet > .table-row-cell .table-cell {
+    -fx-table-cell-highlight: -fx-background;
+    -fx-background-color: -fx-table-cell-border-color, -fx-background, -fx-table-cell-highlight, -fx-background;
+    -fx-background-insets: 0.0, 0.0 0.0 1.0 0.0, 0.0 1.0 1.0 0.0, 1.0 2.0 2.0 1.0;
+}
+.table-view-empty > * > .table-row-cell:odd { /* fixed not showing selection in row selection mode */
+    -fx-background: -fx-control-inner-background-alt;
+}
+.table-view-empty > .virtual-flow > .clipped-container > .sheet > .table-row-cell:empty .table-cell {
+    -fx-background-color: transparent;
+    -fx-border-width: 0.0px;
+}
+
+/* custom scroll bar colors */
+.table-view-custom-scrollbar {
+    -fx-custom-scrollbar: -fx-base;
+}
+.table-view-custom-scrollbar > * > .scroll-bar {
+	-fx-background-color: derive(-fx-custom-scrollbar,60.0%);
+	-fx-color: derive(-fx-custom-scrollbar,20.0%);
+}
+
+/* SynchronizedScrollableTableView */
+.table-view-no-left-focus:focused {
+    -fx-background-insets: -1.4 -1.4 -1.4 0.0, -0.3, 1.0;
+}
+.table-view-no-right-focus:focused {
+    -fx-background-insets: -1.4 0.0 -1.4 -1.4, -0.3, 1.0;
+}
+.scroll-pane-no-focus:focused {
+    -fx-background-insets: 0.0, 0.0, 0.0;
+    -fx-background-radius: 0.0, 0.0, 0.0;
+}
+/* text inputs for table cells */
+.text-input-table-cell {
+    -fx-highlight-fill: -fx-base;
+    -fx-highlight-text-fill: -fx-text-base-color;
+	-fx-background-color: transparent;
+    -fx-background-insets: 0.0, 0.0;
+    -fx-background-radius: 0.0, 0.0;
+    -fx-padding: 0.0; /* TODO padding should apply to cell and input differently */
+}
+.text-input-table-cell:focused {
+    -fx-highlight-fill: -fx-base;
+    -fx-highlight-text-fill: -fx-text-base-color;
+    -fx-background-insets: 0.0;
+    -fx-background-radius: 0.0;
+}
+
+.table-view-full-size > .virtual-flow > .clipped-container > .sheet > .table-row-cell > .table-cell:last-visible {
+    -fx-border-color: transparent;
+}
+.table-view-full-size > .virtual-flow > .clipped-container > .sheet > .table-row-cell:last-row > .table-cell {
+    -fx-background-insets: -1.0;
+}
+.table-view-full-size .column-header:last-column {
+    -fx-background-insets: 0.0, 0.0 0.0 1.0 0.0, 1.0 1.0 2.0 1.0;
+}
+
+/* custom scroll bar colors */
+.custom-scrollbar {
+	-fx-background-color: derive(-fx-base,60.0%);
+	-fx-color: derive(-fx-base,20.0%);
+}
+
+/* selected tab labels bold */
+.tab-pane-selected-bold > .tab-header-area > .headers-region > .tab:selected {
+    -fx-font-weight: bold;
+}
+
+.table-view-empty > .virtual-flow > .clipped-container > .sheet > .table-row-cell .table-cell:fixed-value {
+    -fx-table-cell-highlight: red;
+}
+
+/* custom tab header background */
+.tab-pane-custom-background {
+    -fx-custom-background: -fx-base;
+}
+.tab-pane-custom-background > .tab-header-area > .tab-header-background {
+    -fx-background-color: -fx-custom-background;
+}
+
+/* offset (button-style) tabs */
+.tab-pane-offset > .tab-header-area > .headers-region > .tab {
+    -fx-background-radius: 5.0;
+    -fx-background-insets: 1.0 1.0 1.0 1.0, 2.0 2.0 2.0 2.0, 3.0 3.0 3.0 3.0;
+}
+
+.tab-pane-offset:focused > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
+    -fx-border-radius: 5.0;
+    -fx-border-insets: -4.0 -5.0 -4.0 -5.0, -2.0 -3.0 -2.0 -3.0;
+}
+.tab-pane-offset > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-insets: 1.0 1.0 1.0 1.0, 2.0 2.0 2.0 2.0, 3.0 3.0 3.0 3.0;
+}
+.tab-pane-offset > .tab-header-area {
+    -fx-padding: 0.416667em 0.416667em 0.416667em 0.416667em; /* 5 2 0 5 */
+}
