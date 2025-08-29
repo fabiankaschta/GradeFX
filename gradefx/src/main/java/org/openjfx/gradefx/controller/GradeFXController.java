@@ -28,7 +28,6 @@ public class GradeFXController extends Controller {
 		super(new GradeFXFileIO(), new Config(null, "gradefx.cfg"),
 				new Translator(ResourceBundle.getBundle("org.openjfx.gradefx.lang.gradefx")),
 				new EncryptionHelper("KAFXBase".getBytes()));
-		System.out.println(GradeFXController.class.getModule());
 		config.putIfNotExists("USE_HALF_POINTS", String.valueOf(true));
 		config.putIfNotExists("TENDENCY_BOUND", String.valueOf(0.0));
 		config.putIfNotExists("DEFAULT_GROUP_COLOR", "#e6e6e6");
