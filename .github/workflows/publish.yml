@@ -28,7 +28,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Copy file
-      run: mkdir staging && cp settings.xml staging
+      run: mkdir staging && cp /home/runner/.m2/settings.xml staging
     - uses: actions/upload-artifact@v4
       with:
         name: Settings
