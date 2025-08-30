@@ -21,7 +21,7 @@ public class GradeFXApplication extends Application {
 		root.setCenter(GroupsPane.get());
 		Scene scene = new Scene(root, Double.valueOf(Controller.getConfigOption("WIDTH")),
 				Double.valueOf(Controller.getConfigOption("HEIGHT")));
-		scene.getStylesheets().add(GradeFXApplication.class.getResource("main.css").toExternalForm());
+		scene.getStylesheets().add(GradeFXApplication.class.getResource("/org/openjfx/gradefx/css/gradefx.css").toExternalForm());
 		scene.widthProperty().subscribe(width -> {
 			if (!primaryStage.isMaximized()) {
 				Controller.setConfigOption("WIDTH", String.valueOf(width));
