@@ -92,7 +92,7 @@
 			                <mainClass>${main.class}</mainClass>
 			            </manifest>
 			        </archive>
-					<finalName>${project.name}</finalName>
+					<finalName>${project.name}-${project.version}-full</finalName>
 					<appendAssemblyId>false</appendAssemblyId>
 	            </configuration>
 	            <executions>
