@@ -25,7 +25,7 @@ public class GradeFXController extends Controller {
 
 	public GradeFXController() throws NoSuchAlgorithmException, NoSuchPaddingException {
 		// TODO disable debug
-		super(new GradeFXFileIO(), new Config(null, "gradefx.cfg"),
+		super(new GradeFXFileIO(), new Config(".gradefx.cfg"),
 				new Translator(ResourceBundle.getBundle("org.openjfx.gradefx.lang.gradefx")),
 				new EncryptionHelper("KAFXBase".getBytes()));
 		config.putIfNotExists("USE_HALF_POINTS", String.valueOf(true));

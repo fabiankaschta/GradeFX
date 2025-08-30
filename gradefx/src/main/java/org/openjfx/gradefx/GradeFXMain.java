@@ -19,7 +19,7 @@ public class GradeFXMain {
 			} catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
 				Controller.exception(e);
 			}
-			Controller.setDebugMode(true); // TODO disable debug
+//			Controller.setDebugMode(true); // TODO disable debug
 			// TODO AutoSave.start();
 		});
 		Application.launch(GradeFXApplication.class);
