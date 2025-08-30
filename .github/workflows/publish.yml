@@ -27,10 +27,9 @@ jobs:
         java-version: '23'
         distribution: 'temurin'
         cache: maven
-        settings-path: ${{ github.workspace }} # location for the settings.xml file
     - uses: s4u/maven-settings-action@v3.1.0
     - name: Build with Maven
-      run: mvn -f gradefx -B package -s $GITHUB_WORKSPACE/settings.xml
+      run: mvn -f gradefx -B package
       env:
         GITHUB_TOKEN: ${{ github.token }}
     - name: Upload files to a GitHub release
