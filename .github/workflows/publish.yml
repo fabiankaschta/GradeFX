@@ -16,8 +16,10 @@ on:
 
 jobs:
   build:
-
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: write
 
@@ -38,6 +40,6 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: gradefx/target/GradeFX-${{ github.ref_name }}-full.jar
-        asset_name: GradeFX-${{ github.ref_name }}-full.jar
+        asset_name: GradeFX-${{ github.ref_name }}-${{ matrix.os }}.jar
         tag: ${{ github.ref }}
         overwrite: true
