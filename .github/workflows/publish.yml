@@ -86,7 +86,10 @@ jobs:
 
       - name: Gluon Build and Package
         shell: cmd
-        run: .\mvnw -f gradefx -Pdesktop gluonfx:build gluonfx:package
+        run: |
+          cd gradefx
+          .\mvnw -Pdesktop gluonfx:build gluonfx:package
+          cd ..
 
       - name: Make staging directory
         run: mkdir staging
@@ -133,7 +136,10 @@ jobs:
           sudo apt install libasound2-dev libavcodec-dev libavformat-dev libavutil-dev libgl-dev libgtk-3-dev libpango1.0-dev libxtst-dev
 
       - name: Gluon Build
-        run: ./mvnw -f gradefx -Pdesktop gluonfx:build gluonfx:package
+        run: |
+          cd gradefx
+          ./mvnw -Pdesktop gluonfx:build gluonfx:package
+          cd ..
 
       - name: Make staging directory
         run: mkdir staging
