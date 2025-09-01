@@ -15,31 +15,143 @@ on:
       - '*'
 
 jobs:
-  build:
+  build-jars:
+    name: Build JARs all os
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 23
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Set up JDK
       uses: actions/setup-java@v4
       with:
         java-version: '23'
         distribution: 'temurin'
         cache: maven
+        
     - name: Build with Maven
       run: mvn -f gradefx -B package
       env:
         GITHUB_TOKEN: ${{ github.token }}
-    - name: Upload files to a GitHub release
+
+    - name: Make staging directory
+      run: mkdir staging
+
+    - name: Copy jar to staging
+      run: |
+        cp -r gradefx/target/gluonfx/GradeFX-${{ github.ref_name }}-full.jar staging
+        
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.os }} jar
+        path: staging
+        
+    - name: Upload files to release
       uses: svenstaro/upload-release-action@2.11.2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: gradefx/target/GradeFX-${{ github.ref_name }}-full.jar
+        file: staging/GradeFX-${{ github.ref_name }}-full.jar
         asset_name: GradeFX-${{ github.ref_name }}-${{ matrix.os }}.jar
         tag: ${{ github.ref }}
         overwrite: true
+        
+  build-windows:
+    name: Build standalone Windows
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+      - uses: actions/checkout@v4
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Visual Studio shell
+        uses: egor-tensin/vs-shell@v1
+
+      - name: Setup Gluon's GraalVM
+        uses: gluonhq/setup-graalvm@master
+        with:
+          graalvm: '22.1.0.1-Final'
+          jdk: 'java17'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Gluon Build and Package
+        shell: cmd
+        run: .\mvnw -f gradefx -Pdesktop gluonfx:build gluonfx:package
+
+      - name: Make staging directory
+        run: mkdir staging
+
+      - name: Copy native bundles to staging
+        run: |
+          cp -r gradefx/target/gluonfx/x86_64-windows/GradeFX.exe staging
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: staging
+        
+      - name: Upload files to release
+        uses: svenstaro/upload-release-action@2.11.2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: staging/GradeFX.exe
+          asset_name: GradeFX-${{ github.ref_name }}-${{ matrix.os }}.exe
+          tag: ${{ github.ref }}
+          overwrite: true
+          
+  build-linux:
+    name: Build standalone Linux
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Gluon's GraalVM
+        uses: gluonhq/setup-graalvm@master
+        with:
+          graalvm: '22.1.0.1-Final'
+          jdk: 'java17'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install libraries
+        run: |
+          sudo apt update
+          sudo apt install libasound2-dev libavcodec-dev libavformat-dev libavutil-dev libgl-dev libgtk-3-dev libpango1.0-dev libxtst-dev
+
+      - name: Gluon Build
+        run: ./mvnw -f gradefx -Pdesktop gluonfx:build gluonfx:package
+
+      - name: Make staging directory
+        run: mkdir staging
+
+      - name: Copy native image to staging
+        run: cp -r gradefx/target/gluonfx/x86_64-linux/GradeFX* staging
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: staging
+          
+      - name: Upload files to release
+        uses: svenstaro/upload-release-action@2.11.2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: staging/GradeFX
+          asset_name: GradeFX-${{ github.ref_name }}-${{ matrix.os }}
+          tag: ${{ github.ref }}
+          overwrite: true
