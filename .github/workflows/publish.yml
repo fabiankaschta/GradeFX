@@ -84,12 +84,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Gluon Build and Package
+      - name: Gluon Build
         shell: cmd
         run: |
           cd gradefx
           .\mvnw -Pdesktop gluonfx:build gluonfx:package
           cd ..
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Make staging directory
         run: mkdir staging
@@ -140,6 +142,8 @@ jobs:
           cd gradefx
           ./mvnw -Pdesktop gluonfx:build gluonfx:package
           cd ..
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Make staging directory
         run: mkdir staging
