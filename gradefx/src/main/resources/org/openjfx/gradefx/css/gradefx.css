@@ -57,6 +57,34 @@
     -fx-background-insets: 0.0;
     -fx-background-radius: 0.0;
 }
+.date-picker-table-cell > .text-field {
+    -fx-highlight-fill: -fx-base;
+    -fx-highlight-text-fill: -fx-text-base-color;
+	-fx-background-color: transparent;
+    -fx-background-insets: 0.0;
+    -fx-background-radius: 0.0;
+    -fx-padding: 0.0; /* TODO padding should apply to cell and input differently */
+}
+.date-picker-table-cell > .arrow-button {
+    -fx-background-radius: 0.0, 0.0, 0.0;
+}
+.date-picker-table-cell:focused > .arrow-button {
+    -fx-background-radius: 0.0, 0.0, 0.0;
+}
+.date-picker-table-cell:focused {
+    -fx-highlight-fill: -fx-base;
+    -fx-highlight-text-fill: -fx-text-base-color;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0.0;
+    -fx-background-radius: 0.0;
+}
+.date-picker-table-cell > .text-field {
+    -fx-highlight-fill: -fx-base;
+    -fx-highlight-text-fill: -fx-text-base-color;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0.0;
+    -fx-background-radius: 0.0;
+}
 
 .table-view-full-size > .virtual-flow > .clipped-container > .sheet > .table-row-cell > .table-cell:last-visible {
     -fx-border-color: transparent;

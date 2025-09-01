@@ -2,6 +2,7 @@ package org.openjfx.gradefx.view.tableview;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,8 @@ import org.openjfx.kafx.view.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.converter.BigDecimalPercentConverter;
 import org.openjfx.kafx.view.tableview.TableCellCustom;
 import org.openjfx.kafx.view.tableview.TableCellEditComparable;
+import org.openjfx.kafx.view.tableview.TableCellEditConverter;
+import org.openjfx.kafx.view.tableview.TableCellEditDatePicker;
 
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
@@ -44,6 +47,8 @@ public class TableViewTest extends TableView<Student> {
 	private final SumColumn sumColumn;
 	private final RatioColumn ratioColumn;
 	private final GradeColumn gradeColumn;
+	private final AnnotationColumn annotationColumn;
+	private final DateColumn dateColumn;
 	private final BigDecimalConverter bigDecimalConverter = new BigDecimalConverter();
 
 	public TableViewTest(Group group, Test test) {
@@ -58,6 +63,8 @@ public class TableViewTest extends TableView<Student> {
 		this.ratioColumn = new RatioColumn(this.sumColumn);
 		this.ratioColumn.visibleProperty().bind(test.usePointsProperty());
 		this.gradeColumn = new GradeColumn(this.sumColumn);
+		this.annotationColumn = new AnnotationColumn();
+		this.dateColumn = new DateColumn();
 
 		this.getSelectionModel().selectedItemProperty().subscribe(selected -> GroupsPane.setSelectedStudent(selected));
 
@@ -99,6 +106,8 @@ public class TableViewTest extends TableView<Student> {
 		this.getColumns().add(sumColumn);
 		this.getColumns().add(ratioColumn);
 		this.getColumns().add(gradeColumn);
+		this.getColumns().add(annotationColumn);
+		this.getColumns().add(dateColumn);
 	}
 
 	private class TestTaskColumn extends TableColumn<Student, BigDecimal> {
@@ -141,7 +150,7 @@ public class TableViewTest extends TableView<Student> {
 	private class GradeColumn extends TableColumn<Student, Grade> {
 
 		private GradeColumn(SumColumn sumColumn) {
-			super(Controller.translate("tab_test_grade"));
+			super(Controller.translate("test_grade"));
 			this.setCellValueFactory(data -> test.gradeProperty(data.getValue()));
 			this.setCellFactory(_ -> new TableCellEditComparable<>(group.getGradeSystem().getWorst(),
 					group.getGradeSystem().getBest(), group.getGradeSystem().getGradeConverter(), Pos.CENTER, true) {
@@ -249,7 +258,7 @@ public class TableViewTest extends TableView<Student> {
 		private RatioColumn(SumColumn sumColumn) {
 			super("%");
 			ObservableList<Observable> observables = FXCollections.observableArrayList();
-			setCellValueFactory(data -> Bindings.createObjectBinding(() -> {
+			this.setCellValueFactory(data -> Bindings.createObjectBinding(() -> {
 				observables.add(sumColumn.getCellObservableValue(data.getValue()));
 				observables.add(test.totalPointsProperty());
 				BigDecimal sum = sumColumn.getCellData(data.getValue());
@@ -259,11 +268,39 @@ public class TableViewTest extends TableView<Student> {
 					return sum.divide(test.getTotalPoints(), 5, RoundingMode.FLOOR);
 				}
 			}, observables.toArray(n -> new Observable[n])));
-			setCellFactory(TableCellCustom.forTableColumn(new BigDecimalPercentConverter(2), Pos.CENTER));
-			setSortable(true);
-			setReorderable(false);
-			editableProperty().bind(test.useTasksProperty().not());
+			this.setCellFactory(TableCellCustom.forTableColumn(new BigDecimalPercentConverter(2), Pos.CENTER));
+			this.setSortable(true);
+			this.setReorderable(false);
+			this.editableProperty().bind(test.useTasksProperty().not());
 			this.minWidthProperty().bind(Controller.fontSizeProperty().multiply(5));
+		}
+
+	}
+
+	private class AnnotationColumn extends TableColumn<Student, String> {
+
+		private AnnotationColumn() {
+			super(Controller.translate("test_annotation"));
+			this.setCellValueFactory(data -> test.annotationProperty(data.getValue()));
+			this.setCellFactory(TableCellEditConverter.forTableColumn());
+			this.setSortable(true);
+			this.setReorderable(false);
+			this.setEditable(true);
+			this.minWidthProperty().bind(Controller.fontSizeProperty().multiply(15));
+		}
+
+	}
+
+	private class DateColumn extends TableColumn<Student, LocalDate> {
+
+		private DateColumn() {
+			super(Controller.translate("test_date"));
+			this.setCellValueFactory(data -> test.dateProperty(data.getValue()));
+			this.setCellFactory(TableCellEditDatePicker.forTableColumn());
+			this.setSortable(true);
+			this.setReorderable(false);
+			this.setEditable(true);
+			this.minWidthProperty().bind(Controller.fontSizeProperty().multiply(7));
 		}
 
 	}
@@ -285,9 +322,13 @@ public class TableViewTest extends TableView<Student> {
 								getColumns().remove(sumColumn);
 								getColumns().remove(ratioColumn);
 								getColumns().remove(gradeColumn);
+								getColumns().remove(annotationColumn);
+								getColumns().remove(dateColumn);
 								getColumns().add(sumColumn);
 								getColumns().add(ratioColumn);
 								getColumns().add(gradeColumn);
+								getColumns().add(annotationColumn);
+								getColumns().add(dateColumn);
 							}
 						} else {
 							testTaskColumn.getColumns().add(new TestTaskColumn(task));

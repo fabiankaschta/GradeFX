@@ -313,6 +313,8 @@ public class Test {
 	private final ObservableMap<Student, ObjectProperty<BigDecimal>> totalPoints = FXCollections.observableHashMap();
 	private final ObservableMap<Student, ReadOnlyBooleanWrapper> gradesFixed = FXCollections.observableHashMap();
 	private final ObservableMap<Student, ObjectProperty<Grade>> grades = FXCollections.observableHashMap();
+	private final ObservableMap<Student, StringProperty> annotations = FXCollections.observableHashMap();
+	private final ObservableMap<Student, ObjectProperty<LocalDate>> dates = FXCollections.observableHashMap();
 
 	public Test(Group group, String name, String shortName, LocalDate date, BigDecimal weight, BigDecimal maxPoints,
 			boolean useTasks, boolean usePoints) {
@@ -504,6 +506,8 @@ public class Test {
 		this.gradesFixed.remove(student);
 		this.totalPoints.remove(student);
 		this.totalPointsFixed.remove(student);
+		this.annotations.remove(student);
+		this.dates.remove(student);
 		this.tasksRoot.get().removeStudent(student);
 	}
 
@@ -516,12 +520,16 @@ public class Test {
 					"totalPoints in test " + this);
 			ReadOnlyBooleanWrapper totalPointsFixedProperty = new ReadOnlyBooleanWrapper(student,
 					"totalPointsFixed in test " + this, false);
+			StringProperty annotationProperty = new SimpleStringProperty(student, "annotation in test " + this);
+			ObjectProperty<LocalDate> dateProperty = new SimpleObjectProperty<>(student, "date in test " + this);
 			gradeProperty.addListener(Controller
 					.getConditionalListenerUnsavedChanges(() -> this.isGradeFixed(student) || !this.getUsePoints()));
 			gradeFixedProperty.addListener(Controller.LISTENER_UNSAVED_CHANGES);
 			totalPointsProperty.addListener(Controller.getConditionalListenerUnsavedChanges(
 					() -> this.isTotalPointsFixed(student) || !this.getUseTasks()));
 			totalPointsFixedProperty.addListener(Controller.LISTENER_UNSAVED_CHANGES);
+			annotationProperty.addListener(Controller.LISTENER_UNSAVED_CHANGES);
+			dateProperty.addListener(Controller.LISTENER_UNSAVED_CHANGES);
 
 			gradeFixedProperty.addListener((_, oldValue, newValue) -> {
 				if (oldValue && !newValue) {
@@ -541,6 +549,8 @@ public class Test {
 			this.gradesFixed.put(student, gradeFixedProperty);
 			this.totalPoints.put(student, totalPointsProperty);
 			this.totalPointsFixed.put(student, totalPointsFixedProperty);
+			this.annotations.put(student, annotationProperty);
+			this.dates.put(student, dateProperty);
 
 			this.calculateTotalPoints(student);
 			this.calculateGrade(student);
@@ -646,6 +656,36 @@ public class Test {
 		return this.grades;
 	}
 
+	public void setAnnotation(Student student, String annotation) {
+		this.putStudentPropertiesIfNotExists(student);
+		this.annotations.get(student).set(annotation);
+	}
+
+	public String getAnnotation(Student student) {
+		this.putStudentPropertiesIfNotExists(student);
+		return this.annotations.get(student).getValue();
+	}
+
+	public StringProperty annotationProperty(Student student) {
+		this.putStudentPropertiesIfNotExists(student);
+		return this.annotations.get(student);
+	}
+
+	public void setDate(Student student, LocalDate date) {
+		this.putStudentPropertiesIfNotExists(student);
+		this.dates.get(student).set(date);
+	}
+
+	public LocalDate getDate(Student student) {
+		this.putStudentPropertiesIfNotExists(student);
+		return this.dates.get(student).getValue();
+	}
+
+	public ObjectProperty<LocalDate> dateProperty(Student student) {
+		this.putStudentPropertiesIfNotExists(student);
+		return this.dates.get(student);
+	}
+
 	@Override
 	public String toString() {
 		return this.getName();
@@ -667,6 +707,8 @@ public class Test {
 		private final Map<DataObject<Student>, Boolean> gradesFixed = new HashMap<>();
 		private final Map<DataObject<Student>, BigDecimal> totalPoints = new HashMap<>();
 		private final Map<DataObject<Student>, Boolean> totalPointsFixed = new HashMap<>();
+		private final Map<DataObject<Student>, String> annotations = new HashMap<>();
+		private final Map<DataObject<Student>, LocalDate> dates = new HashMap<>();
 
 		private transient Test test;
 
@@ -680,13 +722,13 @@ public class Test {
 			usePoints = t.getUsePoints();
 			pointsSystem = t.getPointsSystem().serialize();
 			tasksRoot = t.getTasksRoot().serialize();
-			for (Entry<Student, ObjectProperty<BigDecimal>> sg : t.totalPoints.entrySet()) {
-				if (t.isTotalPointsFixed(sg.getKey())) {
-					this.totalPoints.put(sg.getKey().serialize(), sg.getValue().getValue());
-					this.totalPointsFixed.put(sg.getKey().serialize(), true);
+			for (Entry<Student, ObjectProperty<BigDecimal>> st : t.totalPoints.entrySet()) {
+				if (t.isTotalPointsFixed(st.getKey())) {
+					this.totalPoints.put(st.getKey().serialize(), st.getValue().getValue());
+					this.totalPointsFixed.put(st.getKey().serialize(), true);
 				} else if (!t.getUseTasks()) {
-					this.totalPoints.put(sg.getKey().serialize(), sg.getValue().getValue());
-					this.totalPointsFixed.put(sg.getKey().serialize(), false);
+					this.totalPoints.put(st.getKey().serialize(), st.getValue().getValue());
+					this.totalPointsFixed.put(st.getKey().serialize(), false);
 				}
 			}
 			for (Entry<Student, ObjectProperty<Grade>> sg : t.grades.entrySet()) {
@@ -698,6 +740,12 @@ public class Test {
 					this.gradesFixed.put(sg.getKey().serialize(), false);
 				}
 			}
+			for (Entry<Student, StringProperty> sa : t.annotations.entrySet()) {
+				this.annotations.put(sa.getKey().serialize(), sa.getValue().getValue());
+			}
+			for (Entry<Student, ObjectProperty<LocalDate>> sd : t.dates.entrySet()) {
+				this.dates.put(sd.getKey().serialize(), sd.getValue().getValue());
+			}
 			test = t;
 		}
 
@@ -706,11 +754,11 @@ public class Test {
 				test = new Test(name, shortName, date, weight, useTasks, usePoints);
 				test.setPointsSystem(pointsSystem.deserialize());
 				tasksRoot.deserialize(test);
-				for (Entry<DataObject<Student>, BigDecimal> sp : totalPoints.entrySet()) {
-					Student student = sp.getKey().deserialize();
+				for (Entry<DataObject<Student>, BigDecimal> st : totalPoints.entrySet()) {
+					Student student = st.getKey().deserialize();
 					test.putStudentPropertiesIfNotExists(student);
-					test.setTotalPoints(student, sp.getValue());
-					if (totalPointsFixed.get(sp.getKey())) {
+					test.setTotalPoints(student, st.getValue());
+					if (totalPointsFixed.get(st.getKey())) {
 						test.setTotalPointsFixed(student, true);
 					}
 				}
@@ -721,6 +769,16 @@ public class Test {
 					if (gradesFixed.get(sg.getKey())) {
 						test.setGradeFixed(student, true);
 					}
+				}
+				for (Entry<DataObject<Student>, String> sa : annotations.entrySet()) {
+					Student student = sa.getKey().deserialize();
+					test.putStudentPropertiesIfNotExists(student);
+					test.setAnnotation(student, sa.getValue());
+				}
+				for (Entry<DataObject<Student>, LocalDate> sd : dates.entrySet()) {
+					Student student = sd.getKey().deserialize();
+					test.putStudentPropertiesIfNotExists(student);
+					test.setDate(student, sd.getValue());
 				}
 			}
 			return test;
