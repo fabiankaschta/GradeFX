@@ -8,6 +8,7 @@ import org.openjfx.kafx.controller.Controller;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -16,12 +17,24 @@ public class GradeFXApplication extends Application {
 
 	@Override
 	public void start(Stage primaryStage) {
+		Controller.setPrimaryStage(primaryStage);
+
+		primaryStage.setMaximized(Boolean.valueOf(Controller.getConfigOption("MAXIMIZED")));
+		primaryStage.maximizedProperty()
+				.subscribe(maximized -> Controller.setConfigOption("MAXIMIZED", String.valueOf(maximized)));
+		primaryStage.setTitle(Controller.translate("app_title"));
+		primaryStage.addEventFilter(WindowEvent.WINDOW_CLOSE_REQUEST, e -> Controller.close(e));
+		primaryStage.getIcons()
+				.add(new Image(GradeFXApplication.class.getResourceAsStream("/org/openjfx/gradefx/img/icon.png")));
+
 		BorderPane root = new BorderPane();
 		root.setTop(MainMenuBar.get());
 		root.setCenter(GroupsPane.get());
+
 		Scene scene = new Scene(root, Double.valueOf(Controller.getConfigOption("WIDTH")),
 				Double.valueOf(Controller.getConfigOption("HEIGHT")));
-		scene.getStylesheets().add(GradeFXApplication.class.getResource("/org/openjfx/gradefx/css/gradefx.css").toExternalForm());
+		scene.getStylesheets()
+				.add(GradeFXApplication.class.getResource("/org/openjfx/gradefx/css/gradefx.css").toExternalForm());
 		scene.widthProperty().subscribe(width -> {
 			if (!primaryStage.isMaximized()) {
 				Controller.setConfigOption("WIDTH", String.valueOf(width));
@@ -32,6 +45,8 @@ public class GradeFXApplication extends Application {
 				Controller.setConfigOption("HEIGHT", String.valueOf(height));
 			}
 		});
+
+		primaryStage.setScene(scene);
 
 		Controller.fontSizeProperty().subscribe(fontSize -> root.setStyle("-fx-font-size: " + fontSize));
 		root.setOnScroll(event -> {
@@ -45,13 +60,6 @@ public class GradeFXApplication extends Application {
 				}
 			}
 		});
-
-		primaryStage.setMaximized(Boolean.valueOf(Controller.getConfigOption("MAXIMIZED")));
-		primaryStage.maximizedProperty()
-				.subscribe(maximized -> Controller.setConfigOption("MAXIMIZED", String.valueOf(maximized)));
-		primaryStage.setTitle(Controller.translate("app_title"));
-		primaryStage.setScene(scene);
-		primaryStage.addEventFilter(WindowEvent.WINDOW_CLOSE_REQUEST, e -> Controller.close(e));
 
 		if (!Controller.existsConfigOption("LAST_FILE") || !Controller.readFromFile()) {
 			TestGroupSystem.setDefault();

@@ -21,6 +21,7 @@ public class DialogFirstStart extends Dialog<ButtonType> {
 		this.setTitle(Controller.translate("dialog_firstStart_title"));
 		Controller.fontSizeProperty()
 				.subscribe(fontSize -> this.getDialogPane().setStyle("-fx-font-size: " + fontSize));
+		this.initOwner(Controller.getPrimaryStage());
 		Label startMessage = new Label(Controller.translate("dialog_firstStart_message"));
 		startMessage.setWrapText(true);
 		startMessage.setTextAlignment(TextAlignment.CENTER);
