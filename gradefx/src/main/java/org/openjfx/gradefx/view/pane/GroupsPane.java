@@ -10,7 +10,6 @@ import org.openjfx.gradefx.view.tab.TestTab;
 import org.openjfx.kafx.controller.Controller;
 import org.openjfx.kafx.view.pane.AddTabPane;
 
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.ObjectProperty;
@@ -103,41 +102,34 @@ public class GroupsPane extends AddTabPane {
 	}
 
 	public static void select(int index) {
-		Platform.runLater(() -> instance.getSelectionModel().select(index));
+		instance.getSelectionModel().select(index);
 	}
 
 	public static void selectTab(Group group, int index) {
-		Platform.runLater(() -> {
-			for (Tab tab : instance.getTabs()) {
-				GroupTab groupTab = (GroupTab) tab;
-				if (groupTab.getGroup() == group) {
-					groupTab.select(index);
-					return;
-				}
+		for (Tab tab : instance.getTabs()) {
+			GroupTab groupTab = (GroupTab) tab;
+			if (groupTab.getGroup() == group) {
+				groupTab.select(index);
+				return;
 			}
-		});
+		}
 	}
 
 	public static void addTab(Group group) {
-		GroupTab tab = new GroupTab(group);
-		Platform.runLater(() -> {
-			instance.addTab(tab);
-		});
+		instance.addTab(new GroupTab(group));
 	}
 
 	public static void removeTab(Group group) {
-		Platform.runLater(() -> {
-			GroupTab toRemove = null;
-			for (Tab t : instance.getTabs()) {
-				if ((t instanceof GroupTab) && ((GroupTab) t).getGroup() == group) {
-					toRemove = (GroupTab) t;
-					break;
-				}
+		GroupTab toRemove = null;
+		for (Tab t : instance.getTabs()) {
+			if ((t instanceof GroupTab) && ((GroupTab) t).getGroup() == group) {
+				toRemove = (GroupTab) t;
+				break;
 			}
-			if (toRemove != null) {
-				instance.getTabs().remove(toRemove);
-			}
-		});
+		}
+		if (toRemove != null) {
+			instance.getTabs().remove(toRemove);
+		}
 	}
 
 	private GroupsPane() {

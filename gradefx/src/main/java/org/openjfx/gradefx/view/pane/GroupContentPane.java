@@ -10,7 +10,6 @@ import org.openjfx.gradefx.view.tab.GroupOverviewTab;
 import org.openjfx.gradefx.view.tab.TestTab;
 import org.openjfx.kafx.view.pane.AddTabPane;
 
-import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Side;
 import javafx.scene.control.Tab;
@@ -29,20 +28,20 @@ public class GroupContentPane extends AddTabPane {
 				if (c.wasAdded()) {
 					List<? extends Test> added = c.getAddedSubList();
 					for (Test t : added) {
-						Platform.runLater(() -> addTestTab(t));
+						addTestTab(t);
 					}
 				}
 				if (c.wasRemoved()) {
 					List<? extends Test> removed = c.getRemoved();
 					for (Test t : removed) {
-						Platform.runLater(() -> removeTestTab(t));
+						removeTestTab(t);
 					}
 				}
 			}
 		});
 		this.addFixedTab(new GroupOverviewTab(group));
 		for (Test t : group.getTests()) {
-			Platform.runLater(() -> addTestTab(t));
+			addTestTab(t);
 		}
 
 		this.getStyleClass().addAll("tab-pane-selected-bold");
