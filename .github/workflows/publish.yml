@@ -79,7 +79,6 @@ jobs:
       - name: Setup Gluon's GraalVM
         uses: gluonhq/setup-graalvm@master
         with:
-          graalvm: 'gluon-23+25.1-dev-2409082136'
           jdk: 'java23'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -128,7 +127,6 @@ jobs:
       - name: Setup Gluon's GraalVM
         uses: gluonhq/setup-graalvm@master
         with:
-          graalvm: 'gluon-23+25.1-dev-2409082136'
           jdk: 'java23'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
