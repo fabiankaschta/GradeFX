@@ -6,19 +6,20 @@
 
     <groupId>org.openjfx</groupId>
     <artifactId>gradefx</artifactId>
-    <version>0.9.4</version>
+    <version>0.9.5</version>
     <packaging>jar</packaging>
 
     <name>GradeFX</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>22</maven.compiler.release>
-        <javafx.version>24.0.2</javafx.version>
+        <maven.compiler.release>21</maven.compiler.release>
+        <javafx.version>21</javafx.version>
         <javafx.plugin.version>0.0.8</javafx.plugin.version>
         <gluonfx.plugin.version>1.0.27</gluonfx.plugin.version>
-        <attach.version>4.0.22</attach.version>
         <main.class>org.openjfx.gradefx.GradeFXMain</main.class>
+        <fxapp.class>org.openjfx.gradefx.view.GradeFXApplication</fxapp.class>
+        <resources.path>org.openjfx.gradefx.*,org.openjfx.kafx.*</resources.path>
     </properties>
     
 	<repositories>
@@ -47,33 +48,8 @@
         <dependency>
 			<groupId>org.openjfx</groupId>
 			<artifactId>kafx</artifactId>
-			<version>0.9.5</version>
+			<version>0.9.6</version>
 		</dependency>
-        <dependency>
-            <groupId>com.gluonhq.attach</groupId>
-            <artifactId>display</artifactId>
-            <version>${attach.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.gluonhq.attach</groupId>
-            <artifactId>lifecycle</artifactId>
-            <version>${attach.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.gluonhq.attach</groupId>
-            <artifactId>statusbar</artifactId>
-            <version>${attach.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.gluonhq.attach</groupId>
-            <artifactId>storage</artifactId>
-            <version>${attach.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.gluonhq.attach</groupId>
-            <artifactId>util</artifactId>
-            <version>${attach.version}</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -125,12 +101,10 @@
                 <configuration>
                     <target>${gluonfx.target}</target>
                     <mainClass>${main.class}</mainClass>
-                    <attachList>
-                        <list>display</list>
-                        <list>lifecycle</list>
-                        <list>statusbar</list>
-                        <list>storage</list>
-                    </attachList>
+                    <reflectionList>${fxapp.class}</reflectionList>
+                    <resourcesList>${resources.path}</resourcesList>
+        			<javaStaticSdkVersion>21</javaStaticSdkVersion>
+        			<javafxStaticSdkVersion>21</javafxStaticSdkVersion>
                 </configuration>
             </plugin>
         </plugins>
