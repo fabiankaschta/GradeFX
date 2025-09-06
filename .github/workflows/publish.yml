@@ -113,7 +113,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: staging/GradeFX.exe
-          asset_name: GradeFX-${{ github.ref_name }}-${{ matrix.os }}.exe
+          asset_name: GradeFX-${{ github.ref_name }}-windows-latest.exe
           tag: ${{ github.ref }}
           overwrite: true
           
@@ -167,6 +167,6 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: staging/GradeFX
-          asset_name: GradeFX-${{ github.ref_name }}-${{ matrix.os }}
+          asset_name: GradeFX-${{ github.ref_name }}-ubuntu-latest
           tag: ${{ github.ref }}
           overwrite: true
