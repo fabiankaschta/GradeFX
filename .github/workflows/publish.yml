@@ -93,7 +93,7 @@ jobs:
         shell: cmd
         run: |
           cd gradefx
-          ./mvnw -B gluonfx:build
+          ./mvnw -Pdesktop -B gluonfx:build
           cd ..
         env:
           GITHUB_TOKEN: ${{ github.token }}
