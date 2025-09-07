@@ -179,9 +179,9 @@ public class TableViewTest extends TableView<Student> {
 			this.setSortable(true);
 			this.setReorderable(false);
 			this.setOnEditCommit(e -> {
-				if (e.getNewValue() == null && e.getOldValue() != null
+				if (e.getNewValue() != e.getOldValue() && (e.getNewValue() == null && e.getOldValue() != null
 						|| e.getNewValue() != null && e.getOldValue() == null
-						|| e.getNewValue().compareTo(e.getOldValue()) != 0) {
+						|| e.getNewValue().compareTo(e.getOldValue()) != 0)) {
 					if (test.getUsePoints()) {
 						test.setGradeFixed(e.getRowValue(), true);
 					}
