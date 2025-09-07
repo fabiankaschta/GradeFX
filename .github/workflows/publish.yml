@@ -94,7 +94,9 @@ jobs:
       - name: Gluon Build
         shell: cmd
         run: |
-          mvn -f gradefx -B gluonfx:build
+          cd gradefx
+          .\mvnw -B gluonfx:build
+          cd ..
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
