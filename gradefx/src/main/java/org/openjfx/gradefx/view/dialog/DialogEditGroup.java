@@ -2,9 +2,11 @@ package org.openjfx.gradefx.view.dialog;
 
 import org.openjfx.gradefx.model.GradeSystem;
 import org.openjfx.gradefx.model.Group;
+import org.openjfx.gradefx.model.Subject;
 import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
 import org.openjfx.gradefx.view.alert.AlertTestSystemChange;
 import org.openjfx.gradefx.view.converter.GradeSystemConverter;
+import org.openjfx.gradefx.view.converter.SubjectConverter;
 import org.openjfx.gradefx.view.converter.TestGroupSystemConverter;
 import org.openjfx.kafx.controller.Controller;
 import org.openjfx.kafx.view.control.TextFieldPromptText;
@@ -24,6 +26,7 @@ import javafx.scene.paint.Color;
 public class DialogEditGroup extends DialogEdit<Group> {
 
 	private final UserInputTextInput name;
+	private final UserInputChoiceBox<Subject> subject;
 	private final UserInputCheckBox useSubgroups;
 	private final UserInputChoiceBox<GradeSystem> gradeSystem;
 	private final UserInputChoiceBox<TestGroupSystem> testGroupSystem;
@@ -32,8 +35,14 @@ public class DialogEditGroup extends DialogEdit<Group> {
 	public DialogEditGroup(Group group) {
 		super(Controller.translate("dialog_edit_group_title"), group);
 
-		this.name = new UserInputTextInput(new TextFieldPromptText(Controller.translate("group_name")), group.getName());
+		this.name = new UserInputTextInput(new TextFieldPromptText(Controller.translate("group_name")),
+				group.getName());
 		super.addInput(this.name, Controller.translate("group_name"));
+
+		ChoiceBox<Subject> subjectChoiceBox = new ChoiceBox<>(FXCollections.observableArrayList(Subject.getSubjects()));
+		subjectChoiceBox.setConverter(new SubjectConverter());
+		this.subject = new UserInputChoiceBox<>(subjectChoiceBox, group.getSubject());
+		super.addInput(this.subject, Controller.translate("group_subject"));
 
 		this.useSubgroups = new UserInputCheckBox(new CheckBox(), group.getUseSubgroups());
 		super.addInput(this.useSubgroups, Controller.translate("group_useSubgroups"));
@@ -56,12 +65,16 @@ public class DialogEditGroup extends DialogEdit<Group> {
 	@Override
 	public boolean edit(Group group) {
 		String name = this.name.getValue().trim();
+		Subject subject = this.subject.getValue();
 		boolean useSubgroups = this.useSubgroups.getValue();
 		GradeSystem gradeSystem = this.gradeSystem.getValue();
 		TestGroupSystem testGroupSystem = this.testGroupSystem.getValue();
 		Color color = this.color.getValue();
 		if (name != null && name.length() > 0 && !name.equals(group.getName())) {
 			group.setName(name);
+		}
+		if (subject != group.getSubject()) {
+			group.setSubject(subject);
 		}
 		if (useSubgroups != group.getUseSubgroups()) {
 			group.setUseSubgroups(useSubgroups);

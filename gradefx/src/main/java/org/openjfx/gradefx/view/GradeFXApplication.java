@@ -1,5 +1,6 @@
 package org.openjfx.gradefx.view;
 
+import org.openjfx.gradefx.model.Subject;
 import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
 import org.openjfx.gradefx.view.dialog.DialogFirstStart;
 import org.openjfx.gradefx.view.pane.GroupsPane;
@@ -63,6 +64,7 @@ public class GradeFXApplication extends Application {
 
 		if (!Controller.existsConfigOption("LAST_FILE") || !Controller.readFromFile()) {
 			TestGroupSystem.setDefault();
+			Subject.setDefault();
 			new DialogFirstStart().showAndWait().ifPresent(buttonType -> {
 				if (buttonType == DialogFirstStart.NEW_FILE) {
 					if (!Controller.saveAs()) {

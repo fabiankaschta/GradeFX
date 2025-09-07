@@ -71,6 +71,7 @@ public class Group {
 	}
 
 	private final StringProperty name = new SimpleStringProperty(this, "name");
+	private final ObjectProperty<Subject> subject = new SimpleObjectProperty<>(this, "subject");
 	private final BooleanProperty useSubgroups = new SimpleBooleanProperty(this, "useSubgroups");
 	private final ObservableList<Student> students = FXCollections.observableArrayList();
 	private final ObservableList<Test> tests = FXCollections.observableArrayList(); // order of tabs
@@ -88,15 +89,17 @@ public class Group {
 		});
 	}
 
-	public Group(String name, boolean useSubgroups, GradeSystem gradeSystem, TestGroupSystem testGroupSystem,
-			Color color) {
+	public Group(String name, Subject subject, boolean useSubgroups, GradeSystem gradeSystem,
+			TestGroupSystem testGroupSystem, Color color) {
 		this.setName(name);
+		this.setSubject(subject);
 		this.setUseSubgroups(useSubgroups);
 		this.setGradeSystem(gradeSystem);
 		this.setTestGroupSystem(testGroupSystem);
 		this.setColor(color);
 		groups.add(this);
 		this.nameProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
+		this.subjectProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
 		this.useSubgroupsProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
 		this.addStudentsListener(Controller.LISTLISTENER_UNSAVED_CHANGES);
 //		this.addTestsListener(Controller.LISTLISTENER_UNSAVED_CHANGES);
@@ -125,6 +128,18 @@ public class Group {
 
 	public void setName(String name) {
 		this.name.set(name);
+	}
+
+	public Subject getSubject() {
+		return subject.get();
+	}
+
+	public ObjectProperty<Subject> subjectProperty() {
+		return subject;
+	}
+
+	public void setSubject(Subject subject) {
+		this.subject.set(subject);
 	}
 
 	public boolean getUseSubgroups() {
@@ -266,6 +281,7 @@ public class Group {
 		private static final long serialVersionUID = 6323505892334093500L;
 
 		private final String name;
+		private final DataObject<Subject> subject;
 		private final boolean useSubgroups;
 		private final List<DataObject<Student>> students = new ArrayList<>();
 		private final List<DataObject<Test>> tests = new ArrayList<>();
@@ -279,6 +295,7 @@ public class Group {
 		private GroupS(Group g) {
 			DataObject.putSerialized(g, this);
 			this.name = g.getName();
+			this.subject = g.getSubject().serialize();
 			this.useSubgroups = g.getUseSubgroups();
 			this.gradeSystem = g.getGradeSystem();
 			this.testGroupSystem = g.getTestGroupSystem().serialize();
@@ -295,7 +312,8 @@ public class Group {
 
 		public Group deserialize(Object... params) {
 			if (group == null) {
-				group = new Group(name, useSubgroups, gradeSystem, testGroupSystem.deserialize(), Color.web(color));
+				group = new Group(name, subject.deserialize(), useSubgroups, gradeSystem, testGroupSystem.deserialize(),
+						Color.web(color));
 				group.testGroupRoot.set(testGroupRoot.deserialize());
 				for (DataObject<Student> s : students) {
 					group.students.add(s.deserialize());

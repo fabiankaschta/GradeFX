@@ -7,6 +7,7 @@ import javax.crypto.NoSuchPaddingException;
 
 import org.openjfx.gradefx.io.GradeFXFileIO;
 import org.openjfx.gradefx.model.Group;
+import org.openjfx.gradefx.model.Subject;
 import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
 import org.openjfx.gradefx.view.pane.GroupsPane;
 import org.openjfx.gradefx.view.pane.MainMenuBar;
@@ -43,9 +44,13 @@ public class GradeFXController extends Controller {
 	@Override
 	protected void handleNewFile() {
 		TestGroupSystem.setDefault();
+		Subject.setDefault();
 		Group.clearGroups();
 		if (!handleSaveAs()) {
 			readFromFile();
+//			return readFromFile();
+		} else {
+//			return false;
 		}
 	}
 

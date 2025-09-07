@@ -5,6 +5,7 @@ import org.openjfx.gradefx.view.pane.GroupContentPane;
 import org.openjfx.gradefx.view.style.Styles;
 import org.openjfx.kafx.controller.Controller;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -21,7 +22,15 @@ public class GroupTab extends Tab {
 		this.pane = new GroupContentPane(this.group);
 
 		Label label = new Label();
-		label.textProperty().bindBidirectional(this.group.nameProperty());
+		label.textProperty().bind(Bindings.createStringBinding(() -> {
+			String name = this.group.getName();
+			String subject = this.group.getSubject().getShortName();
+			if (subject != null && subject.length() > 0) {
+				return name + '\n' + subject;
+			} else {
+				return name;
+			}
+		}, this.group.nameProperty(), this.group.subjectProperty()));
 		label.setWrapText(true);
 		label.setTextAlignment(TextAlignment.CENTER);
 		label.setAlignment(Pos.CENTER);

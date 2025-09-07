@@ -11,6 +11,7 @@ import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.PointsSystem;
 import org.openjfx.gradefx.model.PointsSystem.BoundType;
 import org.openjfx.gradefx.model.Student;
+import org.openjfx.gradefx.model.Subject;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.Test.TestTask;
 import org.openjfx.gradefx.model.TestGroup;
@@ -39,6 +40,8 @@ public class GradeFXFileIO extends EncryptedFileIO {
 			ArrayList<DataObject<TestGroupSystem>> testGroupSystems = (ArrayList<DataObject<TestGroupSystem>>) data
 					.get("testGroupSystems");
 			testGroupSystems.forEach(tgs -> tgs.deserialize());
+			ArrayList<DataObject<Subject>> subjects = (ArrayList<DataObject<Subject>>) data.get("subjects");
+			subjects.forEach(s -> s.deserialize());
 
 			int selectedGroup = (int) data.get("selectedGroup");
 			GroupsPane.select(selectedGroup);
@@ -66,6 +69,7 @@ public class GradeFXFileIO extends EncryptedFileIO {
 		list.add(Group.class);
 		list.add(PointsSystem.class);
 		list.add(Student.class);
+		list.add(Subject.class);
 		list.add(Test.class);
 		list.add(TestTask.class);
 		list.add(TestGroup.class);
@@ -84,6 +88,8 @@ public class GradeFXFileIO extends EncryptedFileIO {
 		// TODO maybe move to config?
 		data.put("testGroupSystems", new ArrayList<DataObject<TestGroupSystem>>(
 				TestGroupSystem.getTestGroupSystems().stream().map(tgs -> tgs.serialize()).toList()));
+		data.put("subjects",
+				new ArrayList<DataObject<Subject>>(Subject.getSubjects().stream().map(s -> s.serialize()).toList()));
 
 		data.put("selectedGroup", GroupsPane.getSelectedGroupIndex());
 		return data;

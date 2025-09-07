@@ -2,9 +2,11 @@ package org.openjfx.gradefx.view.dialog;
 
 import org.openjfx.gradefx.model.GradeSystem;
 import org.openjfx.gradefx.model.Group;
+import org.openjfx.gradefx.model.Subject;
 import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
 import org.openjfx.gradefx.view.converter.GradeSystemConverter;
 import org.openjfx.gradefx.view.converter.TestGroupSystemConverter;
+import org.openjfx.gradefx.view.converter.SubjectConverter;
 import org.openjfx.kafx.controller.Controller;
 import org.openjfx.kafx.view.control.TextFieldPromptText;
 import org.openjfx.kafx.view.dialog.DialogAdd;
@@ -22,6 +24,7 @@ import javafx.scene.paint.Color;
 public class DialogAddGroup extends DialogAdd<Group> {
 
 	private final UserInputTextInput name;
+	private final UserInputChoiceBox<Subject> subject;
 	private final UserInputCheckBox useSubgroups;
 	private final UserInputChoiceBox<GradeSystem> gradeSystem;
 	private final UserInputChoiceBox<TestGroupSystem> testGroupSystem;
@@ -32,6 +35,11 @@ public class DialogAddGroup extends DialogAdd<Group> {
 
 		this.name = new UserInputTextInput(new TextFieldPromptText(Controller.translate("group_name")));
 		super.addInput(this.name, Controller.translate("group_name"));
+
+		ChoiceBox<Subject> subjectChoiceBox = new ChoiceBox<>(Subject.getSubjects());
+		subjectChoiceBox.setConverter(new SubjectConverter());
+		this.subject = new UserInputChoiceBox<>(subjectChoiceBox);
+		super.addInput(this.subject, Controller.translate("group_subject"));
 
 		this.useSubgroups = new UserInputCheckBox(new CheckBox());
 		super.addInput(this.useSubgroups, Controller.translate("group_useSubgroups"));
@@ -55,8 +63,8 @@ public class DialogAddGroup extends DialogAdd<Group> {
 
 	@Override
 	public Group create() {
-		return new Group(this.name.getValue().trim(), this.useSubgroups.getValue(), this.gradeSystem.getValue(),
-				this.testGroupSystem.getValue(), this.color.getValue());
+		return new Group(this.name.getValue().trim(), this.subject.getValue(), this.useSubgroups.getValue(),
+				this.gradeSystem.getValue(), this.testGroupSystem.getValue(), this.color.getValue());
 	}
 
 }
