@@ -6,7 +6,7 @@
 
     <groupId>org.openjfx</groupId>
     <artifactId>gradefx</artifactId>
-    <version>0.9.5</version>
+    <version>0.9.6</version>
     <packaging>jar</packaging>
 
     <name>GradeFX</name>
@@ -53,6 +53,11 @@
 			<groupId>org.openjfx</groupId>
 			<artifactId>kafx</artifactId>
 			<version>0.9.7</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>3.0.5</version>
 		</dependency>
     </dependencies>
 
