@@ -32,5 +32,5 @@ Derzeit nicht umsetzbare Features
 Das Programm wird als einzelne ausführbare Datei (ohne Installation) angeboten. Zusätzlich wird lediglich beim ersten Start eine Konfigurations-Datei im Home-Verzeichnis des Benutzers angelegt.
 
 Unter [Release](https://github.com/fabiankaschta/GradeFX/releases/latest) finden sich jeweils die aktuellen Versionen.
-* Windows: Das Programm wird als exe-Datei angeboten. Diese wird von Virenschutzprogrammen wahrscheinlich erstmal als gefährlich eingestuft. Zudem wird eine aktuelle Veriosn von [Microsoft Visual C++ Redistributable](https://learn.microsoft.com/de-de/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-microsoft-visual-c-redistributable-version) benötigt.
+* Windows: Das Programm wird als exe-Datei angeboten. Diese wird von Virenschutzprogrammen wahrscheinlich erstmal als gefährlich eingestuft. Zudem wird eine aktuelle Version von [Microsoft Visual C++ Redistributable](https://learn.microsoft.com/de-de/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-microsoft-visual-c-redistributable-version) benötigt.
 * Linux, MacOS, Windows: Das Programm wird als ausführbare Java-Datei (jar) angeboten. Zur Benutzung wird [Java](https://www.java.com/de/download/) benötigt.
