@@ -14,8 +14,7 @@ on:
       - '*'
 
 jobs:
-  build-jars:
-    name: Build JARs all os
+  build:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -29,12 +28,11 @@ jobs:
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
-        java-version: '23'
-        distribution: 'temurin'
+        java-version: '24'
         cache: maven
         
     - name: Build with Maven
-      run: mvn -f gradefx -B package
+      run: mvn -f gradefx -B javafx:jlink jpackage:jpackage
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
@@ -43,138 +41,19 @@ jobs:
 
     - name: Copy jar to staging
       run: |
-        cp -r gradefx/target/GradeFX-${{ github.ref_name }}-full.jar staging
+        cp -r gradefx/target/dist/* staging
         
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.os }} jar
+        name: ${{ matrix.os }}
         path: staging
         
-    - name: Upload files to release
-      uses: svenstaro/upload-release-action@2.11.2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: staging/GradeFX-${{ github.ref_name }}-full.jar
-        asset_name: GradeFX-${{ github.ref_name }}-${{ matrix.os }}.jar
-        tag: ${{ github.ref }}
-        overwrite: true
-        
-  build-windows:
-    name: Build standalone Windows
-    runs-on: windows-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # needed because of access error on github
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '23'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Visual Studio shell
-        uses: egor-tensin/vs-shell@v2
-
-      - name: Setup Gluon's GraalVM
-        uses: gluonhq/setup-graalvm@master
-        with:
-          jdk: 'java23'
-          cache: maven
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Gluon Build
-        shell: cmd
-        run: |
-          cd gradefx
-          .\mvnw -B gluonfx:build
-          cd ..
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Make staging directory
-        run: mkdir staging
-
-      - name: Copy native bundles to staging
-        run: |
-          cp -r gradefx/target/gluonfx/x86_64-windows/GradeFX.exe staging
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows
-          path: staging
-        
-      - name: Upload files to release
-        uses: svenstaro/upload-release-action@2.11.2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: staging/GradeFX.exe
-          asset_name: GradeFX-${{ github.ref_name }}-windows-latest.exe
-          tag: ${{ github.ref }}
-          overwrite: true
-          
-  build-linux:
-    name: Build standalone Linux
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # needed because of access error on github
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '23'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Setup Gluon's GraalVM
-        uses: gluonhq/setup-graalvm@master
-        with:
-          jdk: 'java23'
-          cache: maven
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install libraries
-        run: |
-          sudo apt update
-          sudo apt install libasound2-dev libavcodec-dev libavformat-dev libavutil-dev libgl-dev libgtk-3-dev libpango1.0-dev libxtst-dev
-
-      - name: Gluon Build
-        run: |
-          mvn -f gradefx -B gluonfx:build
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Make staging directory
-        run: mkdir staging
-
-      - name: Copy native image to staging
-        run: cp -r gradefx/target/gluonfx/x86_64-linux/GradeFX* staging
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux
-          path: staging
-          
-      - name: Upload files to release
-        uses: svenstaro/upload-release-action@2.11.2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: staging/GradeFX
-          asset_name: GradeFX-${{ github.ref_name }}-ubuntu-latest
-          tag: ${{ github.ref }}
-          overwrite: true
+#    - name: Upload files to release
+#      uses: svenstaro/upload-release-action@2.11.2
+#      with:
+#        repo_token: ${{ secrets.GITHUB_TOKEN }}
+#        file: staging/GradeFX-${{ github.ref_name }}-full.jar
+#        asset_name: GradeFX-${{ github.ref_name }}-${{ matrix.os }}.jar
+#        tag: ${{ github.ref }}
+#        overwrite: true
