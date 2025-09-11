@@ -17,7 +17,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
@@ -33,7 +33,7 @@ jobs:
         cache: maven
         
     - name: Build with Maven
-      run: mvn -f gradefx -B javafx:jlink jpackage:jpackage
+      run: mvn -f gradefx javafx:jlink jpackage:jpackage
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
