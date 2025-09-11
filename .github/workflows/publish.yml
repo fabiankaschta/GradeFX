@@ -53,17 +53,19 @@ jobs:
     - name: Zip files for Release
       shell: pwsh
       run: |
+        cd staging
         if ($env:RUNNER_OS -eq "Windows") {
-          7z a ${{ matrix.os }}.zip staging/* 
+          7z a ${{ matrix.os }}.zip *
         }
         else {
-          zip -r ${{ matrix.os }}.zip staging/*
+          zip -r ${{ matrix.os }}.zip *
         }
+        cd ..
         
     - name: Upload files to release
       uses: svenstaro/upload-release-action@2.11.2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{ matrix.os }}.zip
+        file: staging/${{ matrix.os }}.zip
         tag: ${{ github.ref }}
         overwrite: true
