@@ -54,10 +54,10 @@ jobs:
       shell: pwsh
       run: |
         if ($env:RUNNER_OS -eq "Windows") {
-          7z a ${{ matrix.os }}.zip staging 
+          7z a ${{ matrix.os }}.zip staging/* 
         }
         else {
-          zip -r ${{ matrix.os }}.zip staging
+          zip -r ${{ matrix.os }}.zip staging/*
         }
         
     - name: Upload files to release
