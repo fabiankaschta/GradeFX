@@ -50,10 +50,10 @@ jobs:
         name: ${{ matrix.os }}
         path: staging
         
-    - name: Zip Artifacts for Release
-      uses: montudor/action-zip@v1
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
       with:
-        args: zip -qq -r ${{ matrix.os }}.zip staging
+        name: ${{ matrix.os }}
         
     - name: Upload files to release
       uses: svenstaro/upload-release-action@2.11.2
