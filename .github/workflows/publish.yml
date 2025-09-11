@@ -50,11 +50,10 @@ jobs:
         name: ${{ matrix.os }}
         path: staging
         
-#    - name: Upload files to release
-#      uses: svenstaro/upload-release-action@2.11.2
-#      with:
-#        repo_token: ${{ secrets.GITHUB_TOKEN }}
-#        file: staging/GradeFX-${{ github.ref_name }}-full.jar
-#        asset_name: GradeFX-${{ github.ref_name }}-${{ matrix.os }}.jar
-#        tag: ${{ github.ref }}
-#        overwrite: true
+    - name: Upload files to release
+      uses: svenstaro/upload-release-action@2.11.2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: staging/*
+        tag: ${{ github.ref }}
+        overwrite: true
