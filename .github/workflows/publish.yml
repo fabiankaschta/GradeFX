@@ -57,3 +57,4 @@ jobs:
         file: staging/*
         tag: ${{ github.ref }}
         overwrite: true
+        file_glob: true
