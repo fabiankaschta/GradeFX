@@ -50,11 +50,15 @@ jobs:
         name: ${{ matrix.os }}
         path: staging
         
+    - name: Zip Artifacts for Release
+      uses: montudor/action-zip@v1
+      with:
+        args: zip -qq -r ${{ matrix.os }}.zip staging
+        
     - name: Upload files to release
       uses: svenstaro/upload-release-action@2.11.2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: staging/*
+        file: ${{ matrix.os }}.zip
         tag: ${{ github.ref }}
         overwrite: true
-        file_glob: true
