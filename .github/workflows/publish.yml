@@ -50,10 +50,15 @@ jobs:
         name: ${{ matrix.os }}
         path: staging
         
-    - name: Download Artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: ${{ matrix.os }}
+    - name: Zip files for Release
+      shell: pwsh
+      run: |
+        if ($env:RUNNER_OS -eq "Windows") {
+          7z a ${{ matrix.os }}.zip staging 
+        }
+        else {
+          zip -r ${{ matrix.os }}.zip staging
+        }
         
     - name: Upload files to release
       uses: svenstaro/upload-release-action@2.11.2
