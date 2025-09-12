@@ -35,11 +35,6 @@ jobs:
       run: mvn -f gradefx jpackage:jpackage@linux-rpm
       env:
         GITHUB_TOKEN: ${{ github.token }}
-        
-    - name: Create App-Image with Maven
-      run: mvn -f gradefx jpackage:jpackage@linux-image
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
 
     - name: Make staging directory
       run: mkdir staging
