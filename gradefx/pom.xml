@@ -51,13 +51,11 @@
 			<artifactId>kafx</artifactId>
 			<version>0.9.7</version>
 		</dependency>
-		<!--
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
 			<version>3.0.5</version>
 		</dependency>
-		-->
     </dependencies>
 
     <build>
@@ -72,6 +70,74 @@
                     <mainClass>${project.groupId}.${project.artifactId}/${main.class}</mainClass>
                 </configuration>
             </plugin>
+            <!-- make modular -->
+            <plugin>
+			    <groupId>org.moditect</groupId>
+			    <artifactId>moditect-maven-plugin</artifactId>
+			    <version>1.3.0.Final</version>
+			    <executions>
+			        <execution>
+			            <id>add-module-infos</id>
+			            <phase>generate-resources</phase>
+			            <goals>
+			                <goal>add-module-info</goal>
+			            </goals>
+			            <configuration>
+			                <outputDirectory>target/modules</outputDirectory>
+			                <modules>
+			                    <module>
+			                        <artifact>
+										<groupId>org.apache.pdfbox</groupId>
+										<artifactId>pdfbox</artifactId>
+										<version>3.0.5</version>
+			                        </artifact>
+			                        <additionalDependencies>
+			                            <dependency>
+			                                <groupId>org.apache.pdfbox</groupId>
+			                                <artifactId>pdfbox-io</artifactId>
+			                                <version>3.0.5</version>
+			                            </dependency>
+			                            <dependency>
+			                                <groupId>org.apache.pdfbox</groupId>
+			                                <artifactId>fontbox</artifactId>
+			                                <version>3.0.5</version>
+			                            </dependency>
+			                            <dependency>
+			                                <groupId>commons-logging</groupId>
+			                                <artifactId>commons-logging</artifactId>
+			                                <version>1.3.5</version>
+			                            </dependency>
+			                            <dependency>
+			                                <groupId>org.bouncycastle</groupId>
+			                                <artifactId>bcpkix-jdk18on</artifactId>
+			                                <version>1.80</version>
+			                            </dependency>
+			                            <dependency>
+			                                <groupId>org.bouncycastle</groupId>
+			                                <artifactId>bcprov-jdk18on</artifactId>
+			                                <version>1.80</version>
+			                            </dependency>
+			                            <dependency>
+			                                <groupId>org.bouncycastle</groupId>
+			                                <artifactId>bcutil-jdk18on</artifactId>
+			                                <version>1.80</version>
+			                            </dependency>
+			                        </additionalDependencies>
+			                        <moduleInfo>
+			                            <name>org.apache.pdfbox</name>
+			                            <opens>
+			                                *;
+			                            </opens>
+			                        </moduleInfo>
+			                    </module>
+			                </modules>
+			                <jdepsExtraArgs>
+			                	<arg>--multi-release=9</arg>
+			                </jdepsExtraArgs>
+			            </configuration>
+			        </execution>
+			    </executions>
+			</plugin>
             <!-- jpackage -->
 			<plugin>
 				<groupId>org.panteleyev</groupId>
