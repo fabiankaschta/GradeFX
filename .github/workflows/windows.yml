@@ -1,0 +1,74 @@
+name: Publish Windows Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '24'
+        distribution: 'temurin'
+        cache: maven
+        
+    - name: Build with Maven
+      run: mvn -f gradefx javafx:jlink
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        
+    - name: Create EXE with Maven
+      run: mvn -f gradefx jpackage:jpackage@windows-exe
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        
+    - name: Create MSI with Maven
+      run: mvn -f gradefx jpackage:jpackage@windows-msi
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Make staging directory
+      run: mkdir staging
+
+    - name: Copy to staging
+      run: |
+        cp -r gradefx/target/dist/* staging
+        
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.os }}
+        path: staging
+        
+    - name: Zip files for release
+      shell: pwsh
+      run: |
+        cd staging
+        7z a windows-exe.zip *.exe
+        7z a windows-msi.zip *.msi
+        cd ..
+        
+    - name: Upload EXE to release
+      uses: svenstaro/upload-release-action@2.11.2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: staging/windows-exe.zip
+        tag: ${{ github.ref }}
+        overwrite: true
+        
+    - name: Upload MSI to release
+      uses: svenstaro/upload-release-action@2.11.2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: staging/windows-msi.zip
+        tag: ${{ github.ref }}
+        overwrite: true
