@@ -6,7 +6,7 @@
 
     <groupId>org.openjfx</groupId>
     <artifactId>gradefx</artifactId>
-    <version>0.9.7</version>
+    <version>0.9.8</version>
     <packaging>jar</packaging>
 
     <name>GradeFX</name>
@@ -159,78 +159,69 @@
 						<option>-Dfile.encoding=${project.build.sourceEncoding}</option>
 					</javaOptions>
 				</configuration>
-			</plugin>
-
-        </plugins>
-    </build>
-	
-    <profiles>
-        <profile>
-            <id>win</id>
-            <activation>
-                <os>
-                    <family>windows</family>
-                </os>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.panteleyev</groupId>
-                        <artifactId>jpackage-maven-plugin</artifactId>
-                        <version>${jpackage.plugin.version}</version>
+			    <executions>
+			        <execution>
+			            <id>macos-pkg</id>
                         <configuration>
+                        	<type>PKG</type>
+                            <icon>src/main/resources/org/openjfx/gradefx/img/icon.png</icon>
+                        </configuration>
+			        </execution>
+			        <execution>
+			            <id>macos-dmg</id>
+                        <configuration>
+                        	<type>DMG</type>
+                            <icon>src/main/resources/org/openjfx/gradefx/img/icon.png</icon>
+                        </configuration>
+			        </execution>
+			        <execution>
+			            <id>windows-exe</id>
+                        <configuration>
+                        	<type>EXE</type>
                             <icon>src/main/resources/org/openjfx/gradefx/img/icon.ico</icon>
                             <winMenu>true</winMenu>
                             <winDirChooser>true</winDirChooser>
                             <winShortcut>true</winShortcut>
                         </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>mac</id>
-            <activation>
-                <os>
-                    <family>mac</family>
-                </os>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.panteleyev</groupId>
-                        <artifactId>jpackage-maven-plugin</artifactId>
-                        <version>${jpackage.plugin.version}</version>
+			        </execution>
+			        <execution>
+			            <id>windows-msi</id>
                         <configuration>
-                            <icon>src/main/resources/org/openjfx/gradefx/img/icon.png</icon>
+                        	<type>MSI</type>
+                            <icon>src/main/resources/org/openjfx/gradefx/img/icon.ico</icon>
+                            <winMenu>true</winMenu>
+                            <winDirChooser>true</winDirChooser>
+                            <winShortcut>true</winShortcut>
                         </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>unix</id>
-            <activation>
-                <os>
-                    <family>unix</family>
-                </os>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.panteleyev</groupId>
-                        <artifactId>jpackage-maven-plugin</artifactId>
-                        <version>${jpackage.plugin.version}</version>
+			        </execution>
+			        <execution>
+			            <id>linux-deb</id>
                         <configuration>
-                            <!--<type>APP_IMAGE</type>-->
+                        	<type>DEB</type>
                             <icon>src/main/resources/org/openjfx/gradefx/img/icon.png</icon>
                             <linuxShortcut>true</linuxShortcut>
                         </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+			        </execution>
+			        <execution>
+			            <id>linux-rpm</id>
+                        <configuration>
+                        	<type>RPM</type>
+                            <icon>src/main/resources/org/openjfx/gradefx/img/icon.png</icon>
+                            <linuxShortcut>true</linuxShortcut>
+                        </configuration>
+			        </execution>
+			        <execution>
+			            <id>linux-image</id>
+                        <configuration>
+                        	<type>APP_IMAGE</type>
+                            <icon>src/main/resources/org/openjfx/gradefx/img/icon.png</icon>
+                            <linuxShortcut>true</linuxShortcut>
+                        </configuration>
+			        </execution>
+			    </executions>
+			</plugin>
 
+        </plugins>
+    </build>
     
 </project>
