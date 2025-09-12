@@ -146,6 +146,15 @@ public class TestStatisticsSidePane extends ScrollPane {
 
 			VBox settingsPaneContent = new VBox(10);
 
+			CheckBox onlyDefaultDateCheckBox = new CheckBox();
+			onlyDefaultDateCheckBox.selectedProperty()
+					.subscribe(selected -> tableViewPointsSystem.setOnlyDefaultDate(selected));
+			onlyDefaultDateCheckBox.disableProperty().bind(test.dateProperty().isNull());
+			Label onlyDefaultDateLabel = new Label(TranslationController.translate("statistics_onlyDefaultDate"));
+			HBox onlyDefaultDate = new HBox(5, onlyDefaultDateLabel, onlyDefaultDateCheckBox);
+			onlyDefaultDate.setAlignment(Pos.CENTER_LEFT);
+			settingsPaneContent.getChildren().add(onlyDefaultDate);
+
 			CheckBox halfPointsCheckBox = new CheckBox();
 			halfPointsCheckBox.selectedProperty().bindBidirectional(test.getPointsSystem().useHalfPointsProperty());
 			Label halfPointsLabel = new Label(TranslationController.translate("pointsSytem_halfPoints"));
