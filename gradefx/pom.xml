@@ -215,7 +215,6 @@
                         <configuration>
                         	<type>APP_IMAGE</type>
                             <icon>src/main/resources/org/openjfx/gradefx/img/icon.png</icon>
-                            <linuxShortcut>true</linuxShortcut>
                         </configuration>
 			        </execution>
 			    </executions>
