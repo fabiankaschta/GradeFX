@@ -9,7 +9,9 @@ import org.openjfx.gradefx.view.dialog.DialogAddStudent;
 import org.openjfx.gradefx.view.dialog.DialogEditStudent;
 import org.openjfx.gradefx.view.dialog.StudentParserDialog;
 import org.openjfx.gradefx.view.pane.GroupsPane;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.ConfigController;
+import org.openjfx.kafx.controller.ExceptionController;
+import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.alert.AlertDelete;
 
 import javafx.scene.control.ButtonType;
@@ -24,25 +26,25 @@ public class StudentMenu extends Menu {
 	private final FileChooser fileChooser = new FileChooser();
 
 	public StudentMenu() {
-		super(Controller.translate("menu_student_title"));
+		super(TranslationController.translate("menu_student_title"));
 
-		this.menuItemNew = new MenuItem(Controller.translate("menu_student_new"));
+		this.menuItemNew = new MenuItem(TranslationController.translate("menu_student_new"));
 		this.menuItemNew.setOnAction(_ -> {
 			new DialogAddStudent(GroupsPane.getSelectedGroup()).showAndWait();
 		});
 		this.getItems().add(this.menuItemNew);
 
-		this.menuItemEdit = new MenuItem(Controller.translate("menu_student_edit"));
+		this.menuItemEdit = new MenuItem(TranslationController.translate("menu_student_edit"));
 		this.menuItemEdit.setOnAction(_ -> {
 			new DialogEditStudent(GroupsPane.getSelectedGroup(), GroupsPane.getSelectedStudent()).showAndWait();
 		});
 		this.getItems().add(this.menuItemEdit);
 
-		this.menuItemDelete = new MenuItem(Controller.translate("menu_student_delete"));
+		this.menuItemDelete = new MenuItem(TranslationController.translate("menu_student_delete"));
 		this.menuItemDelete.setOnAction(_ -> {
 			Group g = GroupsPane.getSelectedGroup();
 			Student s = GroupsPane.getSelectedStudent();
-			new AlertDelete(Controller.translate("student") + " " + s.getFirstName() + " " + s.getLastName()).showAndWait()
+			new AlertDelete(TranslationController.translate("student") + " " + s.getFirstName() + " " + s.getLastName()).showAndWait()
 					.ifPresent(response -> {
 						if (response == ButtonType.OK) {
 							g.removeStudent(s);
@@ -55,18 +57,18 @@ public class StudentMenu extends Menu {
 
 		this.getItems().add(new SeparatorMenuItem());
 
-		this.menuItemImport = new MenuItem(Controller.translate("menu_student_import"));
+		this.menuItemImport = new MenuItem(TranslationController.translate("menu_student_import"));
 		this.menuItemImport.setOnAction(_ -> {
 			Group group = GroupsPane.getSelectedGroup();
-			if (Controller.existsConfigOption("LAST_FILE")) {
-				fileChooser.setInitialDirectory(new File(Controller.getConfigOption("LAST_FILE")).getParentFile());
+			if (ConfigController.exists("LAST_FILE")) {
+				fileChooser.setInitialDirectory(new File(ConfigController.get("LAST_FILE")).getParentFile());
 			}
 			File file = this.fileChooser.showOpenDialog(getParentPopup());
 			if (file != null) {
 				try {
 					new StudentParserDialog(group, file).showAndWait();
 				} catch (IOException e) {
-					Controller.exception(e);
+					ExceptionController.exception(e);
 				}
 			}
 		});

@@ -3,7 +3,7 @@ package org.openjfx.gradefx.view.tab;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.view.pane.GroupContentPane;
 import org.openjfx.gradefx.view.style.Styles;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.FontSizeController;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -34,7 +34,7 @@ public class GroupTab extends Tab {
 		label.setWrapText(true);
 		label.setTextAlignment(TextAlignment.CENTER);
 		label.setAlignment(Pos.CENTER);
-		Controller.fontSizeProperty().subscribe(fontSize -> {
+		FontSizeController.fontSizeProperty().subscribe(fontSize -> {
 			label.setPrefWidth(fontSize.doubleValue() * 4);
 			label.setPrefHeight(fontSize.doubleValue() * 4);
 		});

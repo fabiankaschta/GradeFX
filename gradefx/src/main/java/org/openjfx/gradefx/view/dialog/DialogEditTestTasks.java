@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.Test.TestTask;
 import org.openjfx.gradefx.view.converter.TestTaskConverter;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.dialog.DialogUserInput;
 import org.openjfx.kafx.view.dialog.userinput.UserInputTreeView;
 import org.openjfx.kafx.view.treeview.DragAndDropCellFactory;
@@ -22,7 +22,7 @@ public class DialogEditTestTasks extends DialogUserInput<Boolean> {
 	private final Test test;
 
 	public DialogEditTestTasks(Test test) {
-		super(Controller.translate("dialog_edit_testTasks_title"));
+		super(TranslationController.translate("dialog_edit_testTasks_title"));
 		this.test = test;
 
 		TreeView<TestTask> treeViewTestTask = new TreeView<>(test.getTasksRoot());
@@ -31,9 +31,9 @@ public class DialogEditTestTasks extends DialogUserInput<Boolean> {
 				_ -> new TreeCellCustomAddRemove<TestTask>(new TestTaskConverter(), item -> addTo(item),
 						item -> edit(item), item -> remove(item))));
 		UserInputTreeView<TestTask> testTaskTree = new UserInputTreeView<>(treeViewTestTask);
-		super.addInput(testTaskTree, Controller.translate("test_testTaskTree"));
+		super.addInput(testTaskTree, TranslationController.translate("test_testTaskTree"));
 
-		ButtonType doneButtonType = new ButtonType(Controller.translate("dialog_button_done"), ButtonData.OK_DONE);
+		ButtonType doneButtonType = new ButtonType(TranslationController.translate("dialog_button_done"), ButtonData.OK_DONE);
 		this.getDialogPane().getButtonTypes().add(doneButtonType);
 
 		this.setResultConverter(_ -> {

@@ -1,6 +1,7 @@
 package org.openjfx.gradefx.model;
 
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.ChangeController;
+import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.io.DataObject;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -40,35 +41,62 @@ public class Subject {
 
 	public static void setDefault() {
 		subjects.clear();
-		addSubject(Controller.translate("subject_biology"), Controller.translate("subject_biology_short"));
-		addSubject(Controller.translate("subject_chemistry"), Controller.translate("subject_chemistry_short"));
-		addSubject(Controller.translate("subject_german"), Controller.translate("subject_german_short"));
-		addSubject(Controller.translate("subject_english"), Controller.translate("subject_english_short"));
-		addSubject(Controller.translate("subject_ethics"), Controller.translate("subject_ethics_short"));
-		addSubject(Controller.translate("subject_evangelical"), Controller.translate("subject_evangelical_short"));
-		addSubject(Controller.translate("subject_french"), Controller.translate("subject_french_short"));
-		addSubject(Controller.translate("subject_geography"), Controller.translate("subject_geography_short"));
-		addSubject(Controller.translate("subject_history"), Controller.translate("subject_history_short"));
-		addSubject(Controller.translate("subject_greek"), Controller.translate("subject_greek_short"));
-		addSubject(Controller.translate("subject_it"), Controller.translate("subject_it_short"));
-		addSubject(Controller.translate("subject_instrumental"), Controller.translate("subject_instrumental_short"));
-		addSubject(Controller.translate("subject_italian"), Controller.translate("subject_italian_short"));
-		addSubject(Controller.translate("subject_catholic"), Controller.translate("subject_catholic_short"));
-		addSubject(Controller.translate("subject_arts"), Controller.translate("subject_arts_short"));
-		addSubject(Controller.translate("subject_latin"), Controller.translate("subject_latin_short"));
-		addSubject(Controller.translate("subject_maths"), Controller.translate("subject_maths_short"));
-		addSubject(Controller.translate("subject_music"), Controller.translate("subject_music_short"));
-		addSubject(Controller.translate("subject_nut"), Controller.translate("subject_nut_short"));
-		addSubject(Controller.translate("subject_physics"), Controller.translate("subject_physics_short"));
-		addSubject(Controller.translate("subject_politics"), Controller.translate("subject_politics_short"));
-		addSubject(Controller.translate("subject_psychology"), Controller.translate("subject_psychology_short"));
-		addSubject(Controller.translate("subject_spanish"), Controller.translate("subject_spanish_short"));
-		addSubject(Controller.translate("subject_pe"), Controller.translate("subject_pe_short"));
-		addSubject(Controller.translate("subject_vocal"), Controller.translate("subject_vocal_short"));
-		addSubject(Controller.translate("subject_economy"), Controller.translate("subject_economy_short"));
-		addSubject(Controller.translate("subject_economyIt"), Controller.translate("subject_economyIt_short"));
-		addSubject(Controller.translate("subject_seminarS"), Controller.translate("subject_seminarS_short"));
-		addSubject(Controller.translate("subject_seminarP"), Controller.translate("subject_seminarP_short"));
+		addSubject(TranslationController.translate("subject_biology"),
+				TranslationController.translate("subject_biology_short"));
+		addSubject(TranslationController.translate("subject_chemistry"),
+				TranslationController.translate("subject_chemistry_short"));
+		addSubject(TranslationController.translate("subject_german"),
+				TranslationController.translate("subject_german_short"));
+		addSubject(TranslationController.translate("subject_english"),
+				TranslationController.translate("subject_english_short"));
+		addSubject(TranslationController.translate("subject_ethics"),
+				TranslationController.translate("subject_ethics_short"));
+		addSubject(TranslationController.translate("subject_evangelical"),
+				TranslationController.translate("subject_evangelical_short"));
+		addSubject(TranslationController.translate("subject_french"),
+				TranslationController.translate("subject_french_short"));
+		addSubject(TranslationController.translate("subject_geography"),
+				TranslationController.translate("subject_geography_short"));
+		addSubject(TranslationController.translate("subject_history"),
+				TranslationController.translate("subject_history_short"));
+		addSubject(TranslationController.translate("subject_greek"),
+				TranslationController.translate("subject_greek_short"));
+		addSubject(TranslationController.translate("subject_it"), TranslationController.translate("subject_it_short"));
+		addSubject(TranslationController.translate("subject_instrumental"),
+				TranslationController.translate("subject_instrumental_short"));
+		addSubject(TranslationController.translate("subject_italian"),
+				TranslationController.translate("subject_italian_short"));
+		addSubject(TranslationController.translate("subject_catholic"),
+				TranslationController.translate("subject_catholic_short"));
+		addSubject(TranslationController.translate("subject_arts"),
+				TranslationController.translate("subject_arts_short"));
+		addSubject(TranslationController.translate("subject_latin"),
+				TranslationController.translate("subject_latin_short"));
+		addSubject(TranslationController.translate("subject_maths"),
+				TranslationController.translate("subject_maths_short"));
+		addSubject(TranslationController.translate("subject_music"),
+				TranslationController.translate("subject_music_short"));
+		addSubject(TranslationController.translate("subject_nut"),
+				TranslationController.translate("subject_nut_short"));
+		addSubject(TranslationController.translate("subject_physics"),
+				TranslationController.translate("subject_physics_short"));
+		addSubject(TranslationController.translate("subject_politics"),
+				TranslationController.translate("subject_politics_short"));
+		addSubject(TranslationController.translate("subject_psychology"),
+				TranslationController.translate("subject_psychology_short"));
+		addSubject(TranslationController.translate("subject_spanish"),
+				TranslationController.translate("subject_spanish_short"));
+		addSubject(TranslationController.translate("subject_pe"), TranslationController.translate("subject_pe_short"));
+		addSubject(TranslationController.translate("subject_vocal"),
+				TranslationController.translate("subject_vocal_short"));
+		addSubject(TranslationController.translate("subject_economy"),
+				TranslationController.translate("subject_economy_short"));
+		addSubject(TranslationController.translate("subject_economyIt"),
+				TranslationController.translate("subject_economyIt_short"));
+		addSubject(TranslationController.translate("subject_seminarS"),
+				TranslationController.translate("subject_seminarS_short"));
+		addSubject(TranslationController.translate("subject_seminarP"),
+				TranslationController.translate("subject_seminarP_short"));
 	}
 
 	private final StringProperty name = new SimpleStringProperty(this, "name");
@@ -77,8 +105,8 @@ public class Subject {
 	private Subject(String name, String shortName) {
 		this.setName(name);
 		this.setShortName(shortName);
-		this.nameProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-		this.shortNameProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
+		this.nameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.shortNameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 	}
 
 	public String getName() {

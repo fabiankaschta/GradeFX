@@ -1,6 +1,6 @@
 package org.openjfx.gradefx.model;
 
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.ChangeController;
 import org.openjfx.kafx.io.DataObject;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -20,9 +20,9 @@ public class Student {
 		this.setFirstName(firstName);
 		this.setLastName(lastName);
 		this.setSubgroupName(subgroupName);
-		this.firstNameProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-		this.lastNameProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-		this.subgroupNameProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
+		this.firstNameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.lastNameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.subgroupNameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 	}
 
 	public String getFirstName() {

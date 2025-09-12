@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
 import org.openjfx.gradefx.view.pane.GroupsPane;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.ChangeController;
 import org.openjfx.kafx.io.DataObject;
 import org.openjfx.kafx.view.color.ColorHelper;
 
@@ -48,7 +48,7 @@ public class Group {
 
 	static {
 		groups.addListener(listener);
-		groups.addListener(Controller.LISTLISTENER_UNSAVED_CHANGES);
+		groups.addListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
 	}
 
 	public static ObservableList<Group> getGroups() {
@@ -98,15 +98,15 @@ public class Group {
 		this.setTestGroupSystem(testGroupSystem);
 		this.setColor(color);
 		groups.add(this);
-		this.nameProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-		this.subjectProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-		this.useSubgroupsProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-		this.addStudentsListener(Controller.LISTLISTENER_UNSAVED_CHANGES);
-//		this.addTestsListener(Controller.LISTLISTENER_UNSAVED_CHANGES);
-		this.gradeSystemProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-		this.testGroupSystemProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-		this.testGroupRootProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-		this.colorProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
+		this.nameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.subjectProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.useSubgroupsProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.addStudentsListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
+//		this.addTestsListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
+		this.gradeSystemProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.testGroupSystemProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.testGroupRootProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.colorProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.students.addListener((ListChangeListener<Student>) c -> {
 			while (c.next()) {
 				if (c.wasRemoved()) {

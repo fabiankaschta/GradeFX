@@ -2,7 +2,7 @@ package org.openjfx.gradefx.view.dialog;
 
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.control.TextFieldPromptText;
 import org.openjfx.kafx.view.dialog.DialogAdd;
 import org.openjfx.kafx.view.dialog.userinput.UserInputTextInput;
@@ -14,15 +14,15 @@ public class DialogAddStudent extends DialogAdd<Student> {
 	private final Group group;
 
 	public DialogAddStudent(Group group) {
-		super(Controller.translate("dialog_add_student_title"));
+		super(TranslationController.translate("dialog_add_student_title"));
 		super.showAddMoreButton(true);
 		this.group = group;
-		this.firstName = new UserInputTextInput(new TextFieldPromptText(Controller.translate("student_firstName")));
-		super.addInput(this.firstName, Controller.translate("student_firstName"));
-		this.lastName = new UserInputTextInput(new TextFieldPromptText(Controller.translate("student_lastName")));
-		super.addInput(this.lastName, Controller.translate("student_lastName"));
-		this.subgroupName = new UserInputTextInput(new TextFieldPromptText(Controller.translate("student_subgroupName")));
-		super.addInput(this.subgroupName, Controller.translate("student_subgroupName"));
+		this.firstName = new UserInputTextInput(new TextFieldPromptText(TranslationController.translate("student_firstName")));
+		super.addInput(this.firstName, TranslationController.translate("student_firstName"));
+		this.lastName = new UserInputTextInput(new TextFieldPromptText(TranslationController.translate("student_lastName")));
+		super.addInput(this.lastName, TranslationController.translate("student_lastName"));
+		this.subgroupName = new UserInputTextInput(new TextFieldPromptText(TranslationController.translate("student_subgroupName")));
+		super.addInput(this.subgroupName, TranslationController.translate("student_subgroupName"));
 		this.subgroupName.visibleProperty().bind(group.useSubgroupsProperty());
 	}
 

@@ -4,7 +4,8 @@ import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.view.pane.GroupsPane;
 import org.openjfx.gradefx.view.style.Styles;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.FontSizeController;
+import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.tableview.TableCellCustom;
 import org.openjfx.kafx.view.tableview.TableCellEditConverter;
 
@@ -15,11 +16,11 @@ import javafx.scene.text.Text;
 public class TableViewStudent extends TableView<Student> {
 
 	public TableViewStudent(Group group, boolean editable) {
-		this.setPlaceholder(new Text(Controller.translate("tab_overview_no_students")));
+		this.setPlaceholder(new Text(TranslationController.translate("tab_overview_no_students")));
 		this.setItems(group.getStudents());
 
 		TableColumn<Student, String> firstNameCol = new TableColumn<Student, String>(
-				Controller.translate("student_firstName"));
+				TranslationController.translate("student_firstName"));
 		firstNameCol.setCellValueFactory(data -> data.getValue().firstNameProperty());
 		if (editable) {
 			firstNameCol.setCellFactory(TableCellEditConverter.forTableColumn());
@@ -30,7 +31,7 @@ public class TableViewStudent extends TableView<Student> {
 		firstNameCol.setReorderable(false);
 		firstNameCol.setEditable(editable);
 
-		TableColumn<Student, String> lastNameCol = new TableColumn<Student, String>(Controller.translate("student_lastName"));
+		TableColumn<Student, String> lastNameCol = new TableColumn<Student, String>(TranslationController.translate("student_lastName"));
 		lastNameCol.setCellValueFactory(data -> data.getValue().lastNameProperty());
 		if (editable) {
 			lastNameCol.setCellFactory(TableCellEditConverter.forTableColumn());
@@ -42,7 +43,7 @@ public class TableViewStudent extends TableView<Student> {
 		lastNameCol.setEditable(editable);
 
 		TableColumn<Student, String> subgroupNameCol = new TableColumn<Student, String>(
-				Controller.translate("student_subgroupName"));
+				TranslationController.translate("student_subgroupName"));
 		subgroupNameCol.setCellValueFactory(data -> data.getValue().subgroupNameProperty());
 		if (editable) {
 			subgroupNameCol.setCellFactory(TableCellEditConverter.forTableColumn());
@@ -65,7 +66,7 @@ public class TableViewStudent extends TableView<Student> {
 		this.setEditable(editable);
 //		this.prefWidthProperty().bind(Controller.fontSizeProperty().multiply(20));
 
-		Controller.bindTableColumnWidthToFontSize(this);
+		FontSizeController.bindTableColumnWidthToFontSize(this);
 		Styles.subscribeTableColor(this, group.colorProperty());
 	}
 

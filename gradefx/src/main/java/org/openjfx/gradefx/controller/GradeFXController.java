@@ -1,66 +1,28 @@
 package org.openjfx.gradefx.controller;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.ResourceBundle;
 
-import javax.crypto.NoSuchPaddingException;
-
-import org.openjfx.gradefx.io.GradeFXFileIO;
-import org.openjfx.gradefx.model.Group;
-import org.openjfx.gradefx.model.Subject;
-import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
-import org.openjfx.gradefx.view.pane.GroupsPane;
-import org.openjfx.gradefx.view.pane.MainMenuBar;
+import org.openjfx.kafx.controller.ChangeController;
+import org.openjfx.kafx.controller.ConfigController;
 import org.openjfx.kafx.controller.Controller;
-import org.openjfx.kafx.io.Config;
+import org.openjfx.kafx.controller.EncryptionController;
+import org.openjfx.kafx.controller.EncryptionControllerDefault;
+import org.openjfx.kafx.controller.FileController;
+import org.openjfx.kafx.controller.PrintController;
+import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.lang.Translator;
-import org.openjfx.kafx.secure.EncryptionHelper;
-
-import javafx.print.PageLayout;
-import javafx.print.PageOrientation;
-import javafx.print.Paper;
-import javafx.print.Printer;
-import javafx.scene.Node;
 
 public class GradeFXController extends Controller {
 
-	public GradeFXController() throws NoSuchAlgorithmException, NoSuchPaddingException {
-		// TODO disable debug
-		super(new GradeFXFileIO(), new Config(".gradefx.cfg"),
-				new Translator(ResourceBundle.getBundle("org.openjfx.gradefx.lang.gradefx")),
-				new EncryptionHelper("KAFXBase".getBytes()));
-		config.putIfNotExists("USE_HALF_POINTS", String.valueOf(true));
-		config.putIfNotExists("TENDENCY_BOUND", String.valueOf(0.0));
-		config.putIfNotExists("DEFAULT_GROUP_COLOR", "#e6e6e6");
-	}
-
-	@Override
-	protected void handleUnsavedChanges() {
-//		MainMenuBar.setStatus(Controller.translate("status_all_saved"));
-		MainMenuBar.setStatus(getChangeCounter() == 0 ? ""
-				: getChangeCounter() + " " + Controller.translate("status_unsaved_changes"));
-	}
-
-	@Override
-	protected void handleNewFile() {
-		TestGroupSystem.setDefault();
-		Subject.setDefault();
-		Group.clearGroups();
-		if (!handleSaveAs()) {
-			readFromFile();
-//			return readFromFile();
-		} else {
-//			return false;
-		}
-	}
-
-	@Override
-	protected PageLayout getDefaultPageLayout(Printer printer) {
-		return printer.createPageLayout(Paper.A4, PageOrientation.LANDSCAPE, Printer.MarginType.DEFAULT);
-	}
-
-	@Override
-	protected Node getPrintableNode() {
-		return GroupsPane.getSelectedTabInGroup().getContent();
+	public static void init() {
+		Controller.init(".gradefx.cfg");
+		TranslationController.init(new Translator(ResourceBundle.getBundle("org.openjfx.gradefx.lang.gradefx")));
+		EncryptionController.init(new EncryptionControllerDefault("KAFXBase".getBytes()));
+		ChangeController.init(new GradeFXChangeController());
+		FileController.init(new GradeFXFileController());
+		PrintController.init(new GradeFXPrintController());
+		ConfigController.putIfNotExists("USE_HALF_POINTS", String.valueOf(true));
+		ConfigController.putIfNotExists("TENDENCY_BOUND", String.valueOf(0.0));
+		ConfigController.putIfNotExists("DEFAULT_GROUP_COLOR", "#e6e6e6");
 	}
 }

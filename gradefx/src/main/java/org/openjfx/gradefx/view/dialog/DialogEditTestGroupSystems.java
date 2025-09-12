@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
 import org.openjfx.gradefx.view.converter.TestGroupSystemConverter;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.alert.AlertDelete;
 import org.openjfx.kafx.view.dialog.DialogUserInput;
 import org.openjfx.kafx.view.dialog.userinput.UserInputChoiceBoxButtons;
@@ -28,7 +28,7 @@ public class DialogEditTestGroupSystems extends DialogUserInput<Boolean> {
 	private final UserInputTreeView<TestGroupSystem> testGroupTree;
 
 	public DialogEditTestGroupSystems() {
-		super(Controller.translate("dialog_edit_testGroups_title"));
+		super(TranslationController.translate("dialog_edit_testGroups_title"));
 
 		TreeView<TestGroupSystem> treeView = new TreeView<>();
 		treeView.setEditable(true);
@@ -39,7 +39,7 @@ public class DialogEditTestGroupSystems extends DialogUserInput<Boolean> {
 
 		ChoiceBox<TestGroupSystem> choiceBox = new ChoiceBox<>();
 		choiceBox.getItems().addAll(TestGroupSystem.getTestGroupSystems());
-		choiceBox.getItems().remove(TestGroupSystem.get(Controller.translate("testGroupSystem_NO_GROUPS")));
+		choiceBox.getItems().remove(TestGroupSystem.get(TranslationController.translate("testGroupSystem_NO_GROUPS")));
 		choiceBox.setConverter(new TestGroupSystemConverter());
 		choiceBox.getSelectionModel().selectedItemProperty().addListener(_ -> {
 			TestGroupSystem item = choiceBox.getSelectionModel().getSelectedItem();
@@ -49,7 +49,7 @@ public class DialogEditTestGroupSystems extends DialogUserInput<Boolean> {
 		});
 		choiceBox.disableProperty().bind(choiceBox.getSelectionModel().selectedItemProperty().isNull());
 
-		Button add = new Button(Controller.translate("dialog_edit_testGroups_add"));
+		Button add = new Button(TranslationController.translate("dialog_edit_testGroups_add"));
 		add.setOnAction(_ -> new DialogAddTestGroupSystem().showAndWait().ifPresent(response -> {
 			if (response != null) {
 				choiceBox.getItems().add(response);
@@ -58,8 +58,8 @@ public class DialogEditTestGroupSystems extends DialogUserInput<Boolean> {
 				// abort add, do nothing
 			}
 		}));
-		Button remove = new Button(Controller.translate("dialog_edit_testGroups_remove"));
-		remove.setOnAction(_ -> new AlertDelete(Controller.translate("testGroups_testGroupSystem") + " "
+		Button remove = new Button(TranslationController.translate("dialog_edit_testGroups_remove"));
+		remove.setOnAction(_ -> new AlertDelete(TranslationController.translate("testGroups_testGroupSystem") + " "
 				+ choiceBox.getSelectionModel().getSelectedItem().getName()).showAndWait().ifPresent(response -> {
 					if (response == ButtonType.OK) {
 						int index = choiceBox.getSelectionModel().getSelectedIndex();
@@ -95,13 +95,13 @@ public class DialogEditTestGroupSystems extends DialogUserInput<Boolean> {
 		this.testGroupSystem = new UserInputChoiceBoxButtons<>(choiceBox);
 		this.testGroupSystem.addButton(add);
 		this.testGroupSystem.addButton(remove);
-		super.addInput(this.testGroupSystem, Controller.translate("testGroups_testGroupSystem"));
+		super.addInput(this.testGroupSystem, TranslationController.translate("testGroups_testGroupSystem"));
 
 		this.testGroupTree = new UserInputTreeView<>(treeView);
-		super.addInput(this.testGroupTree, Controller.translate("testGroups_testGroupTree"));
+		super.addInput(this.testGroupTree, TranslationController.translate("testGroups_testGroupTree"));
 		this.testGroupTree.visibleProperty().bind(this.testGroupSystem.isSelectedExpression());
 
-		ButtonType doneButtonType = new ButtonType(Controller.translate("dialog_button_done"), ButtonData.OK_DONE);
+		ButtonType doneButtonType = new ButtonType(TranslationController.translate("dialog_button_done"), ButtonData.OK_DONE);
 		this.getDialogPane().getButtonTypes().add(doneButtonType);
 
 		this.setResultConverter(_ -> true);

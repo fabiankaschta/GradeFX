@@ -5,7 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openjfx.gradefx.view.converter.TestGroupConverter;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.ChangeController;
+import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.io.DataObject;
 
 import javafx.beans.property.BooleanProperty;
@@ -53,21 +54,25 @@ public class TestGroup extends TreeItem<TestGroup> {
 		public static void setDefault() {
 			testGroupSystems.clear();
 			{
-				createRoot(Controller.translate("testGroupSystem_NO_GROUPS"));
+				createRoot(TranslationController.translate("testGroupSystem_NO_GROUPS"));
 			}
 			{
-				TestGroupSystem root = createRoot(Controller.translate("testGroupSystem_SMALL_LARGE"));
-				root.getChildren().removeListener(Controller.LISTLISTENER_UNSAVED_CHANGES);
-				root.addSubgroup(createSubSystem(Controller.translate("testGroupSystem_small"), BigDecimal.ONE));
-				root.addSubgroup(createSubSystem(Controller.translate("testGroupSystem_large"), BigDecimal.TWO));
-				root.getChildren().addListener(Controller.LISTLISTENER_UNSAVED_CHANGES);
+				TestGroupSystem root = createRoot(TranslationController.translate("testGroupSystem_SMALL_LARGE"));
+				root.getChildren().removeListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
+				root.addSubgroup(
+						createSubSystem(TranslationController.translate("testGroupSystem_small"), BigDecimal.ONE));
+				root.addSubgroup(
+						createSubSystem(TranslationController.translate("testGroupSystem_large"), BigDecimal.TWO));
+				root.getChildren().addListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
 			}
 			{
-				TestGroupSystem root = createRoot(Controller.translate("testGroupSystem_SMALL_LARGE_EQUAL"));
-				root.getChildren().removeListener(Controller.LISTLISTENER_UNSAVED_CHANGES);
-				root.addSubgroup(createSubSystem(Controller.translate("testGroupSystem_small"), BigDecimal.ONE));
-				root.addSubgroup(createSubSystem(Controller.translate("testGroupSystem_large"), BigDecimal.ONE));
-				root.getChildren().addListener(Controller.LISTLISTENER_UNSAVED_CHANGES);
+				TestGroupSystem root = createRoot(TranslationController.translate("testGroupSystem_SMALL_LARGE_EQUAL"));
+				root.getChildren().removeListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
+				root.addSubgroup(
+						createSubSystem(TranslationController.translate("testGroupSystem_small"), BigDecimal.ONE));
+				root.addSubgroup(
+						createSubSystem(TranslationController.translate("testGroupSystem_large"), BigDecimal.ONE));
+				root.getChildren().addListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
 			}
 		}
 
@@ -84,9 +89,9 @@ public class TestGroup extends TreeItem<TestGroup> {
 			this.setName(name);
 			this.setWeight(weight);
 			this.setIsRoot(isRoot);
-			this.nameProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-			this.weightProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-			this.getChildren().addListener(Controller.LISTLISTENER_UNSAVED_CHANGES);
+			this.nameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+			this.weightProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+			this.getChildren().addListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
 			super.setValue(this);
 			super.setExpanded(true);
 		}
@@ -142,7 +147,7 @@ public class TestGroup extends TreeItem<TestGroup> {
 		@Override
 		public String toString() {
 			return isRoot() ? getName()
-					: getName() + " (" + Controller.translate("testGroup_weight") + ": " + getWeight() + ")";
+					: getName() + " (" + TranslationController.translate("testGroup_weight") + ": " + getWeight() + ")";
 		}
 
 		private static class TestGroupSystemS implements DataObject<TestGroupSystem> {
@@ -210,10 +215,10 @@ public class TestGroup extends TreeItem<TestGroup> {
 		this.setName(name);
 		this.setWeight(weight);
 		this.setIsRoot(isRoot);
-		this.nameProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-		this.weightProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-		this.addTestsListener(Controller.LISTLISTENER_UNSAVED_CHANGES);
-		this.getChildren().addListener(Controller.LISTLISTENER_UNSAVED_CHANGES);
+		this.nameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.weightProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.addTestsListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
+		this.getChildren().addListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
 		super.setValue(this);
 	}
 

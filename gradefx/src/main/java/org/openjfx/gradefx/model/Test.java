@@ -10,7 +10,7 @@ import java.util.Map.Entry;
 
 import org.openjfx.gradefx.model.GradeSystem.Grade;
 import org.openjfx.gradefx.view.converter.TestTaskConverter;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.ChangeController;
 import org.openjfx.kafx.io.DataObject;
 
 import javafx.beans.property.BooleanProperty;
@@ -52,9 +52,9 @@ public class Test {
 			this.setName(name);
 			this.setMaxPoints(maxPoints);
 			this.setIsRoot(isRoot);
-			this.nameProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-			this.maxPointsProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-			this.getChildren().addListener(Controller.LISTLISTENER_UNSAVED_CHANGES);
+			this.nameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+			this.maxPointsProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+			this.getChildren().addListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
 			super.setValue(this);
 			this.setExpanded(true);
 		}
@@ -202,7 +202,7 @@ public class Test {
 			if (!this.points.containsKey(student)) {
 				ObjectProperty<BigDecimal> pointsProperty = new SimpleObjectProperty<>(student,
 						"points in test " + test);
-				pointsProperty.addListener(Controller.getConditionalListenerUnsavedChanges(() -> this.isLeaf()));
+				pointsProperty.addListener(ChangeController.getConditionalListenerUnsavedChanges(() -> this.isLeaf()));
 				pointsProperty.addListener((_, _, _) -> {
 					this.updatePointsParent(student);
 				});
@@ -337,17 +337,17 @@ public class Test {
 				// keep currently set points, but fix them, but only if there are points
 				for (Entry<Student, ReadOnlyBooleanWrapper> e : this.totalPointsFixed.entrySet()) {
 					if (this.getTotalPoints(e.getKey()) != null) {
-						e.getValue().removeListener(Controller.LISTENER_UNSAVED_CHANGES);
+						e.getValue().removeListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 						e.getValue().set(true);
-						e.getValue().addListener(Controller.LISTENER_UNSAVED_CHANGES);
+						e.getValue().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 					}
 				}
 			} else if (oldValue && !newValue) {
 				// can't have fixed points without tasks
 				for (ReadOnlyBooleanWrapper b : this.totalPointsFixed.values()) {
-					b.removeListener(Controller.LISTENER_UNSAVED_CHANGES);
+					b.removeListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 					b.set(false);
-					b.addListener(Controller.LISTENER_UNSAVED_CHANGES);
+					b.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 				}
 				this.tasksRoot.get().getChildren().clear();
 			}
@@ -357,9 +357,9 @@ public class Test {
 				this.setUseTasks(false);
 				// can't have fixed grade without points
 				for (ReadOnlyBooleanWrapper b : this.gradesFixed.values()) {
-					b.removeListener(Controller.LISTENER_UNSAVED_CHANGES);
+					b.removeListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 					b.set(false);
-					b.addListener(Controller.LISTENER_UNSAVED_CHANGES);
+					b.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 				}
 				// can't have total points without points
 				for (ObjectProperty<BigDecimal> e : this.totalPoints.values()) {
@@ -370,19 +370,19 @@ public class Test {
 				// keep currently set grades, but fix them, but only if there are grades
 				for (Entry<Student, ReadOnlyBooleanWrapper> e : this.gradesFixed.entrySet()) {
 					if (this.getGrade(e.getKey()) != null) {
-						e.getValue().removeListener(Controller.LISTENER_UNSAVED_CHANGES);
+						e.getValue().removeListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 						e.getValue().set(true);
-						e.getValue().addListener(Controller.LISTENER_UNSAVED_CHANGES);
+						e.getValue().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 					}
 				}
 			}
 		});
-		this.nameProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-		this.shortNameProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-		this.dateProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-		this.weightProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-		this.useTasksProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
-		this.usePointsProperty().addListener(Controller.LISTENER_UNSAVED_CHANGES);
+		this.nameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.shortNameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.dateProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.weightProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.useTasksProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.usePointsProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 	}
 
 	public String getName() {
@@ -522,14 +522,14 @@ public class Test {
 					"totalPointsFixed in test " + this, false);
 			StringProperty annotationProperty = new SimpleStringProperty(student, "annotation in test " + this);
 			ObjectProperty<LocalDate> dateProperty = new SimpleObjectProperty<>(student, "date in test " + this);
-			gradeProperty.addListener(Controller
+			gradeProperty.addListener(ChangeController
 					.getConditionalListenerUnsavedChanges(() -> this.isGradeFixed(student) || !this.getUsePoints()));
-			gradeFixedProperty.addListener(Controller.LISTENER_UNSAVED_CHANGES);
-			totalPointsProperty.addListener(Controller.getConditionalListenerUnsavedChanges(
+			gradeFixedProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+			totalPointsProperty.addListener(ChangeController.getConditionalListenerUnsavedChanges(
 					() -> this.isTotalPointsFixed(student) || !this.getUseTasks()));
-			totalPointsFixedProperty.addListener(Controller.LISTENER_UNSAVED_CHANGES);
-			annotationProperty.addListener(Controller.LISTENER_UNSAVED_CHANGES);
-			dateProperty.addListener(Controller.LISTENER_UNSAVED_CHANGES);
+			totalPointsFixedProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+			annotationProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+			dateProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 
 			gradeFixedProperty.addListener((_, oldValue, newValue) -> {
 				if (oldValue && !newValue) {

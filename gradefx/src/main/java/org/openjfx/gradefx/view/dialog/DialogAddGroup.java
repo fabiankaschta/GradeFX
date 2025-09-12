@@ -5,9 +5,10 @@ import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Subject;
 import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
 import org.openjfx.gradefx.view.converter.GradeSystemConverter;
-import org.openjfx.gradefx.view.converter.TestGroupSystemConverter;
 import org.openjfx.gradefx.view.converter.SubjectConverter;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.gradefx.view.converter.TestGroupSystemConverter;
+import org.openjfx.kafx.controller.ConfigController;
+import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.control.TextFieldPromptText;
 import org.openjfx.kafx.view.dialog.DialogAdd;
 import org.openjfx.kafx.view.dialog.userinput.UserInputCheckBox;
@@ -31,34 +32,34 @@ public class DialogAddGroup extends DialogAdd<Group> {
 	private final UserInputColorPicker color;
 
 	public DialogAddGroup() {
-		super(Controller.translate("dialog_add_group_title"));
+		super(TranslationController.translate("dialog_add_group_title"));
 
-		this.name = new UserInputTextInput(new TextFieldPromptText(Controller.translate("group_name")));
-		super.addInput(this.name, Controller.translate("group_name"));
+		this.name = new UserInputTextInput(new TextFieldPromptText(TranslationController.translate("group_name")));
+		super.addInput(this.name, TranslationController.translate("group_name"));
 
 		ChoiceBox<Subject> subjectChoiceBox = new ChoiceBox<>(Subject.getSubjects());
 		subjectChoiceBox.setConverter(new SubjectConverter());
 		this.subject = new UserInputChoiceBox<>(subjectChoiceBox);
-		super.addInput(this.subject, Controller.translate("group_subject"));
+		super.addInput(this.subject, TranslationController.translate("group_subject"));
 
 		this.useSubgroups = new UserInputCheckBox(new CheckBox());
-		super.addInput(this.useSubgroups, Controller.translate("group_useSubgroups"));
+		super.addInput(this.useSubgroups, TranslationController.translate("group_useSubgroups"));
 
 		ChoiceBox<GradeSystem> gradeSystemChoiceBox = new ChoiceBox<>(
 				FXCollections.observableArrayList(GradeSystem.values()));
 		gradeSystemChoiceBox.setConverter(new GradeSystemConverter());
 		this.gradeSystem = new UserInputChoiceBox<>(gradeSystemChoiceBox, GradeSystem.getDefault());
-		super.addInput(this.gradeSystem, Controller.translate("group_gradeSystem"));
+		super.addInput(this.gradeSystem, TranslationController.translate("group_gradeSystem"));
 
 		ChoiceBox<TestGroupSystem> testGroupSystemChoiceBox = new ChoiceBox<>(TestGroupSystem.getTestGroupSystems());
 		testGroupSystemChoiceBox.setConverter(new TestGroupSystemConverter());
 		this.testGroupSystem = new UserInputChoiceBox<>(testGroupSystemChoiceBox,
 				TestGroupSystem.getTestGroupSystems().get(0));
-		super.addInput(this.testGroupSystem, Controller.translate("group_testGroupSystem"));
+		super.addInput(this.testGroupSystem, TranslationController.translate("group_testGroupSystem"));
 
 		this.color = new UserInputColorPicker(new ColorPicker(),
-				Color.web(Controller.getConfigOption("DEFAULT_GROUP_COLOR")), false);
-		super.addInput(this.color, Controller.translate("group_color"));
+				Color.web(ConfigController.get("DEFAULT_GROUP_COLOR")), false);
+		super.addInput(this.color, TranslationController.translate("group_color"));
 	}
 
 	@Override

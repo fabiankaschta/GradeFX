@@ -3,7 +3,6 @@ package org.openjfx.gradefx.io;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openjfx.gradefx.controller.GradeFXController;
 import org.openjfx.gradefx.model.GradeSystem;
 import org.openjfx.gradefx.model.GradeSystem.Grade;
 import org.openjfx.gradefx.model.GradeSystem.Tendency;
@@ -17,6 +16,7 @@ import org.openjfx.gradefx.model.Test.TestTask;
 import org.openjfx.gradefx.model.TestGroup;
 import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
 import org.openjfx.gradefx.view.pane.GroupsPane;
+import org.openjfx.kafx.controller.ExceptionController;
 import org.openjfx.kafx.io.Data;
 import org.openjfx.kafx.io.DataObject;
 import org.openjfx.kafx.io.EncryptedFileIO;
@@ -48,7 +48,7 @@ public class GradeFXFileIO extends EncryptedFileIO {
 
 			return true;
 		} catch (Exception e) {
-			GradeFXController.exception(e);
+			ExceptionController.exception(e);
 			return false;
 		}
 	}

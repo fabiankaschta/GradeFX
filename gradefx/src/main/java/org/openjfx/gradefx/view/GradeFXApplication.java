@@ -5,7 +5,12 @@ import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
 import org.openjfx.gradefx.view.dialog.DialogFirstStart;
 import org.openjfx.gradefx.view.pane.GroupsPane;
 import org.openjfx.gradefx.view.pane.MainMenuBar;
+import org.openjfx.kafx.controller.CloseController;
+import org.openjfx.kafx.controller.ConfigController;
 import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.FileController;
+import org.openjfx.kafx.controller.FontSizeController;
+import org.openjfx.kafx.controller.TranslationController;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -20,11 +25,11 @@ public class GradeFXApplication extends Application {
 	public void start(Stage primaryStage) {
 		Controller.setPrimaryStage(primaryStage);
 
-		primaryStage.setMaximized(Boolean.valueOf(Controller.getConfigOption("MAXIMIZED")));
+		primaryStage.setMaximized(Boolean.valueOf(ConfigController.get("MAXIMIZED")));
 		primaryStage.maximizedProperty()
-				.subscribe(maximized -> Controller.setConfigOption("MAXIMIZED", String.valueOf(maximized)));
-		primaryStage.setTitle(Controller.translate("app_title"));
-		primaryStage.addEventFilter(WindowEvent.WINDOW_CLOSE_REQUEST, e -> Controller.close(e));
+				.subscribe(maximized -> ConfigController.set("MAXIMIZED", String.valueOf(maximized)));
+		primaryStage.setTitle(TranslationController.translate("app_title"));
+		primaryStage.addEventFilter(WindowEvent.WINDOW_CLOSE_REQUEST, e -> CloseController.close(e));
 		primaryStage.getIcons()
 				.add(new Image(GradeFXApplication.class.getResourceAsStream("/org/openjfx/gradefx/img/icon.png")));
 
@@ -32,54 +37,53 @@ public class GradeFXApplication extends Application {
 		root.setTop(MainMenuBar.get());
 		root.setCenter(GroupsPane.get());
 
-		Scene scene = new Scene(root, Double.valueOf(Controller.getConfigOption("WIDTH")),
-				Double.valueOf(Controller.getConfigOption("HEIGHT")));
-		scene.getStylesheets()
-				.add(GradeFXApplication.class.getResource("/org/openjfx/gradefx/css/gradefx.css").toExternalForm());
+		Scene scene = new Scene(root, Double.valueOf(ConfigController.get("WIDTH")),
+				Double.valueOf(ConfigController.get("HEIGHT")));
+		scene.getStylesheets().add(Controller.getStylesheetURL().toExternalForm());
 		scene.widthProperty().subscribe(width -> {
 			if (!primaryStage.isMaximized()) {
-				Controller.setConfigOption("WIDTH", String.valueOf(width));
+				ConfigController.set("WIDTH", String.valueOf(width));
 			}
 		});
 		scene.heightProperty().subscribe(height -> {
 			if (!primaryStage.isMaximized()) {
-				Controller.setConfigOption("HEIGHT", String.valueOf(height));
+				ConfigController.set("HEIGHT", String.valueOf(height));
 			}
 		});
 
 		primaryStage.setScene(scene);
 
-		Controller.fontSizeProperty().subscribe(fontSize -> root.setStyle("-fx-font-size: " + fontSize));
+		FontSizeController.fontSizeProperty().subscribe(fontSize -> root.setStyle("-fx-font-size: " + fontSize));
 		root.setOnScroll(event -> {
 			if (event.isControlDown()) {
 				event.consume();
-				int fontSize = Controller.getFontSize();
+				int fontSize = FontSizeController.getFontSize();
 				if (event.getDeltaY() < 0 && fontSize > 0) {
-					Controller.setFontSize(fontSize - 1);
+					FontSizeController.setFontSize(fontSize - 1);
 				} else if (event.getDeltaY() > 0) {
-					Controller.setFontSize(fontSize + 1);
+					FontSizeController.setFontSize(fontSize + 1);
 				}
 			}
 		});
 
-		if (!Controller.existsConfigOption("LAST_FILE") || !Controller.readFromFile()) {
+		if (!ConfigController.exists("LAST_FILE") || !FileController.readFromFile()) {
 			TestGroupSystem.setDefault();
 			Subject.setDefault();
 			new DialogFirstStart().showAndWait().ifPresent(buttonType -> {
 				if (buttonType == DialogFirstStart.NEW_FILE) {
-					if (!Controller.saveAs()) {
-						Controller.close();
+					if (!FileController.saveAs()) {
+						CloseController.close();
 					} else {
 						primaryStage.show();
 					}
 				} else if (buttonType == DialogFirstStart.OPEN_FILE) {
-					if (!Controller.openFile()) {
-						Controller.close();
+					if (!FileController.openFile()) {
+						CloseController.close();
 					} else {
 						primaryStage.show();
 					}
 				} else {
-					Controller.close();
+					CloseController.close();
 				}
 			});
 		} else {

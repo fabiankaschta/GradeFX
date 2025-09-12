@@ -13,7 +13,8 @@ import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.TestGroup;
 import org.openjfx.gradefx.view.pane.GroupsPane;
 import org.openjfx.gradefx.view.style.Styles;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.FontSizeController;
+import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.tableview.TableCellCustom;
 
@@ -39,7 +40,7 @@ public class TableViewOverview extends TableView<Student> {
 	private final GradeColumn gradeColumn;
 
 	public TableViewOverview(Group group) {
-		this.setPlaceholder(new Text(Controller.translate("tab_overview_no_students")));
+		this.setPlaceholder(new Text(TranslationController.translate("tab_overview_no_students")));
 		this.setItems(group.getStudents());
 		this.group = group;
 		this.avgColumn = new AvgColumn(this.getColumns());
@@ -53,7 +54,7 @@ public class TableViewOverview extends TableView<Student> {
 		this.setEditable(false);
 		this.getSelectionModel().setCellSelectionEnabled(true);
 		
-		Controller.bindTableColumnWidthToFontSize(this);
+		FontSizeController.bindTableColumnWidthToFontSize(this);
 		Styles.subscribeTableColor(this, group.colorProperty());
 	}
 
@@ -121,7 +122,7 @@ public class TableViewOverview extends TableView<Student> {
 	private class GradeColumn extends TableColumn<Student, Grade> {
 
 		private GradeColumn(AvgColumn avgColumn) {
-			super(Controller.translate("tab_overview_grade"));
+			super(TranslationController.translate("tab_overview_grade"));
 			this.setCellValueFactory(data -> Bindings.createObjectBinding(() -> {
 				return group.getGradeSystem().calculateGrade(avgColumn.getCellData(data.getValue()));
 			}, avgColumn.getCellObservableValue(data.getValue()), group.gradeSystemProperty()));

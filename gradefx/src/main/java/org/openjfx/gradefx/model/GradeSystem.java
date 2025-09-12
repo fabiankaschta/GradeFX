@@ -11,7 +11,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.openjfx.gradefx.model.PointsSystem.BoundType;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.ConfigController;
 
 import javafx.beans.value.ObservableValue;
 import javafx.util.StringConverter;
@@ -145,9 +145,9 @@ public enum GradeSystem {
 
 	public PointsSystem getDefaultPointsSystem(ObservableValue<BigDecimal> totalPoints) {
 		return new PointsSystem(totalPoints,
-				Controller.getConfigOption("TENDENCY_BOUND").equals("null") ? null
-						: BigDecimal.valueOf(Double.valueOf(Controller.getConfigOption("TENDENCY_BOUND"))),
-				BoundType.MOREOREQUAL_THAN, Boolean.valueOf(Controller.getConfigOption("USE_HALF_POINTS")), this);
+				ConfigController.get("TENDENCY_BOUND").equals("null") ? null
+						: BigDecimal.valueOf(Double.valueOf(ConfigController.get("TENDENCY_BOUND"))),
+				BoundType.MOREOREQUAL_THAN, Boolean.valueOf(ConfigController.get("USE_HALF_POINTS")), this);
 	}
 
 	public boolean useTendencies() {

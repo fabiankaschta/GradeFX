@@ -3,7 +3,7 @@ package org.openjfx.gradefx.view.converter;
 import java.text.DecimalFormat;
 
 import org.openjfx.gradefx.model.TestGroup;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.TranslationController;
 
 import javafx.scene.control.TreeItem;
 import javafx.util.StringConverter;
@@ -19,8 +19,8 @@ public class TestGroupConverter extends StringConverter<TreeItem<TestGroup>> {
 	@Override
 	public String toString(TreeItem<TestGroup> object) {
 		TestGroup testGroup = (TestGroup) object;
-		return testGroup.isRoot() ? '(' + Controller.translate("testGroup_none") + ')'
-				: testGroup.getName() + " (" + Controller.translate("testGroup_weight") + ": "
+		return testGroup.isRoot() ? '(' + TranslationController.translate("testGroup_none") + ')'
+				: testGroup.getName() + " (" + TranslationController.translate("testGroup_weight") + ": "
 						+ this.decimalFormat.format(testGroup.getWeight()) + ')';
 	}
 

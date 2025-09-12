@@ -10,7 +10,8 @@ import org.openjfx.gradefx.model.PointsSystem;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.view.style.Styles;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.FontSizeController;
+import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.converter.BigDecimalPercentConverter;
 import org.openjfx.kafx.view.tableview.TableCellCustom;
@@ -44,7 +45,7 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 	private final ReadOnlyIntegerWrapper graded = new ReadOnlyIntegerWrapper(this, "graded");
 
 	public TableViewPointsSystem(Group group, Test test) {
-		super(Controller.fontSizeProperty().multiply(2),
+		super(FontSizeController.fontSizeProperty().multiply(2),
 				FXCollections.observableArrayList(group.getGradeSystem().getPossibleGradesDESC()));
 		this.test = test;
 		this.grades = group.getGradeSystem().getPossibleGradesDESC();
@@ -54,7 +55,7 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 		// TODO fix 15 vs 15.0 on update
 		BigDecimalConverter pointsConverter = new BigDecimalConverter();
 
-		TableColumn<Grade, BigDecimal> fromColumn = new TableColumn<>(Controller.translate("pointsSystem_from"));
+		TableColumn<Grade, BigDecimal> fromColumn = new TableColumn<>(TranslationController.translate("pointsSystem_from"));
 		fromColumn.setCellValueFactory(data -> pointsSystem.lowerBoundForGrade(data.getValue()));
 		fromColumn.setCellFactory(_ -> {
 			TableCellEditComparable<Grade, BigDecimal> cell = new TableCellEditComparable<>(BigDecimal.ZERO, null,
@@ -82,7 +83,7 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 		fromColumn.setSortable(false);
 		fromColumn.setReorderable(false);
 
-		TableColumn<Grade, BigDecimal> toColumn = new TableColumn<>(Controller.translate("pointsSystem_to"));
+		TableColumn<Grade, BigDecimal> toColumn = new TableColumn<>(TranslationController.translate("pointsSystem_to"));
 		toColumn.setCellValueFactory(data -> pointsSystem.upperBoundForGrade(data.getValue()));
 		toColumn.setCellFactory(_ -> {
 			TableCellEditComparable<Grade, BigDecimal> cell = new TableCellEditComparable<>(BigDecimal.ZERO, null,
@@ -110,7 +111,7 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 		toColumn.setSortable(false);
 		toColumn.setReorderable(false);
 
-		TableColumn<Grade, Grade> gradeColumn = new TableColumn<>(Controller.translate("pointsSystem_grade"));
+		TableColumn<Grade, Grade> gradeColumn = new TableColumn<>(TranslationController.translate("pointsSystem_grade"));
 		gradeColumn.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue()));
 		gradeColumn.setCellFactory(_ -> new TableCellCustom<>(Pos.CENTER));
 		gradeColumn.setSortable(false);
@@ -137,7 +138,7 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 		this.setEditable(true);
 		this.getSelectionModel().setCellSelectionEnabled(true);
 
-		Controller.bindTableColumnWidthToFontSize(this);
+		FontSizeController.bindTableColumnWidthToFontSize(this);
 		Styles.subscribeTableColor(this, group.colorProperty());
 	}
 
@@ -188,7 +189,7 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 			setCellFactory(TableCellCustom.forTableColumn(new BigDecimalPercentConverter(2), Pos.CENTER));
 			setSortable(false);
 			setReorderable(false);
-			this.minWidthProperty().bind(Controller.fontSizeProperty().multiply(5));
+			this.minWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(5));
 		}
 
 	}
@@ -209,7 +210,7 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 		};
 
 		private AmountColumn() {
-			super(Controller.translate("pointsSystem_amount"));
+			super(TranslationController.translate("pointsSystem_amount"));
 			this.setCellFactory(_ -> new TableCellCustom<>(Pos.CENTER));
 			this.setSortable(false);
 			this.setReorderable(false);

@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.Test.TestTask;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.control.ComparableField;
 import org.openjfx.kafx.view.control.TextFieldPromptText;
 import org.openjfx.kafx.view.converter.BigDecimalConverter;
@@ -20,19 +20,19 @@ public class DialogAddTestTask extends DialogAdd<TestTask> {
 	private final UserInputComparableInput<BigDecimal> maxPoints;
 
 	public DialogAddTestTask(Test test, TestTask root) {
-		super(Controller.translate("dialog_add_testTask_title"));
+		super(TranslationController.translate("dialog_add_testTask_title"));
 		super.showAddMoreButton(true);
 		this.root = root;
 		this.test = test;
 
-		this.name = new UserInputTextInput(new TextFieldPromptText(Controller.translate("testTask_name")));
-		super.addInput(this.name, Controller.translate("testTask_name"));
+		this.name = new UserInputTextInput(new TextFieldPromptText(TranslationController.translate("testTask_name")));
+		super.addInput(this.name, TranslationController.translate("testTask_name"));
 
 		BigDecimalConverter maxPointsConverter = new BigDecimalConverter();
 		maxPointsConverter.getDecimalFormat().setMaximumFractionDigits(2);
 		this.maxPoints = new UserInputComparableInput<>(
 				new ComparableField<>(BigDecimal.ZERO, null, maxPointsConverter), BigDecimal.ZERO, true);
-		super.addInput(this.maxPoints, Controller.translate("testTask_maxPoints"));
+		super.addInput(this.maxPoints, TranslationController.translate("testTask_maxPoints"));
 	}
 
 	@Override

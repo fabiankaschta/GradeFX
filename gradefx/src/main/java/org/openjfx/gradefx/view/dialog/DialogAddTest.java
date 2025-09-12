@@ -6,7 +6,7 @@ import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.TestGroup;
 import org.openjfx.gradefx.view.converter.TestGroupConverter;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.control.ChoiceBoxTreeItem;
 import org.openjfx.kafx.view.control.ComparableField;
 import org.openjfx.kafx.view.control.TextFieldPromptText;
@@ -35,37 +35,37 @@ public class DialogAddTest extends DialogAdd<Test> {
 	private final UserInputChoiceBoxTreeItem<TestGroup> testGroupTree;
 
 	public DialogAddTest(Group group) {
-		super(Controller.translate("dialog_add_test_title"));
+		super(TranslationController.translate("dialog_add_test_title"));
 		this.group = group;
 
-		this.name = new UserInputTextInput(new TextFieldPromptText(Controller.translate("test_name")));
-		super.addInput(this.name, Controller.translate("test_name"));
+		this.name = new UserInputTextInput(new TextFieldPromptText(TranslationController.translate("test_name")));
+		super.addInput(this.name, TranslationController.translate("test_name"));
 
-		this.shortName = new UserInputTextInput(new TextFieldPromptText(Controller.translate("test_shortName")));
-		super.addInput(this.shortName, Controller.translate("test_shortName"));
+		this.shortName = new UserInputTextInput(new TextFieldPromptText(TranslationController.translate("test_shortName")));
+		super.addInput(this.shortName, TranslationController.translate("test_shortName"));
 
 		this.date = new UserInputDatePicker(new DatePicker());
-		super.addInput(date, Controller.translate("test_date"));
+		super.addInput(date, TranslationController.translate("test_date"));
 
 		BigDecimalConverter weightConverter = new BigDecimalConverter();
 		weightConverter.getDecimalFormat().setMaximumFractionDigits(2);
 		this.weight = new UserInputComparableInput<>(new ComparableField<>(BigDecimal.ZERO, null, weightConverter),
 				BigDecimal.ONE, false);
-		super.addInput(this.weight, Controller.translate("test_weight"));
+		super.addInput(this.weight, TranslationController.translate("test_weight"));
 
 		CheckBox useTasksCheckBox = new CheckBox();
 		this.useTasks = new UserInputCheckBox(useTasksCheckBox, true);
-		super.addInput(this.useTasks, Controller.translate("test_useTasks"));
+		super.addInput(this.useTasks, TranslationController.translate("test_useTasks"));
 
 		CheckBox usePointsCheckBox = new CheckBox();
 		this.usePoints = new UserInputCheckBox(usePointsCheckBox, true);
-		super.addInput(this.usePoints, Controller.translate("test_usePoints"));
+		super.addInput(this.usePoints, TranslationController.translate("test_usePoints"));
 
 		BigDecimalConverter totalPointsConverter = new BigDecimalConverter();
 		totalPointsConverter.getDecimalFormat().setMaximumFractionDigits(0);
 		this.totalPoints = new UserInputComparableInput<>(
 				new ComparableField<>(BigDecimal.ONE, null, totalPointsConverter), BigDecimal.ONE, false);
-		super.addInput(this.totalPoints, Controller.translate("test_totalPoints"));
+		super.addInput(this.totalPoints, TranslationController.translate("test_totalPoints"));
 
 		this.totalPoints.visibleProperty()
 				.bind(Bindings.createBooleanBinding(
@@ -90,7 +90,7 @@ public class DialogAddTest extends DialogAdd<Test> {
 
 		this.testGroupTree = new UserInputChoiceBoxTreeItem<>(
 				new ChoiceBoxTreeItem<TestGroup>(group.getTestGroupRoot(), new TestGroupConverter()));
-		super.addInput(this.testGroupTree, Controller.translate("test_testGroupTree"));
+		super.addInput(this.testGroupTree, TranslationController.translate("test_testGroupTree"));
 		this.testGroupTree.visibleProperty().bind(group.getTestGroupRoot().leafProperty().not());
 	}
 

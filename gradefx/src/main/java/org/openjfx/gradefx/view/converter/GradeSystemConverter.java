@@ -1,7 +1,7 @@
 package org.openjfx.gradefx.view.converter;
 
 import org.openjfx.gradefx.model.GradeSystem;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.TranslationController;
 
 import javafx.util.StringConverter;
 
@@ -12,7 +12,7 @@ public class GradeSystemConverter extends StringConverter<GradeSystem> {
 		if (gs == null) {
 			return "null";
 		}
-		return Controller.translate("gradeSystem_" + gs.name());
+		return TranslationController.translate("gradeSystem_" + gs.name());
 	}
 
 	@Override

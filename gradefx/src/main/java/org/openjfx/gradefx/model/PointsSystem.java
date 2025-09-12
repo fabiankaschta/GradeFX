@@ -5,7 +5,7 @@ import java.math.RoundingMode;
 
 import org.openjfx.gradefx.model.GradeSystem.Grade;
 import org.openjfx.gradefx.model.GradeSystem.Tendency;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.ChangeController;
 import org.openjfx.kafx.io.DataObject;
 
 import javafx.beans.property.BooleanProperty;
@@ -66,10 +66,10 @@ public class PointsSystem {
 		this.updateBounds();
 
 		this.useHalfPoints.addListener((_, _, _) -> this.updateBounds());
-		this.useHalfPoints.addListener(Controller.LISTENER_UNSAVED_CHANGES);
+		this.useHalfPoints.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 
 		this.tendencyBound.addListener((_, _, _) -> this.updateBounds());
-		this.tendencyBound.addListener(Controller.LISTENER_UNSAVED_CHANGES);
+		this.tendencyBound.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 
 		this.totalPoints.addListener((_, _, _) -> this.updateBounds());
 
@@ -90,7 +90,7 @@ public class PointsSystem {
 			}
 			this.updateBounds();
 		});
-		this.boundType.addListener(Controller.LISTENER_UNSAVED_CHANGES);
+		this.boundType.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -121,17 +121,17 @@ public class PointsSystem {
 				this.upperBounds[i].addListener((_, _, newValue) -> this.lowerBounds[index + 1]
 						.set(this.calculateLowerBoundFromUpperBound(newValue)));
 			}
-			this.lowerBounds[i].addListener(Controller.LISTENER_UNSAVED_CHANGES);
+			this.lowerBounds[i].addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 			this.lowerBounds[i].addListener(this.updateListener);
-			this.upperBounds[i].addListener(Controller.LISTENER_UNSAVED_CHANGES);
+			this.upperBounds[i].addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 			this.upperBounds[i].addListener(this.updateListener);
 		}
 
 		this.useHalfPoints.addListener((_, _, _) -> this.updateBounds());
-		this.useHalfPoints.addListener(Controller.LISTENER_UNSAVED_CHANGES);
+		this.useHalfPoints.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 
 		this.tendencyBound.addListener((_, _, _) -> this.updateBounds());
-		this.tendencyBound.addListener(Controller.LISTENER_UNSAVED_CHANGES);
+		this.tendencyBound.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 
 		this.totalPoints.addListener((_, _, _) -> this.updateBounds());
 
@@ -152,7 +152,7 @@ public class PointsSystem {
 			}
 			this.updateBounds();
 		});
-		this.boundType.addListener(Controller.LISTENER_UNSAVED_CHANGES);
+		this.boundType.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 	}
 
 	public void subscribeBoundUpdates(Runnable listener) {
@@ -258,9 +258,9 @@ public class PointsSystem {
 		String oldString = this.toString();
 		BigDecimal[] calculatedBounds = calculateBounds();
 		for (int i = 0; i < this.grades.length; i++) {
-			this.lowerBounds[i].removeListener(Controller.LISTENER_UNSAVED_CHANGES);
+			this.lowerBounds[i].removeListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 			this.lowerBounds[i].removeListener(this.updateListener);
-			this.upperBounds[i].removeListener(Controller.LISTENER_UNSAVED_CHANGES);
+			this.upperBounds[i].removeListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 			this.upperBounds[i].removeListener(this.updateListener);
 		}
 		this.lowerBounds[0].set(BigDecimal.ZERO);
@@ -305,15 +305,15 @@ public class PointsSystem {
 			}
 		}
 		for (int i = 0; i < this.grades.length; i++) {
-			this.lowerBounds[i].addListener(Controller.LISTENER_UNSAVED_CHANGES);
+			this.lowerBounds[i].addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 			this.lowerBounds[i].addListener(this.updateListener);
-			this.upperBounds[i].addListener(Controller.LISTENER_UNSAVED_CHANGES);
+			this.upperBounds[i].addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 			this.upperBounds[i].addListener(this.updateListener);
 		}
 		String newString = this.toString();
 		// TODO not the best solution to check for changes...
 		if (oldString != null && !oldString.equals(newString)) {
-			Controller.LISTENER_UNSAVED_CHANGES.changed(null, oldString, newString);
+			ChangeController.LISTENER_UNSAVED_CHANGES.changed(null, oldString, newString);
 		}
 		this.callListener();
 	}

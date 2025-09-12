@@ -7,7 +7,7 @@ import org.openjfx.gradefx.view.dialog.DialogAddGroup;
 import org.openjfx.gradefx.view.tab.GroupOverviewTab;
 import org.openjfx.gradefx.view.tab.GroupTab;
 import org.openjfx.gradefx.view.tab.TestTab;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.view.pane.AddTabPane;
 
 import javafx.beans.binding.Bindings;
@@ -135,7 +135,7 @@ public class GroupsPane extends AddTabPane {
 	private GroupsPane() {
 		this.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
 		this.setSide(Side.LEFT);
-		Controller.fontSizeProperty().subscribe(fontSize -> {
+		FontSizeController.fontSizeProperty().subscribe(fontSize -> {
 			this.setTabMinWidth(fontSize.doubleValue() * 4 + 5);
 			this.setTabMinHeight(fontSize.doubleValue() * 4 + 5);
 			this.setTabMaxWidth(fontSize.doubleValue() * 4 + 5);

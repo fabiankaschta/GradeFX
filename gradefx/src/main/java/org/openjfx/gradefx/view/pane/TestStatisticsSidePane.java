@@ -10,7 +10,8 @@ import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.view.converter.BoundTypeConverter;
 import org.openjfx.gradefx.view.style.Styles;
 import org.openjfx.gradefx.view.tableview.TableViewPointsSystem;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.FontSizeController;
+import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.control.ComparableField;
 import org.openjfx.kafx.view.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.converter.DoublePercentConverter;
@@ -77,7 +78,7 @@ public class TestStatisticsSidePane extends ScrollPane {
 		this.setContent(content);
 		content.minHeightProperty().bind(this.heightProperty());
 
-		Label header = new Label(Controller.translate("test_pointsSytem"));
+		Label header = new Label(TranslationController.translate("test_pointsSytem"));
 		header.setAlignment(Pos.CENTER);
 		header.setStyle("-fx-font-weight: bold;");
 		this.tableViewPointsSystem = new TableViewPointsSystem(group, test);
@@ -113,7 +114,7 @@ public class TestStatisticsSidePane extends ScrollPane {
 			avgConverter.getDecimalFormat().setMaximumFractionDigits(2);
 			avgConverter.getDecimalFormat().setRoundingMode(RoundingMode.DOWN);
 
-			Label avgLabel = new Label(Controller.translate("test_avg") + ": ");
+			Label avgLabel = new Label(TranslationController.translate("test_avg") + ": ");
 			Label avgValue = new Label();
 			avgValue.textProperty().bind(Bindings.createStringBinding(() -> {
 				BigDecimal avg = tableViewPointsSystem.getGradeAVG();
@@ -126,12 +127,12 @@ public class TestStatisticsSidePane extends ScrollPane {
 			this.add(avgLabel, 0, 0);
 			this.add(avgValue, 1, 0);
 
-			Label gradedLabel = new Label(Controller.translate("test_graded") + ": ");
+			Label gradedLabel = new Label(TranslationController.translate("test_graded") + ": ");
 			Label gradedValue = new Label();
 			gradedValue.textProperty().bind(Bindings.createStringBinding(() -> {
 				int graded = tableViewPointsSystem.gradedProperty().get();
 				int size = group.getStudents().size();
-				return graded + " " + Controller.translate("test_graded_outOf") + " " + size;
+				return graded + " " + TranslationController.translate("test_graded_outOf") + " " + size;
 			}, tableViewPointsSystem.gradedProperty(), group.getStudents()));
 			this.add(gradedLabel, 0, 1);
 			this.add(gradedValue, 1, 1);
@@ -141,24 +142,24 @@ public class TestStatisticsSidePane extends ScrollPane {
 	private class SettingsPane extends TitledPane {
 
 		private SettingsPane() {
-			this.setText(Controller.translate("pointsSystem_settings"));
+			this.setText(TranslationController.translate("pointsSystem_settings"));
 
 			VBox settingsPaneContent = new VBox(10);
 
 			CheckBox halfPointsCheckBox = new CheckBox();
 			halfPointsCheckBox.selectedProperty().bindBidirectional(test.getPointsSystem().useHalfPointsProperty());
-			Label halfPointsLabel = new Label(Controller.translate("pointsSytem_halfPoints"));
+			Label halfPointsLabel = new Label(TranslationController.translate("pointsSytem_halfPoints"));
 			HBox halfPoints = new HBox(5, halfPointsLabel, halfPointsCheckBox);
 			halfPoints.setAlignment(Pos.CENTER_LEFT);
 			settingsPaneContent.getChildren().add(halfPoints);
 
 			CheckBox tendenciesCheckBox = new CheckBox();
-			Label tendenciesLabel = new Label(Controller.translate("pointsSytem_tendencies"));
+			Label tendenciesLabel = new Label(TranslationController.translate("pointsSytem_tendencies"));
 			ComparableField<BigDecimal> tendencyBoundField = new ComparableField<>(BigDecimal.ZERO, null,
 					new BigDecimalConverter());
 			tendencyBoundField.setPrefColumnCount(2);
 			tendencyBoundField.disableProperty().bind(tendenciesCheckBox.selectedProperty().not());
-			Label tendencyBoundLabel = new Label(Controller.translate("pointsSytem_tendencyBound"));
+			Label tendencyBoundLabel = new Label(TranslationController.translate("pointsSytem_tendencyBound"));
 			tendenciesCheckBox.setSelected(test.getPointsSystem().getTendencyBound() != null);
 			tendenciesCheckBox.selectedProperty()
 					.subscribe(v -> test.getPointsSystem().setTendencyBound(v ? tendencyBoundField.getValue() : null));
@@ -186,11 +187,11 @@ public class TestStatisticsSidePane extends ScrollPane {
 
 		private SliderPane() {
 
-			this.setText(Controller.translate("pointsSystem_silder"));
+			this.setText(TranslationController.translate("pointsSystem_silder"));
 
 			VBox sliderPaneContent = new VBox(10);
 
-			Label silderModeLabel = new Label(Controller.translate("pointsSystem_silder_mode") + ":");
+			Label silderModeLabel = new Label(TranslationController.translate("pointsSystem_silder_mode") + ":");
 			boundType = new ChoiceBox<>(FXCollections.observableArrayList(BoundType.values()));
 			boundType.setConverter(new BoundTypeConverter());
 			boundType.getSelectionModel().select(test.getPointsSystem().getBoundType());
@@ -322,7 +323,7 @@ public class TestStatisticsSidePane extends ScrollPane {
 				this.setAlignment(Pos.CENTER_LEFT);
 				this.slider = new Slider(0, 1, 0.5);
 				// FIXME slider should resize to fill space in sliderBox
-				this.slider.prefWidthProperty().bind(Controller.fontSizeProperty().multiply(7));
+				this.slider.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(7));
 				ComparableField<Double> field = new ComparableField<>(this.slider.minProperty().asObject(),
 						this.slider.maxProperty().asObject(), new DoublePercentConverter(1));
 				field.setPrefColumnCount(3);

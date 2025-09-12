@@ -14,7 +14,8 @@ import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.Test.TestTask;
 import org.openjfx.gradefx.view.pane.GroupsPane;
 import org.openjfx.gradefx.view.style.Styles;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.FontSizeController;
+import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.converter.BigDecimalPercentConverter;
 import org.openjfx.kafx.view.tableview.TableCellCustom;
@@ -56,7 +57,7 @@ public class TableViewTest extends TableView<Student> {
 		this.test = test;
 		this.group = group;
 
-		this.setPlaceholder(new Text(Controller.translate("tab_overview_no_students")));
+		this.setPlaceholder(new Text(TranslationController.translate("tab_overview_no_students")));
 
 		this.sumColumn = new SumColumn();
 		this.sumColumn.visibleProperty().bind(test.usePointsProperty());
@@ -92,7 +93,7 @@ public class TableViewTest extends TableView<Student> {
 
 		this.setupTaskColumns(test.getTasksRoot());
 
-		Controller.bindTableColumnWidthToFontSize(this);
+		FontSizeController.bindTableColumnWidthToFontSize(this);
 		Styles.subscribeTableColor(this, group.colorProperty());
 	}
 
@@ -119,7 +120,7 @@ public class TableViewTest extends TableView<Student> {
 			this.setReorderable(false);
 			this.name.textProperty().bind(testTask.nameProperty());
 			this.points.textProperty().bind(testTask.maxPointsProperty()
-					.map(v -> bigDecimalConverter.toString(v) + " " + Controller.translate("test_points_short")));
+					.map(v -> bigDecimalConverter.toString(v) + " " + TranslationController.translate("test_points_short")));
 			this.points.setStyle("-fx-font-style: italic; -fx-font-weight: normal;");
 			BorderPane graphic = new BorderPane();
 			BorderPane.setAlignment(this.name, Pos.CENTER);
@@ -150,7 +151,7 @@ public class TableViewTest extends TableView<Student> {
 	private class GradeColumn extends TableColumn<Student, Grade> {
 
 		private GradeColumn(SumColumn sumColumn) {
-			super(Controller.translate("test_grade"));
+			super(TranslationController.translate("test_grade"));
 			this.setCellValueFactory(data -> test.gradeProperty(data.getValue()));
 			this.setCellFactory(_ -> new TableCellEditComparable<>(group.getGradeSystem().getWorst(),
 					group.getGradeSystem().getBest(), group.getGradeSystem().getGradeConverter(), Pos.CENTER, true) {
@@ -226,7 +227,7 @@ public class TableViewTest extends TableView<Student> {
 					});
 			this.name.setText("\u2211");
 			this.points.textProperty().bind(test.totalPointsProperty()
-					.map(v -> bigDecimalConverter.toString(v) + " " + Controller.translate("test_points_short")));
+					.map(v -> bigDecimalConverter.toString(v) + " " + TranslationController.translate("test_points_short")));
 			this.points.setStyle("-fx-font-style: italic; -fx-font-weight: normal;");
 			BorderPane graphic = new BorderPane();
 			BorderPane.setAlignment(this.name, Pos.CENTER);
@@ -272,7 +273,7 @@ public class TableViewTest extends TableView<Student> {
 			this.setSortable(true);
 			this.setReorderable(false);
 			this.editableProperty().bind(test.useTasksProperty().not());
-			this.minWidthProperty().bind(Controller.fontSizeProperty().multiply(5));
+			this.minWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(5));
 		}
 
 	}
@@ -280,13 +281,13 @@ public class TableViewTest extends TableView<Student> {
 	private class AnnotationColumn extends TableColumn<Student, String> {
 
 		private AnnotationColumn() {
-			super(Controller.translate("test_annotation"));
+			super(TranslationController.translate("test_annotation"));
 			this.setCellValueFactory(data -> test.annotationProperty(data.getValue()));
 			this.setCellFactory(TableCellEditConverter.forTableColumn());
 			this.setSortable(true);
 			this.setReorderable(false);
 			this.setEditable(true);
-			this.minWidthProperty().bind(Controller.fontSizeProperty().multiply(15));
+			this.minWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(15));
 		}
 
 	}
@@ -294,13 +295,13 @@ public class TableViewTest extends TableView<Student> {
 	private class DateColumn extends TableColumn<Student, LocalDate> {
 
 		private DateColumn() {
-			super(Controller.translate("test_date"));
+			super(TranslationController.translate("test_date"));
 			this.setCellValueFactory(data -> test.dateProperty(data.getValue()));
 			this.setCellFactory(TableCellEditDatePicker.forTableColumn());
 			this.setSortable(true);
 			this.setReorderable(false);
 			this.setEditable(true);
-			this.minWidthProperty().bind(Controller.fontSizeProperty().multiply(7));
+			this.minWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(7));
 		}
 
 	}

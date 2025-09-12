@@ -6,7 +6,8 @@ import java.util.stream.Stream;
 
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.ExceptionController;
+import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.io.CSVParser;
 import org.openjfx.kafx.view.dialog.DialogUserInput;
 import org.openjfx.kafx.view.dialog.userinput.UserInputCheckBox;
@@ -38,23 +39,24 @@ public class StudentParserDialog extends DialogUserInput<Boolean> {
 	private int previewAmount = 3;
 
 	public StudentParserDialog(Group group, File file) throws IOException {
-		super(Controller.translate("dialog_import_students_title"));
+		super(TranslationController.translate("dialog_import_students_title"));
 
 		ObservableList<Student> studentPreview = FXCollections.observableArrayList();
 
-		this.firstNameCol = new TableColumn<Student, String>(Controller.translate("student_firstName"));
+		this.firstNameCol = new TableColumn<Student, String>(TranslationController.translate("student_firstName"));
 		this.firstNameCol.setCellValueFactory(data -> data.getValue().firstNameProperty());
 		this.firstNameCol.setCellFactory(TableCellCustom.forTableColumn());
 		this.firstNameCol.setSortable(false);
 		this.firstNameCol.setReorderable(true);
 
-		this.lastNameCol = new TableColumn<Student, String>(Controller.translate("student_lastName"));
+		this.lastNameCol = new TableColumn<Student, String>(TranslationController.translate("student_lastName"));
 		this.lastNameCol.setCellValueFactory(data -> data.getValue().lastNameProperty());
 		this.lastNameCol.setCellFactory(TableCellCustom.forTableColumn());
 		this.lastNameCol.setSortable(false);
 		this.lastNameCol.setReorderable(true);
 
-		this.subgroupNameCol = new TableColumn<Student, String>(Controller.translate("student_subgroupName"));
+		this.subgroupNameCol = new TableColumn<Student, String>(
+				TranslationController.translate("student_subgroupName"));
 		this.subgroupNameCol.setCellValueFactory(data -> data.getValue().subgroupNameProperty());
 		this.subgroupNameCol.setCellFactory(TableCellCustom.forTableColumn());
 		this.subgroupNameCol.setSortable(false);
@@ -107,15 +109,15 @@ public class StudentParserDialog extends DialogUserInput<Boolean> {
 			public String toString(Character object) {
 				switch (object) {
 				case ',':
-					return Controller.translate("key_comma");
+					return TranslationController.translate("key_comma");
 				case ';':
-					return Controller.translate("key_semicolon");
+					return TranslationController.translate("key_semicolon");
 				case ' ':
-					return Controller.translate("key_space");
+					return TranslationController.translate("key_space");
 				case '\t':
-					return Controller.translate("key_tab");
+					return TranslationController.translate("key_tab");
 				case ':':
-					return Controller.translate("key_colon");
+					return TranslationController.translate("key_colon");
 				default:
 					return String.valueOf(object);
 				}
@@ -135,10 +137,10 @@ public class StudentParserDialog extends DialogUserInput<Boolean> {
 			try {
 				studentPreview.setAll(csvReader.preview(previewAmount));
 			} catch (IOException e) {
-				Controller.exception(e);
+				ExceptionController.exception(e);
 			}
 		});
-		super.addInput(this.separator, Controller.translate("dialog_import_students_separator"));
+		super.addInput(this.separator, TranslationController.translate("dialog_import_students_separator"));
 
 		ChoiceBox<Character> quotationMarkChoiceBox = new ChoiceBox<>();
 		quotationMarkChoiceBox.getItems().addAll('"', '\'');
@@ -147,9 +149,9 @@ public class StudentParserDialog extends DialogUserInput<Boolean> {
 			public String toString(Character object) {
 				switch (object) {
 				case '"':
-					return Controller.translate("csv_quotationMark_double");
+					return TranslationController.translate("csv_quotationMark_double");
 				case '\'':
-					return Controller.translate("csv_quotationMark_single");
+					return TranslationController.translate("csv_quotationMark_single");
 				default:
 					return String.valueOf(object);
 				}
@@ -166,14 +168,15 @@ public class StudentParserDialog extends DialogUserInput<Boolean> {
 			try {
 				studentPreview.setAll(csvReader.preview(previewAmount));
 			} catch (IOException e) {
-				Controller.exception(e);
+				ExceptionController.exception(e);
 			}
 		});
-		super.addInput(this.quotationMark, Controller.translate("dialog_import_students_quotationMark"));
+		super.addInput(this.quotationMark, TranslationController.translate("dialog_import_students_quotationMark"));
 
 		this.labeled = new UserInputCheckBox(new CheckBox());
-		csvReader.checkContainsLabels(Controller.translate("student_firstName"), Controller.translate("student_lastName"),
-				Controller.translate("student_subgroupName"));
+		csvReader.checkContainsLabels(TranslationController.translate("student_firstName"),
+				TranslationController.translate("student_lastName"),
+				TranslationController.translate("student_subgroupName"));
 		this.labeled.setDefaultValue(csvReader.containsLabel());
 		this.labeled.selectDefault();
 		this.labeled.valueProperty().subscribe(v -> {
@@ -181,10 +184,10 @@ public class StudentParserDialog extends DialogUserInput<Boolean> {
 			try {
 				studentPreview.setAll(csvReader.preview(previewAmount));
 			} catch (IOException e) {
-				Controller.exception(e);
+				ExceptionController.exception(e);
 			}
 		});
-		super.addInput(this.labeled, Controller.translate("dialog_import_students_labeled"));
+		super.addInput(this.labeled, TranslationController.translate("dialog_import_students_labeled"));
 
 		this.getDialogPane().setExpandableContent(this.preview);
 		this.preview.getColumns().addListener((ListChangeListener<TableColumn<Student, ?>>) c -> {
@@ -198,14 +201,15 @@ public class StudentParserDialog extends DialogUserInput<Boolean> {
 				try {
 					studentPreview.setAll(csvReader.preview(previewAmount));
 				} catch (IOException e) {
-					Controller.exception(e);
+					ExceptionController.exception(e);
 				}
 			}
 		});
 		this.getDialogPane().expandedProperty().subscribe(() -> this.setResizable(false));
 		this.getDialogPane().setExpanded(true);
 
-		ButtonType doneButtonType = new ButtonType(Controller.translate("dialog_button_done"), ButtonData.OK_DONE);
+		ButtonType doneButtonType = new ButtonType(TranslationController.translate("dialog_button_done"),
+				ButtonData.OK_DONE);
 		this.getDialogPane().getButtonTypes().add(doneButtonType);
 		// TODO this.getDialogPane().detailsButton
 
@@ -217,7 +221,7 @@ public class StudentParserDialog extends DialogUserInput<Boolean> {
 					stream.close();
 					return true;
 				} catch (IOException e) {
-					Controller.exception(e);
+					ExceptionController.exception(e);
 					return false;
 				}
 			} else {

@@ -3,7 +3,7 @@ package org.openjfx.gradefx.view.dialog;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Subject;
 import org.openjfx.gradefx.view.converter.SubjectConverter;
-import org.openjfx.kafx.controller.Controller;
+import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.alert.AlertDelete;
 import org.openjfx.kafx.view.control.TextFieldPromptText;
 import org.openjfx.kafx.view.dialog.DialogUserInput;
@@ -23,10 +23,10 @@ public class DialogEditSubjects extends DialogUserInput<Boolean> {
 	private final UserInputTextInput shortName;
 
 	public DialogEditSubjects() {
-		super(Controller.translate("dialog_edit_subjects_title"));
+		super(TranslationController.translate("dialog_edit_subjects_title"));
 
-		this.name = new UserInputTextInput(new TextFieldPromptText(Controller.translate("subject_name")));
-		this.shortName = new UserInputTextInput(new TextFieldPromptText(Controller.translate("subject_shortName")));
+		this.name = new UserInputTextInput(new TextFieldPromptText(TranslationController.translate("subject_name")));
+		this.shortName = new UserInputTextInput(new TextFieldPromptText(TranslationController.translate("subject_shortName")));
 
 		ChoiceBox<Subject> choiceBox = new ChoiceBox<>(Subject.getSubjects());
 		choiceBox.setConverter(new SubjectConverter());
@@ -47,14 +47,14 @@ public class DialogEditSubjects extends DialogUserInput<Boolean> {
 			// TODO editing does not update text of item list in choicebox and labels of groups
 		});
 
-		Button add = new Button(Controller.translate("dialog_edit_subjects_add"));
+		Button add = new Button(TranslationController.translate("dialog_edit_subjects_add"));
 		add.setOnAction(_ -> {
 			Subject.addSubject("", "");
 			choiceBox.getSelectionModel().selectLast();
 		});
-		Button remove = new Button(Controller.translate("dialog_edit_subjects_remove"));
+		Button remove = new Button(TranslationController.translate("dialog_edit_subjects_remove"));
 		remove.setOnAction(_ -> new AlertDelete(
-				Controller.translate("subject") + " " + choiceBox.getSelectionModel().getSelectedItem().getName())
+				TranslationController.translate("subject") + " " + choiceBox.getSelectionModel().getSelectedItem().getName())
 				.showAndWait().ifPresent(response -> {
 					if (response == ButtonType.OK) {
 						int index = choiceBox.getSelectionModel().getSelectedIndex();
@@ -89,12 +89,12 @@ public class DialogEditSubjects extends DialogUserInput<Boolean> {
 		this.subject = new UserInputChoiceBoxButtons<>(choiceBox);
 		this.subject.addButton(add);
 		this.subject.addButton(remove);
-		super.addInput(this.subject, Controller.translate("subject"));
+		super.addInput(this.subject, TranslationController.translate("subject"));
 
-		super.addInput(this.name, Controller.translate("subject_name"));
-		super.addInput(this.shortName, Controller.translate("subject_shortName"));
+		super.addInput(this.name, TranslationController.translate("subject_name"));
+		super.addInput(this.shortName, TranslationController.translate("subject_shortName"));
 
-		ButtonType doneButtonType = new ButtonType(Controller.translate("dialog_button_done"), ButtonData.OK_DONE);
+		ButtonType doneButtonType = new ButtonType(TranslationController.translate("dialog_button_done"), ButtonData.OK_DONE);
 		this.getDialogPane().getButtonTypes().add(doneButtonType);
 
 		this.setResultConverter(_ -> true);
