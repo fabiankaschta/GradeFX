@@ -89,7 +89,12 @@ public class GroupsPane extends AddTabPane {
 	}
 
 	public static Tab getSelectedTabInGroup() {
-		return getSelectedTab().getSelectedTab();
+		GroupTab groupTab = getSelectedTab();
+		if (groupTab != null) {
+			return groupTab.getSelectedTab();
+		} else {
+			return null;
+		}
 	}
 
 	public static GroupTab getSelectedTab() {
