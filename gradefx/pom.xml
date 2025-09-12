@@ -6,7 +6,7 @@
 
     <groupId>org.openjfx</groupId>
     <artifactId>gradefx</artifactId>
-    <version>0.9.8</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>GradeFX</name>
