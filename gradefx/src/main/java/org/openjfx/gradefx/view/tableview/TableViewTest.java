@@ -297,7 +297,7 @@ public class TableViewTest extends TableView<Student> {
 		private DateColumn() {
 			super(TranslationController.translate("test_date"));
 			this.setCellValueFactory(data -> test.dateProperty(data.getValue()));
-			this.setCellFactory(TableCellEditDatePicker.forTableColumn());
+			this.setCellFactory(TableCellEditDatePicker.forTableColumn(true));
 			this.setSortable(true);
 			this.setReorderable(false);
 			this.setEditable(true);
