@@ -283,7 +283,7 @@ public class TableViewTest extends TableView<Student> {
 		private AnnotationColumn() {
 			super(TranslationController.translate("test_annotation"));
 			this.setCellValueFactory(data -> test.annotationProperty(data.getValue()));
-			this.setCellFactory(TableCellEditConverter.forTableColumn());
+			this.setCellFactory(TableCellEditConverter.forTableColumn(true));
 			this.setSortable(true);
 			this.setReorderable(false);
 			this.setEditable(true);
