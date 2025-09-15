@@ -17,7 +17,7 @@ Folgende Features sind bereits enthalten:
 * SchülerInnen-Import per csv-Datei
 * Sortieren von Tabellen nach Name, Note, usw.
 * Ausdruck/PDF-Export möglich (wird noch verbessert)
-* Verschlüsselte Dateien (können beliebig in Cloud-Diensten oder aus USB-Sticks gelagert werden, sofern gute Passwörter verwendet werden)
+* Verschlüsselte Dateien (können beliebig in Cloud-Diensten oder auf USB-Sticks gelagert werden, sofern gute Passwörter verwendet werden)
 
 Geplante Features
 * Automatisches Ausfüllen von Umschlägen für Archivierung
