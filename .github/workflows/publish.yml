@@ -30,6 +30,15 @@ jobs:
       run: mvn -f gradefx -B package
       env:
         GITHUB_TOKEN: ${{ github.token }}
+    
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '24'
+        distribution: 'temurin'
+        server-id: githubDist # Value of the distributionManagement/repository/id field of the pom.xml
+        settings-path: ${{ github.workspace }} # location for the settings.xml file
+        cache: maven
 
     - name: Publish to GitHub Packages Apache Maven
       run: mvn -f gradefx deploy -s $GITHUB_WORKSPACE/settings.xml
