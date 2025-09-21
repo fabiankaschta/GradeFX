@@ -10,4 +10,5 @@ module org.openjfx.gradefx {
     exports org.openjfx.gradefx.model;
     exports org.openjfx.gradefx.view.menu;
     exports org.openjfx.gradefx.view.pane;
+    exports org.openjfx.gradefx.view.tab;
 }
