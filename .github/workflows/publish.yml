@@ -29,11 +29,11 @@ jobs:
         cache: maven
 
     - name: Build with Maven
-      run: mvn -f gradefx javafx:jlink
+      run: mvn -f gradefx -B package
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
-#    - name: Publish to GitHub Packages Apache Maven
-#      run: mvn -f gradefx deploy -s $GITHUB_WORKSPACE/settings.xml
-#      env:
-#        GITHUB_TOKEN: ${{ github.token }}
+    - name: Publish to GitHub Packages Apache Maven
+      run: mvn -f gradefx deploy -s $GITHUB_WORKSPACE/settings.xml
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
