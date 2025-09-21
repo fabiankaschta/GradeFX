@@ -26,7 +26,7 @@
     
 	<repositories>
 		<repository>
-			<id>github-kafx</id>
+			<id>github</id>
 			<url>https://maven.pkg.github.com/fabiankaschta/KAFXBase</url>
 		</repository>
 	</repositories>
@@ -220,11 +220,4 @@
         </plugins>
     </build>
     
-	<distributionManagement>
-		<repository>
-			<id>github</id>
-			<name>GitHub Packages</name>
-			<url>https://maven.pkg.github.com/fabiankaschta/GradeFX</url>
-	    </repository>
-	</distributionManagement>
 </project>
