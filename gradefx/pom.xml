@@ -19,6 +19,7 @@
         <kafx.version>1.1.0</kafx.version>
         <pdfbox.version>3.0.5</pdfbox.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
+        <dependency.plugin.version>3.8.1</dependency.plugin.version>
         <javafx.plugin.version>0.0.8</javafx.plugin.version>
         <jpackage.plugin.version>1.6.6</jpackage.plugin.version>
         <module.path>${project.groupId}.${project.artifactId}</module.path>
@@ -62,6 +63,24 @@
 
     <build>
         <plugins>
+            <!-- copy all modular dependencies -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>${dependency.plugin.version}</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+		                <configuration>
+		              		<outputDirectory>${project.build.directory}/modules</outputDirectory>
+		              		<includeGroupIds>commons-logging</includeGroupIds> <!-- required by org.apache.pdfbox -->
+		                </configuration>
+					</execution>
+				</executions>
+            </plugin>
             <!-- javafx:run, javafx:jlink -->
             <plugin>
                 <groupId>org.openjfx</groupId>
@@ -72,7 +91,7 @@
                     <jmodsPath>target/modules</jmodsPath>
                 </configuration>
             </plugin>
-            <!-- make modular -->
+            <!-- copy & make non-modular dependencies modular -->
             <plugin>
 			    <groupId>org.moditect</groupId>
 			    <artifactId>moditect-maven-plugin</artifactId>
@@ -85,7 +104,7 @@
 			                <goal>add-module-info</goal>
 			            </goals>
 			            <configuration>
-			                <outputDirectory>target/modules</outputDirectory>
+							<outputDirectory>${project.build.directory}/modules</outputDirectory>
 			                <overwriteExistingFiles>true</overwriteExistingFiles>
 			                <modules>
 			                    <module>
@@ -96,6 +115,32 @@
 			                        </artifact>
 			                        <moduleInfo>
 			                            <name>com.github.zafarkhaja.semver</name>
+			                            <opens>
+			                                *;
+			                            </opens>
+			                        </moduleInfo>
+			                    </module>
+			                    <module>
+			                        <artifact>
+										<groupId>org.apache.pdfbox</groupId>
+										<artifactId>pdfbox-io</artifactId>
+		                                <version>3.0.5</version>
+			                        </artifact>
+			                        <moduleInfo>
+			                            <name>org.apache.pdfbox.io</name>
+			                            <opens>
+			                                *;
+			                            </opens>
+			                        </moduleInfo>
+			                    </module>
+			                    <module>
+			                        <artifact>
+										<groupId>org.apache.pdfbox</groupId>
+										<artifactId>fontbox</artifactId>
+		                                <version>3.0.5</version>
+			                        </artifact>
+			                        <moduleInfo>
+			                            <name>org.apache.fontbox</name>
 			                            <opens>
 			                                *;
 			                            </opens>
@@ -123,21 +168,6 @@
 			                                <artifactId>commons-logging</artifactId>
 			                                <version>1.3.5</version>
 			                            </dependency>
-			                            <dependency>
-			                                <groupId>org.bouncycastle</groupId>
-			                                <artifactId>bcpkix-jdk18on</artifactId>
-			                                <version>1.80</version>
-			                            </dependency>
-			                            <dependency>
-			                                <groupId>org.bouncycastle</groupId>
-			                                <artifactId>bcprov-jdk18on</artifactId>
-			                                <version>1.80</version>
-			                            </dependency>
-			                            <dependency>
-			                                <groupId>org.bouncycastle</groupId>
-			                                <artifactId>bcutil-jdk18on</artifactId>
-			                                <version>1.80</version>
-			                            </dependency>
 			                        </additionalDependencies>
 			                        <moduleInfo>
 			                            <name>org.apache.pdfbox</name>
@@ -149,6 +179,7 @@
 			                </modules>
 			                <jdepsExtraArgs>
 			                	<arg>--multi-release=9</arg>
+			                	<arg>--ignore-missing-deps</arg>
 			                </jdepsExtraArgs>
 			            </configuration>
 			        </execution>
@@ -167,9 +198,9 @@
 					<runtimeImage>target/image</runtimeImage>
 					<module>${module.path}/${main.class}</module>
 					<modulePaths>
-						<modulePath>target</modulePath>
+						<modulePath>${project.build.directory}</modulePath>
 					</modulePaths>
-					<destination>target/dist</destination>
+					<destination>${project.build.directory}/dist</destination>
 					<javaOptions>
 						<option>--enable-preview</option>
 						<option>-Dfile.encoding=${project.build.sourceEncoding}</option>

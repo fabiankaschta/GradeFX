@@ -3,7 +3,7 @@ module org.openjfx.gradefx {
 	requires transitive javafx.controls;
 	requires transitive javafx.graphics;
 	requires transitive org.openjfx.kafx;
-	requires org.apache.pdfbox;
+	requires transitive org.apache.pdfbox;
 	
     exports org.openjfx.gradefx.view to javafx.graphics;
     
