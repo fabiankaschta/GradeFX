@@ -17,6 +17,7 @@
         <java.version>24</java.version>
         <javafx.version>24</javafx.version>
         <kafx.version>1.1.0</kafx.version>
+        <pdfbox.version>3.0.5</pdfbox.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <javafx.plugin.version>0.0.8</javafx.plugin.version>
         <jpackage.plugin.version>1.6.6</jpackage.plugin.version>
@@ -51,11 +52,15 @@
 			<groupId>org.openjfx</groupId>
 			<artifactId>kafx</artifactId>
 			<version>${kafx.version}</version>
-		</dependency> 
+		</dependency>
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>${pdfbox.version}</version>
+		</dependency>
     </dependencies>
 
     <build>
-
         <plugins>
             <!-- javafx:run, javafx:jlink -->
             <plugin>
@@ -64,6 +69,7 @@
                 <version>${javafx.plugin.version}</version>
                 <configuration>
                     <mainClass>${project.groupId}.${project.artifactId}/${main.class}</mainClass>
+                    <jmodsPath>target/modules</jmodsPath>
                 </configuration>
             </plugin>
             <!-- make modular -->
@@ -82,6 +88,19 @@
 			                <outputDirectory>target/modules</outputDirectory>
 			                <overwriteExistingFiles>true</overwriteExistingFiles>
 			                <modules>
+			                    <module>
+			                        <artifact>
+										<groupId>com.github.zafarkhaja</groupId>
+										<artifactId>java-semver</artifactId>
+										<version>0.10.2</version>
+			                        </artifact>
+			                        <moduleInfo>
+			                            <name>com.github.zafarkhaja.semver</name>
+			                            <opens>
+			                                *;
+			                            </opens>
+			                        </moduleInfo>
+			                    </module>
 			                    <module>
 			                        <artifact>
 										<groupId>org.apache.pdfbox</groupId>
