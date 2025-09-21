@@ -17,17 +17,22 @@ jobs:
       packages: write
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 24
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Set up JDK
       uses: actions/setup-java@v4
       with:
         java-version: '24'
         distribution: 'temurin'
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
+        cache: maven
 
     - name: Build with Maven
       run: mvn -f gradefx -B package
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
 
     - name: Publish to GitHub Packages Apache Maven
       run: mvn -f gradefx deploy -s $GITHUB_WORKSPACE/settings.xml
