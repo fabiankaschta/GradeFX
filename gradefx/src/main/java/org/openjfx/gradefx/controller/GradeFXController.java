@@ -8,9 +8,11 @@ import org.openjfx.kafx.controller.Controller;
 import org.openjfx.kafx.controller.EncryptionController;
 import org.openjfx.kafx.controller.EncryptionControllerDefault;
 import org.openjfx.kafx.controller.FileController;
+import org.openjfx.kafx.controller.PluginController;
 import org.openjfx.kafx.controller.PrintController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.lang.Translator;
+import org.pf4j.JarPluginManager;
 
 public class GradeFXController extends Controller {
 
@@ -21,6 +23,7 @@ public class GradeFXController extends Controller {
 		ChangeController.init(new GradeFXChangeController());
 		FileController.init(new GradeFXFileController());
 		PrintController.init(new GradeFXPrintController());
+		PluginController.init(new JarPluginManager());
 		ConfigController.putIfNotExists("USE_HALF_POINTS", String.valueOf(true));
 		ConfigController.putIfNotExists("TENDENCY_BOUND", String.valueOf(0.0));
 		ConfigController.putIfNotExists("DEFAULT_GROUP_COLOR", "#e6e6e6");
