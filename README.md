@@ -32,4 +32,6 @@ Derzeit nicht umsetzbare Features
 Unter [Release](https://github.com/fabiankaschta/GradeFX/releases/latest) finden sich jeweils die aktuellen Versionen für die unterstützten Betriebssysteme. Die *.zip-Datei herunterladen, entpacken und per Doppelklick installieren.
 
 ## Plugins
-Im Installationsverzeichnis einen Ordner "plugins" erstellen, die heruntergeladenen Plugin-Dateien (*.jar) in diesen Ordner kopieren, anschließend das Programm schließen und neu öffnen. Beispiel-Plugin: [BSG-Plugin](https://github.com/fabiankaschta/GradeFX-Plugin-BSG) für das Bernhard-Strigel-Gymnasium Memmingen.
+Im Installationsverzeichnis einen Ordner "plugins" erstellen, die heruntergeladenen Plugin-Dateien (*.jar) in diesen Ordner kopieren, anschließend das Programm schließen und neu öffnen.
+
+Beispiel-Plugin: [BSG-Plugin](https://github.com/fabiankaschta/GradeFX-Plugin-BSG) für das Bernhard-Strigel-Gymnasium Memmingen.
