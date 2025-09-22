@@ -18,9 +18,9 @@ Folgende Features sind bereits enthalten:
 * Sortieren von Tabellen nach Name, Note, usw.
 * Ausdruck/PDF-Export möglich (wird noch verbessert)
 * Verschlüsselte Dateien (können beliebig in Cloud-Diensten oder auf USB-Sticks gelagert werden, sofern gute Passwörter verwendet werden)
+* Automatisches Ausfüllen von Umschlägen für Archivierung (via Plugins)
 
 Geplante Features
-* Automatisches Ausfüllen von Umschlägen für Archivierung
 * Filter, insbesondere in der Übersicht (z.B. Stand zu bestimmtem Datum, Noten einzelnder SchülerInnen)
 * Weitere Statistiken (Diagramme für Notenverteilung, Abschneiden bei einzelnen Aufgaben)
 * Update-Benachrichtigung
@@ -35,3 +35,5 @@ Unter [Release](https://github.com/fabiankaschta/GradeFX/releases/latest) finden
 Im Installationsverzeichnis einen Ordner "plugins" erstellen, die heruntergeladenen Plugin-Dateien (*.jar) in diesen Ordner kopieren, anschließend das Programm schließen und neu öffnen.
 
 Beispiel-Plugin: [BSG-Plugin](https://github.com/fabiankaschta/GradeFX-Plugin-BSG) für das Bernhard-Strigel-Gymnasium Memmingen.
+
+Achtung: Plugins können auf alle Daten im Programm zugreifen, also auch auf sensible Informationen. Verwenden Sie nur Plugins aus vertrauenswürdigen Quellen!
