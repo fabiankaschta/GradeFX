@@ -6,7 +6,7 @@
 
     <groupId>org.openjfx</groupId>
     <artifactId>gradefx</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <packaging>jar</packaging>
 
     <name>GradeFX</name>
@@ -16,7 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>24</java.version>
         <javafx.version>24</javafx.version>
-        <kafx.version>1.1.0</kafx.version>
+        <kafx.version>1.1.1</kafx.version>
         <pdfbox.version>3.0.5</pdfbox.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <dependency.plugin.version>3.8.1</dependency.plugin.version>

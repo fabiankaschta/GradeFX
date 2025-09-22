@@ -11,14 +11,13 @@ import org.openjfx.kafx.controller.FileController;
 import org.openjfx.kafx.controller.PluginController;
 import org.openjfx.kafx.controller.PrintController;
 import org.openjfx.kafx.controller.TranslationController;
-import org.openjfx.kafx.lang.Translator;
 import org.pf4j.JarPluginManager;
 
 public class GradeFXController extends Controller {
 
 	public static void init() {
 		Controller.init(".gradefx.cfg");
-		TranslationController.init(new Translator(ResourceBundle.getBundle("org.openjfx.gradefx.lang.gradefx")));
+		TranslationController.addBundle(ResourceBundle.getBundle("org.openjfx.gradefx.lang.gradefx"));
 		EncryptionController.init(new EncryptionControllerDefault("KAFXBase".getBytes()));
 		ChangeController.init(new GradeFXChangeController());
 		FileController.init(new GradeFXFileController());
