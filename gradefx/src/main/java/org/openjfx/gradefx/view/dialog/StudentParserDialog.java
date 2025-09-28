@@ -190,19 +190,11 @@ public class StudentParserDialog extends DialogUserInput<Boolean> {
 		super.addInput(this.labeled, TranslationController.translate("dialog_import_students_labeled"));
 
 		this.getDialogPane().setExpandableContent(this.preview);
-		this.preview.getColumns().addListener((ListChangeListener<TableColumn<Student, ?>>) c -> {
-			boolean permutate = false;
-			while (c.next()) {
-				if (c.wasPermutated()) {
-					permutate = true;
-				}
-			}
-			if (permutate) {
-				try {
-					studentPreview.setAll(csvReader.preview(previewAmount));
-				} catch (IOException e) {
-					ExceptionController.exception(e);
-				}
+		this.preview.getColumns().addListener((ListChangeListener<TableColumn<Student, ?>>) _ -> {
+			try {
+				studentPreview.setAll(csvReader.preview(previewAmount));
+			} catch (IOException e) {
+				ExceptionController.exception(e);
 			}
 		});
 		this.getDialogPane().expandedProperty().subscribe(() -> this.setResizable(false));
