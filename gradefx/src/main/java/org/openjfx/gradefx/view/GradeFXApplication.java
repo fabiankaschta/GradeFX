@@ -1,5 +1,9 @@
 package org.openjfx.gradefx.view;
 
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
+
 import org.openjfx.gradefx.model.Subject;
 import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
 import org.openjfx.gradefx.view.dialog.DialogFirstStart;
@@ -10,10 +14,15 @@ import org.openjfx.kafx.controller.ConfigController;
 import org.openjfx.kafx.controller.Controller;
 import org.openjfx.kafx.controller.FileController;
 import org.openjfx.kafx.controller.FontSizeController;
+import org.openjfx.kafx.controller.PropertiesController;
 import org.openjfx.kafx.controller.TranslationController;
+import org.openjfx.kafx.view.alert.AlertVersion;
+
+import com.github.zafarkhaja.semver.Version;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
@@ -52,6 +61,7 @@ public class GradeFXApplication extends Application {
 		});
 
 		primaryStage.setScene(scene);
+		primaryStage.setOnShown(_ -> checkVersion());
 
 		FontSizeController.fontSizeProperty().subscribe(fontSize -> root.setStyle("-fx-font-size: " + fontSize));
 		root.setOnScroll(event -> {
@@ -88,6 +98,30 @@ public class GradeFXApplication extends Application {
 			});
 		} else {
 			primaryStage.show();
+		}
+	}
+
+	private void checkVersion() {
+		try {
+			Version local = Version.parse(PropertiesController.getProperty("version"));
+			URL url = URI.create("https://github.com/fabiankaschta/GradeFX/releases/latest").toURL();
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setRequestMethod("HEAD");
+			con.connect();
+			int status = con.getResponseCode();
+			if (status == 200) {
+				String[] tmp = con.getURL().getFile().split("/");
+				Version remote = Version.parse(tmp[tmp.length - 1].substring(1));
+				if (local.isLowerThan(remote)) {
+					new AlertVersion(local.toString(), remote.toString(), url).showAndWait().ifPresent(buttonType -> {
+						if (buttonType == ButtonType.OK) {
+							getHostServices().showDocument("https://github.com/fabiankaschta/GradeFX");
+						}
+					});
+				}
+			}
+			con.disconnect();
+		} catch (Exception e) {
 		}
 	}
 
