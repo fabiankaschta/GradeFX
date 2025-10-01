@@ -19,11 +19,11 @@ Folgende Features sind bereits enthalten:
 * Ausdruck/PDF-Export möglich (wird noch verbessert)
 * Verschlüsselte Dateien (können beliebig in Cloud-Diensten oder auf USB-Sticks gelagert werden, sofern gute Passwörter verwendet werden)
 * Automatisches Ausfüllen von Umschlägen für Archivierung (via Plugins)
+* Update-Benachrichtigung
 
 Geplante Features
 * Filter, insbesondere in der Übersicht (z.B. Stand zu bestimmtem Datum, Noten einzelnder SchülerInnen)
 * Weitere Statistiken (Diagramme für Notenverteilung, Abschneiden bei einzelnen Aufgaben)
-* Update-Benachrichtigung
 
 Derzeit nicht umsetzbare Features
 * ASV-Export
