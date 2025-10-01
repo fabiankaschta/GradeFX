@@ -119,8 +119,8 @@ public class TableViewTest extends TableView<Student> {
 		private TestTaskColumn(TestTask testTask) {
 			this.setReorderable(false);
 			this.name.textProperty().bind(testTask.nameProperty());
-			this.points.textProperty().bind(testTask.maxPointsProperty()
-					.map(v -> bigDecimalConverter.toString(v) + " " + TranslationController.translate("test_points_short")));
+			this.points.textProperty().bind(testTask.maxPointsProperty().map(
+					v -> bigDecimalConverter.toString(v) + " " + TranslationController.translate("test_points_short")));
 			this.points.setStyle("-fx-font-style: italic; -fx-font-weight: normal;");
 			BorderPane graphic = new BorderPane();
 			BorderPane.setAlignment(this.name, Pos.CENTER);
@@ -138,11 +138,13 @@ public class TableViewTest extends TableView<Student> {
 					getColumns().clear();
 				} else {
 					graphic.setBottom(null);
-					for (TreeItem<TestTask> t : testTask.getChildren()) {
-						getColumns().add(new TestTaskColumn((TestTask) t));
-					}
 				}
 			});
+			if (!testTask.isLeaf()) {
+				for (TreeItem<TestTask> t : testTask.getChildren()) {
+					getColumns().add(new TestTaskColumn((TestTask) t));
+				}
+			}
 			testTask.getChildren().addListener(new TasksChangedListener());
 			testTaskColumns.put(testTask, this);
 		}
@@ -226,8 +228,8 @@ public class TableViewTest extends TableView<Student> {
 						}
 					});
 			this.name.setText("\u2211");
-			this.points.textProperty().bind(test.totalPointsProperty()
-					.map(v -> bigDecimalConverter.toString(v) + " " + TranslationController.translate("test_points_short")));
+			this.points.textProperty().bind(test.totalPointsProperty().map(
+					v -> bigDecimalConverter.toString(v) + " " + TranslationController.translate("test_points_short")));
 			this.points.setStyle("-fx-font-style: italic; -fx-font-weight: normal;");
 			BorderPane graphic = new BorderPane();
 			BorderPane.setAlignment(this.name, Pos.CENTER);
