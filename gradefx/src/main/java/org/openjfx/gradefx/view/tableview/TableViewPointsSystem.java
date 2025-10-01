@@ -36,7 +36,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -201,10 +200,7 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 
 		private RatioColumn(AmountColumn amountColumn) {
 			super("%");
-			ObservableList<Observable> observables = FXCollections.observableArrayList();
 			setCellValueFactory(data -> Bindings.createObjectBinding(() -> {
-				observables.add(amountColumn.getCellObservableValue(data.getValue()));
-				observables.add(test.totalPointsProperty());
 				int sum = 0;
 				for (IntegerProperty amount : amountColumn.amounts) {
 					sum += amount.get();

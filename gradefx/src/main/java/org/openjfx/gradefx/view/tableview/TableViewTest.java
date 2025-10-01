@@ -23,11 +23,8 @@ import org.openjfx.kafx.view.tableview.TableCellEditComparable;
 import org.openjfx.kafx.view.tableview.TableCellEditConverter;
 import org.openjfx.kafx.view.tableview.TableCellEditDatePicker;
 
-import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -260,17 +257,14 @@ public class TableViewTest extends TableView<Student> {
 
 		private RatioColumn(SumColumn sumColumn) {
 			super("%");
-			ObservableList<Observable> observables = FXCollections.observableArrayList();
 			this.setCellValueFactory(data -> Bindings.createObjectBinding(() -> {
-				observables.add(sumColumn.getCellObservableValue(data.getValue()));
-				observables.add(test.totalPointsProperty());
 				BigDecimal sum = sumColumn.getCellData(data.getValue());
 				if (sum == null || test.getTotalPoints().compareTo(BigDecimal.ZERO) == 0) {
 					return null;
 				} else {
 					return sum.divide(test.getTotalPoints(), 5, RoundingMode.FLOOR);
 				}
-			}, observables.toArray(n -> new Observable[n])));
+			}, test.totalPointsProperty(), sumColumn.getCellObservableValue(data.getValue())));
 			this.setCellFactory(TableCellCustom.forTableColumn(new BigDecimalPercentConverter(2), Pos.CENTER));
 			this.setSortable(true);
 			this.setReorderable(false);
