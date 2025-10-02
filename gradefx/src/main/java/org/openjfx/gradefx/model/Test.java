@@ -117,7 +117,9 @@ public class Test {
 		private void updatePointsParent(Student student) {
 			TestTask parent = getParentTask();
 			if (parent == null) {
-				this.test.setTotalPoints(student, this.getPoints(student));
+				if (!this.test.isTotalPointsFixed(student)) {
+					this.test.setTotalPoints(student, this.getPoints(student));
+				}
 			} else {
 				parent.updatePoints(student);
 			}
