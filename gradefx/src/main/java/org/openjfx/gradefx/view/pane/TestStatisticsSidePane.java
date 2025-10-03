@@ -204,7 +204,7 @@ public class TestStatisticsSidePane extends ScrollPane {
 			boundType = new ChoiceBox<>(FXCollections.observableArrayList(BoundType.values()));
 			boundType.setConverter(new BoundTypeConverter());
 			boundType.getSelectionModel().select(test.getPointsSystem().getBoundType());
-			boundType.getSelectionModel().selectedItemProperty().subscribe(_ -> {
+			boundType.getSelectionModel().selectedItemProperty().addListener((_, _, _) -> {
 				if (this.sliderList.size() > 0) {
 					updatePointsSystem();
 				}
@@ -314,7 +314,6 @@ public class TestStatisticsSidePane extends ScrollPane {
 					box.slider.minProperty().set(0);
 				}
 			}
-			updatePointsSystem();
 		}
 
 		private class RatioSlider extends HBox {
@@ -325,6 +324,7 @@ public class TestStatisticsSidePane extends ScrollPane {
 			private RatioSlider() {
 				this(null, null);
 				updateSliders();
+				updatePointsSystem();
 			}
 
 			private RatioSlider(Grade grade, BigDecimal value) {
@@ -369,6 +369,7 @@ public class TestStatisticsSidePane extends ScrollPane {
 					}
 					if (oldSelection != null) {
 						updateSliders();
+						updatePointsSystem();
 					}
 				});
 				Button removeButton = new Button("-");
@@ -382,6 +383,7 @@ public class TestStatisticsSidePane extends ScrollPane {
 						slider.gradeList.sort((g1, g2) -> -g1.compareTo(g2));
 					}
 					updateSliders();
+					updatePointsSystem();
 				});
 				this.getChildren().addAll(field, this.slider, this.gradeBox, removeButton);
 				if (value == null) {
