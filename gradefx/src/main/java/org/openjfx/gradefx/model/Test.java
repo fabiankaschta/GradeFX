@@ -754,8 +754,8 @@ public class Test {
 		public Test deserialize(Object... params) {
 			if (test == null) {
 				test = new Test(name, shortName, date, weight, useTasks, usePoints);
-				test.setPointsSystem(pointsSystem.deserialize());
 				tasksRoot.deserialize(test);
+				test.setPointsSystem(pointsSystem.deserialize());
 				test.calculateTotalPoints();
 				for (Entry<DataObject<Student>, BigDecimal> st : totalPoints.entrySet()) {
 					Student student = st.getKey().deserialize();
