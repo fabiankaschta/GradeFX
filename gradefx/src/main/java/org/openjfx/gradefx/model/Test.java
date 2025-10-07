@@ -757,6 +757,7 @@ public class Test {
 				tasksRoot.deserialize(test);
 				test.setPointsSystem(pointsSystem.deserialize());
 				test.calculateTotalPoints();
+				test.calculateGrades();
 				for (Entry<DataObject<Student>, BigDecimal> st : totalPoints.entrySet()) {
 					Student student = st.getKey().deserialize();
 					test.putStudentPropertiesIfNotExists(student);
