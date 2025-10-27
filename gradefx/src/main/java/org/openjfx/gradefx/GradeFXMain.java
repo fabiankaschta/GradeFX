@@ -10,8 +10,8 @@ import javafx.application.Platform;
 
 public class GradeFXMain {
 	public static void main(String[] args) {
+		Locale.setDefault(Locale.GERMAN);
 		Platform.startup(() -> {
-			Locale.setDefault(Locale.GERMAN);
 			GradeFXController.init();
 			// org.openjfx.kafx.controller.LogController.setDebugMode(true);
 			// TODO AutoSave.start();

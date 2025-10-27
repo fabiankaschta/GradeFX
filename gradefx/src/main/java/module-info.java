@@ -1,4 +1,5 @@
 module org.openjfx.gradefx {
+    requires jdk.localedata;
     requires transitive javafx.base;
 	requires transitive javafx.controls;
 	requires transitive javafx.graphics;
