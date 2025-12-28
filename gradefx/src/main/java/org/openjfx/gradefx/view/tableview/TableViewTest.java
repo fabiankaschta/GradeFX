@@ -55,6 +55,7 @@ public class TableViewTest extends TableView<Student> {
 		this.group = group;
 
 		this.setPlaceholder(new Text(TranslationController.translate("tab_overview_no_students")));
+		this.fixedCellSizeProperty().bind(FontSizeController.fontSizeProperty().multiply(2).add(1));
 
 		this.sumColumn = new SumColumn();
 		this.sumColumn.visibleProperty().bind(test.usePointsProperty());

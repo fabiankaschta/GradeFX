@@ -53,7 +53,8 @@ public class TableViewOverview extends TableView<Student> {
 
 		this.setEditable(false);
 		this.getSelectionModel().setCellSelectionEnabled(true);
-		
+
+		this.fixedCellSizeProperty().bind(FontSizeController.fontSizeProperty().multiply(2).add(1));
 		FontSizeController.bindTableColumnWidthToFontSize(this);
 		Styles.subscribeTableColor(this, group.colorProperty());
 	}

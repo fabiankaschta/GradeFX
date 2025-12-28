@@ -18,6 +18,7 @@ public class TableViewStudent extends TableView<Student> {
 	public TableViewStudent(Group group, boolean editable) {
 		this.setPlaceholder(new Text(TranslationController.translate("tab_overview_no_students")));
 		this.setItems(group.getStudents());
+		this.fixedCellSizeProperty().bind(FontSizeController.fontSizeProperty().multiply(2).add(1));
 
 		TableColumn<Student, String> firstNameCol = new TableColumn<Student, String>(
 				TranslationController.translate("student_firstName"));
@@ -25,18 +26,19 @@ public class TableViewStudent extends TableView<Student> {
 		if (editable) {
 			firstNameCol.setCellFactory(TableCellEditConverter.forTableColumn());
 		} else {
-			firstNameCol.setCellFactory(TableCellCustom.forTableColumn());
+			firstNameCol.setCellFactory(TableCellCustom.forTableColumn()); // FIXME different indent
 		}
 		firstNameCol.setSortable(true);
 		firstNameCol.setReorderable(false);
 		firstNameCol.setEditable(editable);
 
-		TableColumn<Student, String> lastNameCol = new TableColumn<Student, String>(TranslationController.translate("student_lastName"));
+		TableColumn<Student, String> lastNameCol = new TableColumn<Student, String>(
+				TranslationController.translate("student_lastName"));
 		lastNameCol.setCellValueFactory(data -> data.getValue().lastNameProperty());
 		if (editable) {
 			lastNameCol.setCellFactory(TableCellEditConverter.forTableColumn());
 		} else {
-			lastNameCol.setCellFactory(TableCellCustom.forTableColumn());
+			lastNameCol.setCellFactory(TableCellCustom.forTableColumn()); // FIXME different indent
 		}
 		lastNameCol.setSortable(true);
 		lastNameCol.setReorderable(false);
