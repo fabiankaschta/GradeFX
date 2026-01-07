@@ -9,8 +9,10 @@ import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.tableview.TableCellCustom;
 import org.openjfx.kafx.view.tableview.TableCellEditConverter;
 
+import javafx.scene.AccessibleAttribute;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.skin.TableHeaderRow;
 import javafx.scene.text.Text;
 
 public class TableViewStudent extends TableView<Student> {
@@ -70,6 +72,17 @@ public class TableViewStudent extends TableView<Student> {
 
 		FontSizeController.bindTableColumnWidthToFontSize(this);
 		Styles.subscribeTableColor(this, group.colorProperty());
+	}
+
+	@Override
+	protected double computePrefHeight(double width) {
+		double height = 0;
+		TableHeaderRow header = (TableHeaderRow) this.queryAccessibleAttribute(AccessibleAttribute.HEADER);
+		if (header != null) {
+			height = header.getHeight();
+		}
+		height += this.getFixedCellSize() * this.getItems().size();
+		return height + this.snappedTopInset() + this.snappedBottomInset();
 	}
 
 }

@@ -26,9 +26,11 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.scene.AccessibleAttribute;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
+import javafx.scene.control.skin.TableHeaderRow;
 import javafx.scene.text.Text;
 
 public class TableViewOverview extends TableView<Student> {
@@ -57,6 +59,17 @@ public class TableViewOverview extends TableView<Student> {
 		this.fixedCellSizeProperty().bind(FontSizeController.fontSizeProperty().multiply(2).add(1));
 		FontSizeController.bindTableColumnWidthToFontSize(this);
 		Styles.subscribeTableColor(this, group.colorProperty());
+	}
+
+	@Override
+	protected double computePrefHeight(double width) {
+		double height = 0;
+		TableHeaderRow header = (TableHeaderRow) this.queryAccessibleAttribute(AccessibleAttribute.HEADER);
+		if (header != null) {
+			height = header.getHeight();
+		}
+		height += this.getFixedCellSize() * this.getItems().size();
+		return height + this.snappedTopInset() + this.snappedBottomInset();
 	}
 
 	private void setupTestColumns(TestGroup root) {

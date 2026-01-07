@@ -27,11 +27,13 @@ import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
+import javafx.scene.AccessibleAttribute;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
+import javafx.scene.control.skin.TableHeaderRow;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.text.Text;
@@ -93,6 +95,17 @@ public class TableViewTest extends TableView<Student> {
 
 		FontSizeController.bindTableColumnWidthToFontSize(this);
 		Styles.subscribeTableColor(this, group.colorProperty());
+	}
+
+	@Override
+	protected double computePrefHeight(double width) {
+		double height = 0;
+		TableHeaderRow header = (TableHeaderRow) this.queryAccessibleAttribute(AccessibleAttribute.HEADER);
+		if (header != null) {
+			height = header.getHeight();
+		}
+		height += this.getFixedCellSize() * this.getItems().size();
+		return height + this.snappedTopInset() + this.snappedBottomInset();
 	}
 
 	private void setupTaskColumns(TestTask root) {
