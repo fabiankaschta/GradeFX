@@ -21,7 +21,7 @@
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <dependency.plugin.version>3.8.1</dependency.plugin.version>
         <javafx.plugin.version>0.0.8</javafx.plugin.version>
-        <jpackage.plugin.version>1.6.6</jpackage.plugin.version>
+        <jpackage.plugin.version>1.7.2</jpackage.plugin.version>
         <module.path>${project.groupId}.${project.artifactId}</module.path>
         <main.class>${module.path}.GradeFXMain</main.class>
     </properties>
