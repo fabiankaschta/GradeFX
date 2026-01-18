@@ -72,6 +72,19 @@ public class TableViewOverview extends TableView<Student> {
 		return height + this.snappedTopInset() + this.snappedBottomInset();
 	}
 
+	@Override
+	protected double computePrefWidth(double height) {
+		double width = 0;
+		for (TableColumn<Student, ?> c : this.getColumns()) {
+			if (c instanceof TestGroupColumn) {
+				width += ((TestGroupColumn) c).getWidthSum();
+			} else {
+				width += c.getWidth();
+			}
+		}
+		return width + this.snappedLeftInset() + this.snappedRightInset();
+	}
+
 	private void setupTestColumns(TestGroup root) {
 		this.getColumns().clear();
 		testGroupColumns.clear();
@@ -114,6 +127,22 @@ public class TableViewOverview extends TableView<Student> {
 				}
 			}
 			throw new IllegalStateException("error");
+		}
+
+		public double getWidthSum() {
+			if (!this.getColumns().isEmpty()) {
+				double width = 0;
+				for (TableColumn<Student, ?> c : this.getColumns()) {
+					if (c instanceof TestGroupColumn) {
+						width += ((TestGroupColumn) c).getWidthSum();
+					} else {
+						width += c.getWidth();
+					}
+				}
+				return width;
+			} else {
+				return getWidth();
+			}
 		}
 	}
 

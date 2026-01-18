@@ -108,6 +108,19 @@ public class TableViewTest extends TableView<Student> {
 		return height + this.snappedTopInset() + this.snappedBottomInset();
 	}
 
+	@Override
+	protected double computePrefWidth(double height) {
+		double width = 0;
+		for (TableColumn<Student, ?> c : this.getColumns()) {
+			if (c instanceof TestTaskColumn) {
+				width += ((TestTaskColumn) c).getWidthSum();
+			} else {
+				width += c.getWidth();
+			}
+		}
+		return width + this.snappedLeftInset() + this.snappedRightInset();
+	}
+
 	private void setupTaskColumns(TestTask root) {
 		root.getChildren().addListener(new TasksChangedListener());
 		if (!root.isLeaf()) {
@@ -159,6 +172,23 @@ public class TableViewTest extends TableView<Student> {
 			testTask.getChildren().addListener(new TasksChangedListener());
 			testTaskColumns.put(testTask, this);
 		}
+
+		public double getWidthSum() {
+			if (!this.getColumns().isEmpty()) {
+				double width = 0;
+				for (TableColumn<Student, ?> c : this.getColumns()) {
+					if (c instanceof TestTaskColumn) {
+						width += ((TestTaskColumn) c).getWidthSum();
+					} else {
+						width += c.getWidth();
+					}
+				}
+				return width;
+			} else {
+				return getWidth();
+			}
+		}
+
 	}
 
 	private class GradeColumn extends TableColumn<Student, Grade> {
