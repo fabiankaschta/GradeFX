@@ -6,7 +6,7 @@
 
     <groupId>org.openjfx</groupId>
     <artifactId>gradefx</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
     <packaging>jar</packaging>
 
     <name>GradeFX</name>
@@ -220,14 +220,14 @@
 			            <id>macos-pkg</id>
                         <configuration>
                         	<type>PKG</type>
-                            <icon>src/main/resources/org/openjfx/gradefx/img/icon.png</icon>
+                            <icon>src/main/resources/org/openjfx/gradefx/img/icon.icns</icon>
                         </configuration>
 			        </execution>
 			        <execution>
 			            <id>macos-dmg</id>
                         <configuration>
                         	<type>DMG</type>
-                            <icon>src/main/resources/org/openjfx/gradefx/img/icon.png</icon>
+                            <icon>src/main/resources/org/openjfx/gradefx/img/icon.icns</icon>
                         </configuration>
 			        </execution>
 			        <execution>
