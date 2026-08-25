@@ -6,6 +6,7 @@ module org.openjfx.gradefx {
 	requires transitive org.openjfx.kafx;
 	requires transitive org.apache.pdfbox;
 	requires com.github.zafarkhaja.semver;
+	requires org.controlsfx.controls;
 	
     exports org.openjfx.gradefx.view to javafx.graphics;
     

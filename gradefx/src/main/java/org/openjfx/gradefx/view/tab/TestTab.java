@@ -20,6 +20,7 @@ public class TestTab extends Tab {
 
 		Label label = new Label();
 		label.textProperty().bind(test.shortNameProperty());
+		label.setStyle("-fx-text-fill: -fx-text-base-color;");
 		this.setGraphic(label);
 
 		this.selectedProperty().addListener((_, _, selected) -> {
@@ -30,7 +31,6 @@ public class TestTab extends Tab {
 			}
 		});
 
-		this.getStyleClass().add("tab-bold-selected");
 		this.pane = new TestPane(group, this.test);
 		this.setContent(this.pane);
 	}

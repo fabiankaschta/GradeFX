@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import org.openjfx.kafx.controller.ConfigController;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
-import org.openjfx.kafx.view.color.ColorHelper;
 import org.openjfx.kafx.view.control.ComparableField;
 import org.openjfx.kafx.view.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.dialog.DialogUserInput;
@@ -13,6 +12,7 @@ import org.openjfx.kafx.view.dialog.userinput.UserInputCheckBox;
 import org.openjfx.kafx.view.dialog.userinput.UserInputColorPicker;
 import org.openjfx.kafx.view.dialog.userinput.UserInputComparableInput;
 import org.openjfx.kafx.view.dialog.userinput.UserInputSpinner;
+import org.openjfx.kafx.view.style.Styles;
 
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
@@ -53,7 +53,7 @@ public class DialogEditConfig extends DialogUserInput<Boolean> {
 		this.groupColor = new UserInputColorPicker(new ColorPicker(),
 				Color.web(ConfigController.get("DEFAULT_GROUP_COLOR")), false);
 		this.groupColor.valueProperty().subscribe(
-				groupColor -> ConfigController.set("DEFAULT_GROUP_COLOR", ColorHelper.toHexString(groupColor)));
+				groupColor -> ConfigController.set("DEFAULT_GROUP_COLOR", Styles.toHexString(groupColor)));
 		super.addInput(this.groupColor, TranslationController.translate("configOption_groupColor"));
 
 		ButtonType doneButtonType = new ButtonType(TranslationController.translate("dialog_button_done"),

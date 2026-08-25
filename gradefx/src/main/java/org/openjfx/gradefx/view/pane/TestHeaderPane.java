@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Test;
-import org.openjfx.gradefx.view.style.Styles;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.control.ComparableField;
@@ -92,8 +91,6 @@ public class TestHeaderPane extends HBox {
 		right.add(weightPointsLabel, 0, 1);
 		right.add(this.weight, 1, 1);
 		this.getChildren().add(right);
-
-		Styles.subscribeBackgroundColor(this, group.colorProperty());
 	}
 
 }

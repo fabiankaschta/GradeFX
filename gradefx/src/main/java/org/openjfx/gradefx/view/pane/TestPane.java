@@ -3,7 +3,6 @@ package org.openjfx.gradefx.view.pane;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
-import org.openjfx.gradefx.view.style.Styles;
 
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.scene.control.ScrollPane;
@@ -28,8 +27,6 @@ public class TestPane extends ScrollPane {
 		this.setFitToWidth(true);
 		this.setFitToHeight(true);
 		this.setContent(fullPane);
-		
-		Styles.subscribeScrollBarColor(this, group.colorProperty());
 	}
 
 	public ReadOnlyObjectProperty<Student> selectedStudentProperty() {

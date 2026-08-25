@@ -6,17 +6,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.controlsfx.control.tableview2.TableView2;
 import org.openjfx.gradefx.model.GradeSystem.Grade;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.TestGroup;
 import org.openjfx.gradefx.view.pane.GroupsPane;
-import org.openjfx.gradefx.view.style.Styles;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.tableview.TableCellCustom;
+import org.openjfx.kafx.view.tableview.TableCellEditControl;
+import org.openjfx.kafx.view.tableview.TableCellEditConverter;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
@@ -28,12 +30,11 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.skin.TableHeaderRow;
 import javafx.scene.text.Text;
 
-public class TableViewOverview extends TableView<Student> {
+public class TableViewOverview extends TableView2<Student> {
 
 	private final Group group;
 	private final Map<TestGroup, TestGroupColumn> testGroupColumns = new HashMap<>();
@@ -49,16 +50,57 @@ public class TableViewOverview extends TableView<Student> {
 		this.gradeColumn = new GradeColumn(this.avgColumn);
 		// not added here, this is done in setupTestColumns() after the test columns
 
-		this.group.testGroupRootProperty().subscribe(root -> this.setupTestColumns(root));
-
 		this.getSelectionModel().selectedItemProperty().subscribe(selected -> GroupsPane.setSelectedStudent(selected));
 
-		this.setEditable(false);
+		this.setEditable(true);
 		this.getSelectionModel().setCellSelectionEnabled(true);
 
 		this.fixedCellSizeProperty().bind(FontSizeController.fontSizeProperty().multiply(2).add(1));
+		
+		TableColumn<Student, String> firstNameCol = new TableColumn<Student, String>(
+				TranslationController.translate("student_firstName"));
+		firstNameCol.setCellValueFactory(data -> data.getValue().firstNameProperty());
+		firstNameCol.setCellFactory(TableCellEditConverter.forTableColumn());
+		firstNameCol.setSortable(true);
+		firstNameCol.setReorderable(false);
+		firstNameCol.setEditable(true);
+
+		TableColumn<Student, String> lastNameCol = new TableColumn<Student, String>(
+				TranslationController.translate("student_lastName"));
+		lastNameCol.setCellValueFactory(data -> data.getValue().lastNameProperty());
+		lastNameCol.setCellFactory(TableCellEditConverter.forTableColumn());
+		lastNameCol.setSortable(true);
+		lastNameCol.setReorderable(false);
+		lastNameCol.setEditable(true);
+
+		TableColumn<Student, String> subgroupNameCol = new TableColumn<Student, String>(
+				TranslationController.translate("student_subgroupName"));
+		subgroupNameCol.setCellValueFactory(data -> data.getValue().subgroupNameProperty());
+		subgroupNameCol.setCellFactory(TableCellEditConverter.forTableColumn());
+		subgroupNameCol.setSortable(true);
+		subgroupNameCol.setReorderable(false);
+		subgroupNameCol.setEditable(true);
+		subgroupNameCol.visibleProperty().bind(group.useSubgroupsProperty());
+
+		this.getColumns().add(lastNameCol);
+		this.getColumns().add(firstNameCol);
+		this.getColumns().add(subgroupNameCol);
+		this.getFixedColumns().addAll(lastNameCol, firstNameCol, subgroupNameCol);
+		
 		FontSizeController.bindTableColumnWidthToFontSize(this);
-		Styles.subscribeTableColor(this, group.colorProperty());
+		this.getStyleClass().addAll("table-view-cell-highlight", "table-view-no-focus", "table-view-hide-empty");
+		
+		this.group.testGroupRootProperty().subscribe(root -> this.setupTestColumns(root));
+
+		// both necessary to clear selection correctly 
+		this.focusedProperty().addListener((_, _, isFocused) -> {
+			if (!isFocused && this.getEditingCell() == null) {
+				this.getSelectionModel().clearSelection();
+			}
+		});
+		this.addEventHandler(TableCellEditControl.FOCUS_LOST, _ -> {
+			this.getSelectionModel().clearSelection();
+		});
 	}
 
 	@Override
@@ -86,7 +128,7 @@ public class TableViewOverview extends TableView<Student> {
 	}
 
 	private void setupTestColumns(TestGroup root) {
-		this.getColumns().clear();
+		this.getColumns().removeIf(c -> !this.getFixedColumns().contains(c));
 		testGroupColumns.clear();
 		testColumns.clear();
 		group.getTestsInTestGroup(root).addListener(new TestsChangedListener());

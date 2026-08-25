@@ -2,8 +2,8 @@ package org.openjfx.gradefx.view.tab;
 
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.view.pane.GroupContentPane;
-import org.openjfx.gradefx.view.style.Styles;
 import org.openjfx.kafx.controller.FontSizeController;
+import org.openjfx.kafx.view.style.Styles;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -34,6 +34,7 @@ public class GroupTab extends Tab {
 		label.setWrapText(true);
 		label.setTextAlignment(TextAlignment.CENTER);
 		label.setAlignment(Pos.CENTER);
+		label.setStyle("-fx-text-fill: -fx-text-base-color;");
 		FontSizeController.fontSizeProperty().subscribe(fontSize -> {
 			label.setPrefWidth(fontSize.doubleValue() * 4);
 			label.setPrefHeight(fontSize.doubleValue() * 4);
@@ -41,7 +42,7 @@ public class GroupTab extends Tab {
 
 		this.setGraphic(label);
 		this.setContent(this.pane);
-		Styles.subscribeColor(this, "-fx-base", this.group.colorProperty());
+		Styles.subscribeThemeColor(this, this.group.colorProperty());
 	}
 
 	public Group getGroup() {

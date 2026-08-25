@@ -7,7 +7,7 @@ import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
 import org.openjfx.gradefx.view.pane.GroupsPane;
 import org.openjfx.kafx.controller.ChangeController;
 import org.openjfx.kafx.io.DataObject;
-import org.openjfx.kafx.view.color.ColorHelper;
+import org.openjfx.kafx.view.style.Styles;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -300,7 +300,7 @@ public class Group {
 			this.gradeSystem = g.getGradeSystem();
 			this.testGroupSystem = g.getTestGroupSystem().serialize();
 			this.testGroupRoot = g.getTestGroupRoot().serialize();
-			this.color = ColorHelper.toHexString(g.getColor());
+			this.color = Styles.toHexString(g.getColor());
 			for (Student s : g.students) {
 				this.students.add(s.serialize());
 			}

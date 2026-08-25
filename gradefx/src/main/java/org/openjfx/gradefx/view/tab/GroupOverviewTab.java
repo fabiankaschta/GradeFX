@@ -15,7 +15,9 @@ public class GroupOverviewTab extends Tab {
 	private final GroupOverviewPane pane;
 
 	public GroupOverviewTab(Group group) {
-		this.setGraphic(new Label(TranslationController.translate("tab_overview_title")));
+		Label label = new Label(TranslationController.translate("tab_overview_title"));
+		label.setStyle("-fx-text-fill: -fx-text-base-color;");
+		this.setGraphic(label);
 		this.selectedProperty().addListener((_, _, selected) -> {
 			if (selected) {
 				GroupsPane.setSelectedTest(null);

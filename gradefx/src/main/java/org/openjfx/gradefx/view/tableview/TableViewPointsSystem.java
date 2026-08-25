@@ -11,13 +11,13 @@ import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.PointsSystem;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
-import org.openjfx.gradefx.view.style.Styles;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.converter.BigDecimalPercentConverter;
 import org.openjfx.kafx.view.tableview.TableCellCustom;
 import org.openjfx.kafx.view.tableview.TableCellEditComparable;
+import org.openjfx.kafx.view.tableview.TableCellEditControl;
 import org.openjfx.kafx.view.tableview.TableViewFullSize;
 
 import javafx.beans.Observable;
@@ -153,7 +153,16 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 		this.getSelectionModel().setCellSelectionEnabled(true);
 
 		FontSizeController.bindTableColumnWidthToFontSize(this);
-		Styles.subscribeTableColor(this, group.colorProperty());
+
+		// both necessary to clear selection correctly 
+		this.focusedProperty().addListener((_, _, isFocused) -> {
+			if (!isFocused && this.getEditingCell() == null) {
+				this.getSelectionModel().clearSelection();
+			}
+		});
+		this.addEventHandler(TableCellEditControl.FOCUS_LOST, _ -> {
+			this.getSelectionModel().clearSelection();
+		});
 	}
 
 	public ReadOnlyIntegerProperty gradedProperty() {

@@ -5,10 +5,10 @@ import java.util.List;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.view.dialog.DialogAddTest;
-import org.openjfx.gradefx.view.style.Styles;
 import org.openjfx.gradefx.view.tab.GroupOverviewTab;
 import org.openjfx.gradefx.view.tab.TestTab;
 import org.openjfx.kafx.view.pane.AddTabPane;
+import org.openjfx.kafx.view.style.Styles;
 
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Side;
@@ -44,8 +44,8 @@ public class GroupContentPane extends AddTabPane {
 			addTestTab(t);
 		}
 
+		Styles.subscribeThemeColor(this, group.colorProperty());
 		this.getStyleClass().addAll("tab-pane-selected-bold");
-		Styles.subscribeTabPaneColor(this, this.group.colorProperty());
 	}
 
 	private void removeTestTab(Test test) {

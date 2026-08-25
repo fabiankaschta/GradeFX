@@ -7,39 +7,43 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.controlsfx.control.tableview2.TableView2;
 import org.openjfx.gradefx.model.GradeSystem.Grade;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.Test.TestTask;
 import org.openjfx.gradefx.view.pane.GroupsPane;
-import org.openjfx.gradefx.view.style.Styles;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.converter.BigDecimalPercentConverter;
 import org.openjfx.kafx.view.tableview.TableCellCustom;
 import org.openjfx.kafx.view.tableview.TableCellEditComparable;
+import org.openjfx.kafx.view.tableview.TableCellEditControl;
 import org.openjfx.kafx.view.tableview.TableCellEditConverter;
 import org.openjfx.kafx.view.tableview.TableCellEditDatePicker;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
-import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.skin.TableHeaderRow;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.text.Text;
 import javafx.util.Subscription;
+import javafx.util.converter.DefaultStringConverter;
 
-public class TableViewTest extends TableView<Student> {
+public class TableViewTest extends TableView2<Student> {
 
 	private final Group group;
 	private final Test test;
@@ -50,14 +54,70 @@ public class TableViewTest extends TableView<Student> {
 	private final AnnotationColumn annotationColumn;
 	private final DateColumn dateColumn;
 	private final BigDecimalConverter bigDecimalConverter = new BigDecimalConverter();
+	private final IntegerProperty selectedRowIndex = new SimpleIntegerProperty(this, "selectedRow", -1);
 
 	public TableViewTest(Group group, Test test) {
 		super(group.getStudents());
 		this.test = test;
 		this.group = group;
+		this.setEditable(true);
+		this.getSelectionModel().setCellSelectionEnabled(true);
+
+		this.getSelectionModel().selectedItemProperty().addListener((_, _, newItem) -> {
+			if (newItem == null) {
+				selectedRowIndex.setValue(-1);
+			} else {
+				selectedRowIndex.setValue(this.getSelectionModel().getSelectedCells().getFirst().getRow());
+			}
+		});
 
 		this.setPlaceholder(new Text(TranslationController.translate("tab_overview_no_students")));
 		this.fixedCellSizeProperty().bind(FontSizeController.fontSizeProperty().multiply(2).add(1));
+		TableColumn<Student, String> firstNameCol = new TableColumn<Student, String>(
+				TranslationController.translate("student_firstName"));
+		firstNameCol.setCellValueFactory(data -> data.getValue().firstNameProperty());
+		firstNameCol.setCellFactory(_ -> new TableCellCustom<>() {
+			{
+				subscribeRowIndex(this);
+			}
+		});
+		firstNameCol.setSortable(true);
+		firstNameCol.setReorderable(false);
+		firstNameCol.setEditable(false);
+
+		TableColumn<Student, String> lastNameCol = new TableColumn<Student, String>(
+				TranslationController.translate("student_lastName"));
+		lastNameCol.setCellValueFactory(data -> data.getValue().lastNameProperty());
+		lastNameCol.setCellFactory(_ -> new TableCellCustom<>() {
+			{
+				subscribeRowIndex(this);
+			}
+		});
+		lastNameCol.setSortable(true);
+		lastNameCol.setReorderable(false);
+		lastNameCol.setEditable(false);
+
+		TableColumn<Student, String> subgroupNameCol = new TableColumn<Student, String>(
+				TranslationController.translate("student_subgroupName"));
+		subgroupNameCol.setCellValueFactory(data -> data.getValue().subgroupNameProperty());
+		subgroupNameCol.setCellFactory(_ -> new TableCellCustom<>() {
+			{
+				subscribeRowIndex(this);
+			}
+		});
+		subgroupNameCol.setSortable(true);
+		subgroupNameCol.setReorderable(false);
+		subgroupNameCol.setEditable(false);
+		subgroupNameCol.visibleProperty().bind(group.useSubgroupsProperty());
+
+		this.getColumns().add(lastNameCol);
+		this.getColumns().add(firstNameCol);
+		this.getColumns().add(subgroupNameCol);
+		this.getFixedColumns().addAll(lastNameCol, firstNameCol, subgroupNameCol);
+
+		this.getSelectionModel().selectedItemProperty().addListener((_, _, selected) -> {
+			GroupsPane.setSelectedStudent(selected);
+		});
 
 		this.sumColumn = new SumColumn();
 		this.sumColumn.visibleProperty().bind(test.usePointsProperty());
@@ -69,23 +129,22 @@ public class TableViewTest extends TableView<Student> {
 
 		this.getSelectionModel().selectedItemProperty().subscribe(selected -> GroupsPane.setSelectedStudent(selected));
 
-		this.setEditable(true);
-		this.getSelectionModel().setCellSelectionEnabled(true);
-
 		// DEL / BACKSPACE remove fixed state
 		this.setOnKeyPressed(event -> {
 			if (event.getCode() == KeyCode.BACK_SPACE || event.getCode() == KeyCode.DELETE) {
 				// single selection
-				TablePosition<?, ?> pos = TableViewTest.this.getSelectionModel().getSelectedCells().get(0);
-				if (pos.getTableColumn() == this.gradeColumn) {
-					Student student = TableViewTest.this.getSelectionModel().getSelectedItem();
-					if (test.isGradeFixed(student)) {
-						test.setGradeFixed(student, false);
-					}
-				} else if (pos.getTableColumn() == this.sumColumn) {
-					Student student = TableViewTest.this.getSelectionModel().getSelectedItem();
-					if (test.isTotalPointsFixed(student)) {
-						test.setTotalPointsFixed(student, false);
+				if (!TableViewTest.this.getSelectionModel().getSelectedCells().isEmpty()) {
+					TablePosition<?, ?> pos = TableViewTest.this.getSelectionModel().getSelectedCells().getFirst();
+					if (pos.getTableColumn() == this.gradeColumn) {
+						Student student = TableViewTest.this.getSelectionModel().getSelectedItem();
+						if (test.isGradeFixed(student)) {
+							test.setGradeFixed(student, false);
+						}
+					} else if (pos.getTableColumn() == this.sumColumn) {
+						Student student = TableViewTest.this.getSelectionModel().getSelectedItem();
+						if (test.isTotalPointsFixed(student)) {
+							test.setTotalPointsFixed(student, false);
+						}
 					}
 				}
 			}
@@ -94,7 +153,17 @@ public class TableViewTest extends TableView<Student> {
 		this.setupTaskColumns(test.getTasksRoot());
 
 		FontSizeController.bindTableColumnWidthToFontSize(this);
-		Styles.subscribeTableColor(this, group.colorProperty());
+		this.getStyleClass().addAll("table-view-cell-highlight", "table-view-no-focus", "table-view-hide-empty");
+
+		// both necessary to clear selection correctly
+		this.focusedProperty().addListener((_, _, isFocused) -> {
+			if (!isFocused && this.getEditingCell() == null) {
+				this.getSelectionModel().clearSelection();
+			}
+		});
+		this.addEventHandler(TableCellEditControl.FOCUS_LOST, _ -> {
+			this.getSelectionModel().clearSelection();
+		});
 	}
 
 	@Override
@@ -121,6 +190,23 @@ public class TableViewTest extends TableView<Student> {
 		return width + this.snappedLeftInset() + this.snappedRightInset();
 	}
 
+	private void subscribeRowIndex(TableCell<Student, ?> cell) {
+		this.selectedRowIndex.subscribe(index -> {
+			if (cell.getTableRow() != null && index.intValue() == cell.getTableRow().getIndex()) {
+				cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), true);
+			} else {
+				cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), false);
+			}
+		});
+		cell.tableRowProperty().subscribe(row -> {
+			if (row == null || this.selectedRowIndex.intValue() != row.getIndex()) {
+				cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), false);
+			} else {
+				cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), true);
+			}
+		});
+	}
+
 	private void setupTaskColumns(TestTask root) {
 		root.getChildren().addListener(new TasksChangedListener());
 		if (!root.isLeaf()) {
@@ -143,9 +229,11 @@ public class TableViewTest extends TableView<Student> {
 		private TestTaskColumn(TestTask testTask) {
 			this.setReorderable(false);
 			this.name.textProperty().bind(testTask.nameProperty());
+			this.name.setStyle("-fx-text-fill: -fx-text-base-color;");
 			this.points.textProperty().bind(testTask.maxPointsProperty().map(
 					v -> bigDecimalConverter.toString(v) + " " + TranslationController.translate("test_points_short")));
-			this.points.setStyle("-fx-font-style: italic; -fx-font-weight: normal;");
+			this.points
+					.setStyle("-fx-text-fill: -fx-text-base-color; -fx-font-style: italic; -fx-font-weight: normal;");
 			BorderPane graphic = new BorderPane();
 			BorderPane.setAlignment(this.name, Pos.CENTER);
 			BorderPane.setAlignment(this.points, Pos.CENTER);
@@ -153,9 +241,12 @@ public class TableViewTest extends TableView<Student> {
 			this.setGraphic(graphic);
 			this.setCellValueFactory(data -> testTask.pointsProperty(data.getValue()));
 			this.setCellFactory(
-					// TODO if points > max ...
-					TableCellEditComparable.forTableColumn(BigDecimal.ZERO, null, bigDecimalConverter, Pos.CENTER,
-							true));
+					_ -> new TableCellEditComparable<>(BigDecimal.ZERO, null, bigDecimalConverter, Pos.CENTER, true) {
+						{
+							// TODO if points > max ...
+							subscribeRowIndex(this);
+						}
+					});
 			testTask.leafProperty().subscribe(isLeaf -> {
 				if (isLeaf) {
 					graphic.setBottom(this.points);
@@ -218,6 +309,7 @@ public class TableViewTest extends TableView<Student> {
 							});
 						}
 					});
+					subscribeRowIndex(this);
 				}
 			});
 			this.setSortable(true);
@@ -266,12 +358,15 @@ public class TableViewTest extends TableView<Student> {
 									});
 								}
 							});
+							subscribeRowIndex(this);
 						}
 					});
 			this.name.setText("\u2211");
+			this.name.setStyle("-fx-text-fill: -fx-text-base-color;");
 			this.points.textProperty().bind(test.totalPointsProperty().map(
 					v -> bigDecimalConverter.toString(v) + " " + TranslationController.translate("test_points_short")));
-			this.points.setStyle("-fx-font-style: italic; -fx-font-weight: normal;");
+			this.points
+					.setStyle("-fx-text-fill: -fx-text-base-color; -fx-font-style: italic; -fx-font-weight: normal;");
 			BorderPane graphic = new BorderPane();
 			BorderPane.setAlignment(this.name, Pos.CENTER);
 			BorderPane.setAlignment(this.points, Pos.CENTER);
@@ -309,7 +404,11 @@ public class TableViewTest extends TableView<Student> {
 					return sum.divide(test.getTotalPoints(), 5, RoundingMode.FLOOR);
 				}
 			}, test.totalPointsProperty(), sumColumn.getCellObservableValue(data.getValue())));
-			this.setCellFactory(TableCellCustom.forTableColumn(new BigDecimalPercentConverter(2), Pos.CENTER));
+			this.setCellFactory(_ -> new TableCellCustom<>(new BigDecimalPercentConverter(2), Pos.CENTER) {
+				{
+					subscribeRowIndex(this);
+				}
+			});
 			this.setSortable(true);
 			this.setReorderable(false);
 			this.editableProperty().bind(test.useTasksProperty().not());
@@ -323,7 +422,11 @@ public class TableViewTest extends TableView<Student> {
 		private AnnotationColumn() {
 			super(TranslationController.translate("test_annotation"));
 			this.setCellValueFactory(data -> test.annotationProperty(data.getValue()));
-			this.setCellFactory(TableCellEditConverter.forTableColumn(true));
+			this.setCellFactory(_ -> new TableCellEditConverter<>(new DefaultStringConverter(), true) {
+				{
+					subscribeRowIndex(this);
+				}
+			});
 			this.setSortable(true);
 			this.setReorderable(false);
 			this.setEditable(true);
@@ -337,7 +440,11 @@ public class TableViewTest extends TableView<Student> {
 		private DateColumn() {
 			super(TranslationController.translate("test_date"));
 			this.setCellValueFactory(data -> test.dateProperty(data.getValue()));
-			this.setCellFactory(TableCellEditDatePicker.forTableColumn(true));
+			this.setCellFactory(_ -> new TableCellEditDatePicker<>(true) {
+				{
+					subscribeRowIndex(this);
+				}
+			});
 			this.setSortable(true);
 			this.setReorderable(false);
 			this.setEditable(true);
