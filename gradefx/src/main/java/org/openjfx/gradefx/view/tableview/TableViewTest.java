@@ -115,10 +115,6 @@ public class TableViewTest extends TableView2<Student> {
 		this.getColumns().add(subgroupNameCol);
 		this.getFixedColumns().addAll(lastNameCol, firstNameCol, subgroupNameCol);
 
-		this.getSelectionModel().selectedItemProperty().addListener((_, _, selected) -> {
-			GroupsPane.setSelectedStudent(selected);
-		});
-
 		this.sumColumn = new SumColumn();
 		this.sumColumn.visibleProperty().bind(test.usePointsProperty());
 		this.ratioColumn = new RatioColumn(this.sumColumn);
