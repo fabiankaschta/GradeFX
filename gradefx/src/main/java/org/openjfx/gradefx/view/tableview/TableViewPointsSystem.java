@@ -52,7 +52,7 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 	private final ReadOnlyObjectWrapper<BigDecimal> gradeAVG = new ReadOnlyObjectWrapper<>(this, "gradeAVG");
 	private final ReadOnlyIntegerWrapper graded = new ReadOnlyIntegerWrapper(this, "graded");
 
-	public TableViewPointsSystem(Group group, Test test) {
+	public TableViewPointsSystem(Group group, Test test, boolean printMode) {
 		super(FontSizeController.fontSizeProperty().multiply(2),
 				FXCollections.observableArrayList(group.getGradeSystem().getPossibleGradesDESC()));
 		this.group = group;
@@ -149,20 +149,25 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 		fromColumn.visibleProperty().bind(test.usePointsProperty());
 		toColumn.visibleProperty().bind(test.usePointsProperty());
 
-		this.setEditable(true);
-		this.getSelectionModel().setCellSelectionEnabled(true);
-
 		FontSizeController.bindTableColumnWidthToFontSize(this);
 
-		// both necessary to clear selection correctly 
-		this.focusedProperty().addListener((_, _, isFocused) -> {
-			if (!isFocused && this.getEditingCell() == null) {
+		if (printMode) {
+			this.setEditable(false);
+			this.setSelectionModel(null);
+		} else {
+			this.setEditable(true);
+			this.getSelectionModel().setCellSelectionEnabled(true);
+
+			// both necessary to clear selection correctly
+			this.focusedProperty().addListener((_, _, isFocused) -> {
+				if (!isFocused && this.getEditingCell() == null) {
+					this.getSelectionModel().clearSelection();
+				}
+			});
+			this.addEventHandler(TableCellEditControl.FOCUS_LOST, _ -> {
 				this.getSelectionModel().clearSelection();
-			}
-		});
-		this.addEventHandler(TableCellEditControl.FOCUS_LOST, _ -> {
-			this.getSelectionModel().clearSelection();
-		});
+			});
+		}
 	}
 
 	public ReadOnlyIntegerProperty gradedProperty() {

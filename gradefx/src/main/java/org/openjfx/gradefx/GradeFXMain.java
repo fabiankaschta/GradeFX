@@ -13,7 +13,7 @@ public class GradeFXMain {
 		Locale.setDefault(Locale.GERMAN);
 		Platform.startup(() -> {
 			GradeFXController.init();
-			// org.openjfx.kafx.controller.LogController.setDebugMode(true);
+			org.openjfx.kafx.controller.LogController.setDebugMode(true);
 			// TODO AutoSave.start();
 		});
 		Application.launch(GradeFXApplication.class);

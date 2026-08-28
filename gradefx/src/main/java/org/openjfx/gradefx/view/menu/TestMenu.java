@@ -7,7 +7,9 @@ import org.openjfx.gradefx.view.dialog.DialogEditTest;
 import org.openjfx.gradefx.view.dialog.DialogEditTestGroupSystems;
 import org.openjfx.gradefx.view.dialog.DialogEditTestTasks;
 import org.openjfx.gradefx.view.pane.GroupsPane;
+import org.openjfx.gradefx.view.pane.print.TestPrintPane;
 import org.openjfx.kafx.controller.PluginController;
+import org.openjfx.kafx.controller.PrintController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.alert.AlertDelete;
 import org.pf4j.ExtensionPoint;
@@ -23,7 +25,7 @@ public class TestMenu extends Menu {
 		public void addMenuItem(TestMenu testMenu);
 	}
 
-	private final MenuItem menuItemNew, menuItemEdit, menuItemDelete, menuItemTasks, menuItemGroups;
+	private final MenuItem menuItemNew, menuItemEdit, menuItemDelete, menuItemPrint, menuItemTasks, menuItemGroups;
 
 	public TestMenu() {
 		super(TranslationController.translate("menu_test_title"));
@@ -55,6 +57,14 @@ public class TestMenu extends Menu {
 		});
 		this.getItems().add(this.menuItemDelete);
 
+		this.menuItemPrint = new MenuItem(TranslationController.translate("menu_test_print"));
+		this.menuItemPrint.setOnAction(_ -> {
+			Group g = GroupsPane.getSelectedGroup();
+			Test t = GroupsPane.getSelectedTest();
+			PrintController.showPrintSinglePreview(new TestPrintPane(g, t), PrintController.A4_LANDSCAPE);
+		});
+		this.getItems().add(menuItemPrint);
+
 		this.getItems().add(new SeparatorMenuItem());
 
 		this.menuItemTasks = new MenuItem(TranslationController.translate("menu_test_tasks"));
@@ -74,6 +84,7 @@ public class TestMenu extends Menu {
 		this.menuItemNew.disableProperty().bind(GroupsPane.selectedGroupProperty().isNull());
 		this.menuItemEdit.disableProperty().bind(GroupsPane.selectedTestProperty().isNull());
 		this.menuItemDelete.disableProperty().bind(GroupsPane.selectedTestProperty().isNull());
+		this.menuItemPrint.disableProperty().bind(GroupsPane.selectedTestProperty().isNull());
 		if (GroupsPane.getSelectedTest() == null) {
 			this.menuItemTasks.disableProperty().set(true);
 		} else {

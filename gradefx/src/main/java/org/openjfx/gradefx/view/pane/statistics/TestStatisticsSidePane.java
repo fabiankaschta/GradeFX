@@ -1,7 +1,6 @@
-package org.openjfx.gradefx.view.pane;
+package org.openjfx.gradefx.view.pane.statistics;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import org.openjfx.gradefx.model.GradeSystem.Grade;
 import org.openjfx.gradefx.model.Group;
@@ -32,7 +31,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -80,12 +78,12 @@ public class TestStatisticsSidePane extends ScrollPane {
 		Label header = new Label(TranslationController.translate("test_pointsSytem"));
 		header.setAlignment(Pos.CENTER);
 		header.setStyle("-fx-font-weight: bold;");
-		this.tableViewPointsSystem = new TableViewPointsSystem(group, test);
+		this.tableViewPointsSystem = new TableViewPointsSystem(group, test, false);
 		VBox headerBox = new VBox(10, header, this.tableViewPointsSystem);
 		headerBox.setAlignment(Pos.CENTER);
 		content.getChildren().add(headerBox);
 
-		content.getChildren().add(new StatisticsGrid());
+		content.getChildren().add(new StatisticsGrid(this.group, this.tableViewPointsSystem));
 		content.getChildren().add(new SettingsPane());
 		content.getChildren().add(new SliderPane());
 
@@ -98,41 +96,6 @@ public class TestStatisticsSidePane extends ScrollPane {
 							: new Insets(10),
 					scrollBarVertical.visibleProperty(), scrollBarVertical.widthProperty()));
 		});
-	}
-
-	private class StatisticsGrid extends GridPane {
-
-		private StatisticsGrid() {
-			super(10, 0);
-			this.setStyle("-fx-font-weight: bold;");
-			BigDecimalConverter avgConverter = new BigDecimalConverter();
-			avgConverter.getDecimalFormat().setMinimumFractionDigits(2);
-			avgConverter.getDecimalFormat().setMaximumFractionDigits(2);
-			avgConverter.getDecimalFormat().setRoundingMode(RoundingMode.DOWN);
-
-			Label avgLabel = new Label(TranslationController.translate("test_avg") + ": ");
-			Label avgValue = new Label();
-			avgValue.textProperty().bind(Bindings.createStringBinding(() -> {
-				BigDecimal avg = tableViewPointsSystem.getGradeAVG();
-				if (avg == null) {
-					return "-"; // '\u2014'; // long dash
-				} else {
-					return avgConverter.toString(avg);
-				}
-			}, tableViewPointsSystem.gradeAVGProperty()));
-			this.add(avgLabel, 0, 0);
-			this.add(avgValue, 1, 0);
-
-			Label gradedLabel = new Label(TranslationController.translate("test_graded") + ": ");
-			Label gradedValue = new Label();
-			gradedValue.textProperty().bind(Bindings.createStringBinding(() -> {
-				int graded = tableViewPointsSystem.gradedProperty().get();
-				int size = group.getStudents().size();
-				return graded + " " + TranslationController.translate("test_graded_outOf") + " " + size;
-			}, tableViewPointsSystem.gradedProperty(), group.getStudents()));
-			this.add(gradedLabel, 0, 1);
-			this.add(gradedValue, 1, 1);
-		}
 	}
 
 	private class SettingsPane extends TitledPane {

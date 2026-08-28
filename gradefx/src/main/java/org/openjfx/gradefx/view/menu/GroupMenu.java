@@ -5,6 +5,8 @@ import org.openjfx.gradefx.view.dialog.DialogAddGroup;
 import org.openjfx.gradefx.view.dialog.DialogEditGroup;
 import org.openjfx.gradefx.view.dialog.DialogEditSubjects;
 import org.openjfx.gradefx.view.pane.GroupsPane;
+import org.openjfx.gradefx.view.pane.print.GroupOverviewPrintPane;
+import org.openjfx.kafx.controller.PrintController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.alert.AlertDelete;
 
@@ -29,15 +31,23 @@ public class GroupMenu extends Menu {
 		MenuItem menuItemDelete = new MenuItem(TranslationController.translate("menu_group_delete"));
 		menuItemDelete.setOnAction(_ -> {
 			Group g = GroupsPane.getSelectedGroup();
-			new AlertDelete(TranslationController.translate("group") + " " + g.getName()).showAndWait().ifPresent(response -> {
-				if (response == ButtonType.OK) {
-					Group.remove(g);
-				} else {
-					// abort delete, do nothing
-				}
-			});
+			new AlertDelete(TranslationController.translate("group") + " " + g.getName()).showAndWait()
+					.ifPresent(response -> {
+						if (response == ButtonType.OK) {
+							Group.remove(g);
+						} else {
+							// abort delete, do nothing
+						}
+					});
 		});
 		this.getItems().add(menuItemDelete);
+
+		MenuItem menuItemPrint = new MenuItem(TranslationController.translate("menu_group_print"));
+		menuItemPrint.setOnAction(_ -> {
+			PrintController.showPrintSinglePreview(new GroupOverviewPrintPane(GroupsPane.getSelectedGroup()),
+					PrintController.A4_LANDSCAPE);
+		});
+		getItems().add(menuItemPrint);
 
 		this.getItems().add(new SeparatorMenuItem());
 

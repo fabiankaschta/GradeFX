@@ -31,8 +31,8 @@ public class MainMenuBar extends BorderPane {
 	private final Label statusIndicator = new Label("status");
 
 	private MainMenuBar() {
-		MenuBar menuBar = new MenuBar(new FileMenu(), new GroupMenu(), new StudentMenu(), new TestMenu(),
-				new SettingsMenu());
+		MenuBar menuBar = new MenuBar(new FileMenu(), new GroupMenu(), new StudentMenu(),
+				new TestMenu(), new SettingsMenu());
 		this.statusIndicator.textProperty().bind(message);
 		// cant' use css menu-item because of transparent background
 		this.statusIndicator.setStyle("-fx-padding: 0.333333em 0.41777em 0.333333em 0.41777em;");

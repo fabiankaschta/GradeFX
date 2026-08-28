@@ -3,7 +3,7 @@ package org.openjfx.gradefx.view.pane;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
-import org.openjfx.gradefx.view.tableview.TableViewTest;
+import org.openjfx.gradefx.view.tableview.test.TableViewTest;
 
 import javafx.beans.property.ReadOnlyObjectProperty;
 
