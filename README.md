@@ -16,7 +16,7 @@ Folgende Features sind bereits enthalten:
 * Individuelles Datum und Text-Anmerkung für Noten
 * SchülerInnen-Import per csv-Datei
 * Sortieren von Tabellen nach Name, Note, usw.
-* Ausdruck/PDF-Export möglich (wird noch verbessert)
+* Ausdruck/PDF-Export möglich
 * Verschlüsselte Dateien (können beliebig in Cloud-Diensten oder auf USB-Sticks gelagert werden, sofern gute Passwörter verwendet werden)
 * Automatisches Ausfüllen von Umschlägen für Archivierung (via Plugins)
 * Update-Benachrichtigung
