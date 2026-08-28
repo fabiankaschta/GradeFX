@@ -307,6 +307,7 @@ public class Test {
 	private final StringProperty shortName = new SimpleStringProperty(this, "shortName");
 	private final ObjectProperty<LocalDate> date = new SimpleObjectProperty<>(this, "date");
 	private final ObjectProperty<BigDecimal> weight = new SimpleObjectProperty<>(this, "weight");
+	private final BooleanProperty onlyDefaultDate = new SimpleBooleanProperty(this, "onlyDefaultDate");
 	private final BooleanProperty useTasks = new SimpleBooleanProperty(this, "useTasks");
 	private final BooleanProperty usePoints = new SimpleBooleanProperty(this, "usePoints");
 	private final ObjectProperty<PointsSystem> pointsSystem = new SimpleObjectProperty<>(this, "pointsSystem");
@@ -319,18 +320,19 @@ public class Test {
 	private final ObservableMap<Student, ObjectProperty<LocalDate>> dates = FXCollections.observableHashMap();
 
 	public Test(Group group, String name, String shortName, LocalDate date, BigDecimal weight, BigDecimal maxPoints,
-			boolean useTasks, boolean usePoints) {
-		this(name, shortName, date, weight, useTasks, usePoints);
+			boolean onlyDefaultDate, boolean useTasks, boolean usePoints) {
+		this(name, shortName, date, weight, onlyDefaultDate, useTasks, usePoints);
 		this.setTasksRoot(TestTask.createRoot(this, maxPoints));
 		this.setPointsSystem(group.getGradeSystem().getDefaultPointsSystem(this.totalPointsProperty()));
 	}
 
-	private Test(String name, String shortName, LocalDate date, BigDecimal weight, boolean useTasks,
-			boolean usePoints) {
+	private Test(String name, String shortName, LocalDate date, BigDecimal weight, boolean onlyDefaultDate,
+			boolean useTasks, boolean usePoints) {
 		this.setName(name);
 		this.setShortName(shortName);
 		this.setDate(date);
 		this.setWeight(weight);
+		this.setOnlyDefaultDate(onlyDefaultDate);
 		this.setUseTasks(useTasks);
 		this.setUsePoints(usePoints);
 		this.useTasksProperty().addListener((_, oldValue, newValue) -> {
@@ -433,6 +435,18 @@ public class Test {
 
 	public void setWeight(BigDecimal weight) {
 		this.weight.set(weight);
+	}
+
+	public boolean getOnlyDefaultDate() {
+		return onlyDefaultDate.get();
+	}
+
+	public BooleanProperty onlyDefaultDateProperty() {
+		return onlyDefaultDate;
+	}
+
+	public void setOnlyDefaultDate(boolean onlyDefaultDate) {
+		this.onlyDefaultDate.set(onlyDefaultDate);
 	}
 
 	public boolean getUseTasks() {
@@ -701,6 +715,7 @@ public class Test {
 		private final String shortName;
 		private final LocalDate date;
 		private final BigDecimal weight;
+		private final boolean onlyDefaultDate;
 		private final boolean useTasks;
 		private final boolean usePoints;
 		private final DataObject<PointsSystem> pointsSystem;
@@ -720,6 +735,7 @@ public class Test {
 			shortName = t.getShortName();
 			date = t.getDate();
 			weight = t.getWeight();
+			onlyDefaultDate = t.getOnlyDefaultDate();
 			useTasks = t.getUseTasks();
 			usePoints = t.getUsePoints();
 			pointsSystem = t.getPointsSystem().serialize();
@@ -753,7 +769,7 @@ public class Test {
 
 		public Test deserialize(Object... params) {
 			if (test == null) {
-				test = new Test(name, shortName, date, weight, useTasks, usePoints);
+				test = new Test(name, shortName, date, weight, onlyDefaultDate, useTasks, usePoints);
 				tasksRoot.deserialize(test);
 				test.setPointsSystem(pointsSystem.deserialize());
 				test.calculateTotalPoints();

@@ -41,7 +41,8 @@ public class DialogAddTest extends DialogAdd<Test> {
 		this.name = new UserInputTextInput(new TextFieldPromptText(TranslationController.translate("test_name")));
 		super.addInput(this.name, TranslationController.translate("test_name"));
 
-		this.shortName = new UserInputTextInput(new TextFieldPromptText(TranslationController.translate("test_shortName")));
+		this.shortName = new UserInputTextInput(
+				new TextFieldPromptText(TranslationController.translate("test_shortName")));
 		super.addInput(this.shortName, TranslationController.translate("test_shortName"));
 
 		this.date = new UserInputDatePicker(new DatePicker());
@@ -101,7 +102,7 @@ public class DialogAddTest extends DialogAdd<Test> {
 			totalPoints = this.totalPoints.getValue();
 		}
 		Test test = new Test(this.group, this.name.getValue().trim(), this.shortName.getValue().trim(),
-				this.date.getValue(), this.weight.getValue(), totalPoints, this.useTasks.getValue(),
+				this.date.getValue(), this.weight.getValue(), totalPoints, false, this.useTasks.getValue(),
 				this.usePoints.getValue());
 		if (this.group.getTestGroupRoot().isLeaf()) {
 			this.group.addTest(test, this.group.getTestGroupRoot());

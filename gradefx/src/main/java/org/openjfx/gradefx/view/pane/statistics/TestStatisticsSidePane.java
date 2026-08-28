@@ -106,8 +106,7 @@ public class TestStatisticsSidePane extends ScrollPane {
 			VBox settingsPaneContent = new VBox(10);
 
 			CheckBox onlyDefaultDateCheckBox = new CheckBox();
-			onlyDefaultDateCheckBox.selectedProperty()
-					.subscribe(selected -> tableViewPointsSystem.setOnlyDefaultDate(selected));
+			onlyDefaultDateCheckBox.selectedProperty().bindBidirectional(test.onlyDefaultDateProperty());
 			onlyDefaultDateCheckBox.disableProperty().bind(test.dateProperty().isNull());
 			Label onlyDefaultDateLabel = new Label(TranslationController.translate("statistics_onlyDefaultDate"));
 			HBox onlyDefaultDate = new HBox(5, onlyDefaultDateLabel, onlyDefaultDateCheckBox);

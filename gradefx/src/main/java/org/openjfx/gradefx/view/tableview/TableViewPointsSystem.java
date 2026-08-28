@@ -62,6 +62,8 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 		this.updateStudentFilter();
 		this.group.getStudents().addListener((ListChangeListener<Student>) _ -> updateStudentFilter());
 		this.setPadding(new Insets(0));
+		
+		test.onlyDefaultDateProperty().subscribe(v -> this.filtered.setValue(v));
 
 		PointsSystem pointsSystem = test.getPointsSystem();
 		// TODO fix 15 vs 15.0 on update
@@ -193,10 +195,6 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 			}
 		}
 		return -1;
-	}
-
-	public void setOnlyDefaultDate(boolean set) {
-		this.filtered.setValue(set);
 	}
 
 	private void updateStudentFilter() {
