@@ -1,6 +1,7 @@
 package org.openjfx.gradefx.view.tableview.overview.columns;
 
 import java.math.BigDecimal;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.openjfx.gradefx.model.Group;
@@ -9,6 +10,7 @@ import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.TestGroup;
 
 import javafx.beans.value.ObservableValue;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TreeItem;
 
@@ -17,12 +19,16 @@ public class OverviewTestGroupColumn extends TableColumn<Student, Integer> {
 	private final TestGroup testGroup;
 
 	public OverviewTestGroupColumn(Group group, TestGroup testGroup) {
-		this(group, testGroup, null, null);
+		this(group, testGroup, null, null, null);
+	}
+
+	public OverviewTestGroupColumn(Group group, TestGroup testGroup, Consumer<TableCell<Student, ?>> cellSubscription) {
+		this(group, testGroup, null, null, cellSubscription);
 	}
 
 	public OverviewTestGroupColumn(Group group, TestGroup testGroup,
 			Function<TestGroup, OverviewTestGroupColumn> createTestGroupColumn,
-			Function<Test, OverviewTestColumn> createTestColumn) {
+			Function<Test, OverviewTestColumn> createTestColumn, Consumer<TableCell<Student, ?>> cellSubscription) {
 		this.testGroup = testGroup;
 		this.textProperty().bind(testGroup.nameProperty());
 		this.setReorderable(false);
@@ -31,10 +37,10 @@ public class OverviewTestGroupColumn extends TableColumn<Student, Integer> {
 					: createTestGroupColumn.apply((TestGroup) t));
 		}
 		for (Test test : group.getTestsInTestGroup(testGroup)) {
-			getColumns()
-					.add(createTestColumn == null ? new OverviewTestColumn(group, test) : createTestColumn.apply(test));
+			getColumns().add(createTestColumn == null ? new OverviewTestColumn(group, test, cellSubscription)
+					: createTestColumn.apply(test));
 		}
-		this.getColumns().add(new OverviewAvgColumn(group, getColumns()));
+		this.getColumns().add(new OverviewAvgColumn(group, getColumns(), cellSubscription));
 	}
 
 	public ObservableValue<BigDecimal> getAvg(Student student) {

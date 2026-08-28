@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.GradeSystem.Grade;
@@ -19,6 +20,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 
 public class OverviewAvgColumn extends TableColumn<Student, BigDecimal> {
@@ -29,6 +31,11 @@ public class OverviewAvgColumn extends TableColumn<Student, BigDecimal> {
 	private final Map<Student, ChangeListener<Object>> updateListener = new HashMap<>();
 
 	public OverviewAvgColumn(Group group, ObservableList<TableColumn<Student, ?>> columns) {
+		this(group, columns, null);
+	}
+
+	public OverviewAvgColumn(Group group, ObservableList<TableColumn<Student, ?>> columns,
+			Consumer<TableCell<Student, ?>> cellSubscription) {
 		super("\u2300"); // avg symbol in unicode
 		this.group = group;
 		this.columns = columns;
@@ -47,7 +54,13 @@ public class OverviewAvgColumn extends TableColumn<Student, BigDecimal> {
 		});
 		BigDecimalConverter avgConverter = new BigDecimalConverter();
 		avgConverter.getDecimalFormat().setMinimumFractionDigits(2);
-		this.setCellFactory(TableCellCustom.forTableColumn(avgConverter, Pos.CENTER));
+		this.setCellFactory(_ -> new TableCellCustom<>(avgConverter, Pos.CENTER) {
+			{
+				if (cellSubscription != null) {
+					cellSubscription.accept(this);
+				}
+			}
+		});
 		this.setSortable(true);
 		this.setReorderable(false);
 		this.setEditable(false);

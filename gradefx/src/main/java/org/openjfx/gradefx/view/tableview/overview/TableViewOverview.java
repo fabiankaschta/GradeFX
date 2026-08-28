@@ -3,6 +3,7 @@ package org.openjfx.gradefx.view.tableview.overview;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.controlsfx.control.tableview2.TableView2;
 import org.openjfx.gradefx.model.Group;
@@ -21,8 +22,12 @@ import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.tableview.TableCellEditControl;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.ListChangeListener;
+import javafx.css.PseudoClass;
 import javafx.scene.AccessibleAttribute;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.skin.TableHeaderRow;
@@ -35,6 +40,8 @@ public class TableViewOverview extends TableView2<Student> {
 	private final Map<Test, OverviewTestColumn> testColumns = new HashMap<>();
 	private final OverviewAvgColumn avgColumn;
 	private final OverviewGradeColumn gradeColumn;
+	private final IntegerProperty selectedRowIndex = new SimpleIntegerProperty(this, "selectedRow", -1);
+	private final Consumer<TableCell<Student, ?>> rowIndexSubscription = cell -> subscribeRowIndex(cell);
 
 	public TableViewOverview(Group group) {
 		super(group.getStudents());
@@ -42,6 +49,8 @@ public class TableViewOverview extends TableView2<Student> {
 		this.setEditable(true);
 
 		this.getSelectionModel().selectedItemProperty().subscribe(selected -> GroupsPane.setSelectedStudent(selected));
+		this.getSelectionModel().selectedItemProperty().subscribe(item -> this.selectedRowIndex
+				.setValue(item == null ? -1 : this.getSelectionModel().getSelectedCells().getFirst().getRow()));
 		this.getSelectionModel().setCellSelectionEnabled(true);
 
 		this.setPlaceholder(new Text(TranslationController.translate("tab_overview_no_students")));
@@ -49,13 +58,13 @@ public class TableViewOverview extends TableView2<Student> {
 		this.fixedCellSizeProperty().bind(FontSizeController.fontSizeProperty().multiply(2).add(1));
 
 		this.group = group;
-		this.avgColumn = new OverviewAvgColumn(group, this.getColumns());
-		this.gradeColumn = new OverviewGradeColumn(group, this.avgColumn);
+		this.avgColumn = new OverviewAvgColumn(group, this.getColumns(), rowIndexSubscription);
+		this.gradeColumn = new OverviewGradeColumn(group, this.avgColumn, rowIndexSubscription);
 		// not added here, this is done in setupTestColumns() after the test columns
 
-		StudentLastNameColumn lastNameCol = new StudentLastNameColumn(true);
-		StudentFirstNameColumn firstNameCol = new StudentFirstNameColumn(true);
-		StudentSubgroupNameColumn subgroupNameCol = new StudentSubgroupNameColumn(group, true);
+		StudentLastNameColumn lastNameCol = new StudentLastNameColumn(true, rowIndexSubscription);
+		StudentFirstNameColumn firstNameCol = new StudentFirstNameColumn(true, rowIndexSubscription);
+		StudentSubgroupNameColumn subgroupNameCol = new StudentSubgroupNameColumn(group, true, rowIndexSubscription);
 
 		this.getColumns().add(lastNameCol);
 		this.getColumns().add(firstNameCol);
@@ -104,6 +113,23 @@ public class TableViewOverview extends TableView2<Student> {
 		return width + this.snappedLeftInset() + this.snappedRightInset();
 	}
 
+	private void subscribeRowIndex(TableCell<Student, ?> cell) {
+		this.selectedRowIndex.subscribe(index -> {
+			if (cell.getTableRow() != null && index.intValue() == cell.getTableRow().getIndex()) {
+				cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), true);
+			} else {
+				cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), false);
+			}
+		});
+		cell.tableRowProperty().subscribe(row -> {
+			if (row == null || this.selectedRowIndex.intValue() != row.getIndex()) {
+				cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), false);
+			} else {
+				cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), true);
+			}
+		});
+	}
+
 	private void setupTestColumns(TestGroup root) {
 		this.getColumns().removeIf(c -> !this.getFixedColumns().contains(c));
 		this.testGroupColumns.clear();
@@ -120,14 +146,14 @@ public class TableViewOverview extends TableView2<Student> {
 	}
 
 	public OverviewTestColumn createTestColumn(Test test) {
-		OverviewTestColumn column = new OverviewTestColumn(this.group, test);
+		OverviewTestColumn column = new OverviewTestColumn(this.group, test, rowIndexSubscription);
 		this.testColumns.put(test, column);
 		return column;
 	}
 
 	public OverviewTestGroupColumn createTestGroupColumn(TestGroup testGroup) {
 		OverviewTestGroupColumn column = new OverviewTestGroupColumn(this.group, testGroup,
-				tg -> createTestGroupColumn(tg), t -> createTestColumn(t));
+				tg -> createTestGroupColumn(tg), t -> createTestColumn(t), rowIndexSubscription);
 		this.group.getTestsInTestGroup(testGroup).addListener(new TestsChangedListener());
 		this.testGroupColumns.put(testGroup, column);
 		return column;
