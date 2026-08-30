@@ -37,3 +37,9 @@ Im Installationsverzeichnis einen Ordner "plugins" erstellen, die heruntergelade
 Beispiel-Plugin: [BSG-Plugin](https://github.com/fabiankaschta/GradeFX-Plugin-BSG) für das Bernhard-Strigel-Gymnasium Memmingen.
 
 Achtung: Plugins können auf alle Daten im Programm zugreifen, also auch auf sensible Informationen. Verwenden Sie nur Plugins aus vertrauenswürdigen Quellen!
+
+## Credits
+Emoji artwork is provided by [Emojitwo](https://emojitwo.github.io/), 
+originally released as [Emojione 2.2](https://www.emojione.com) by [Ranks.com](http://www.ranks.com)
+with contributions from the Emojitwo community
+and is licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode).
