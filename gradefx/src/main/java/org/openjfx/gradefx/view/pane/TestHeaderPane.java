@@ -16,6 +16,7 @@ import org.openjfx.kafx.view.dialog.userinput.UserInputComparableInput;
 import org.openjfx.kafx.view.dialog.userinput.UserInputDatePicker;
 import org.openjfx.kafx.view.dialog.userinput.UserInputTextInput;
 import org.openjfx.kafx.view.dialog.userinput.UserInputToggleSwitch;
+import org.openjfx.kafx.view.imageview.EmojiImageView;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
@@ -27,11 +28,12 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.text.TextAlignment;
 
-public class TestHeaderPane extends BorderPane {
+public class TestHeaderPane extends GridPane {
 
 	private final UserInputTextInput name;
 	private final UserInputDatePicker date;
@@ -42,10 +44,8 @@ public class TestHeaderPane extends BorderPane {
 //	private final UserInputChoiceBoxTreeItem<TestGroup> testGroupTree;
 
 	public TestHeaderPane(Group group, Test test) {
-//		super(10);
+		super(10, 0);
 		this.setPadding(new Insets(10));
-
-		GridPane left = new GridPane(10, 0);
 
 		this.name = new UserInputTextInput(new TextFieldPromptText(TranslationController.translate("test_name")),
 				test.getName());
@@ -54,8 +54,8 @@ public class TestHeaderPane extends BorderPane {
 		this.name.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(12));
 		Label nameLabel = new Label(TranslationController.translate("test_name"));
 		nameLabel.setMinWidth(USE_PREF_SIZE);
-		left.add(nameLabel, 0, 0);
-		left.add(this.name, 1, 0);
+		this.add(nameLabel, 0, 0);
+		this.add(this.name, 1, 0);
 
 		this.date = new UserInputDatePicker(new DatePicker(), test.getDate());
 		this.date.setMinWidth(USE_PREF_SIZE);
@@ -63,8 +63,8 @@ public class TestHeaderPane extends BorderPane {
 		test.dateProperty().bindBidirectional(this.date.valueProperty());
 		Label dateLabel = new Label(TranslationController.translate("test_date"));
 		dateLabel.setMinWidth(USE_PREF_SIZE);
-		left.add(dateLabel, 0, 1);
-		left.add(this.date, 1, 1);
+		this.add(dateLabel, 0, 1);
+		this.add(this.date, 1, 1);
 
 		BigDecimalConverter totalPointsConverter = new BigDecimalConverter();
 		totalPointsConverter.getDecimalFormat().setMaximumFractionDigits(2);
@@ -83,8 +83,8 @@ public class TestHeaderPane extends BorderPane {
 		test.totalPointsProperty().subscribe(v -> this.totalPoints.setValue(v));
 		Label totalPointsLabel = new Label(TranslationController.translate("test_totalPoints"));
 		totalPointsLabel.setMinWidth(USE_PREF_SIZE);
-		left.add(totalPointsLabel, 2, 0);
-		left.add(this.totalPoints, 3, 0);
+		this.add(totalPointsLabel, 2, 0);
+		this.add(this.totalPoints, 3, 0);
 
 		BigDecimalConverter weightConverter = new BigDecimalConverter();
 		weightConverter.getDecimalFormat().setMaximumFractionDigits(2);
@@ -95,29 +95,51 @@ public class TestHeaderPane extends BorderPane {
 		test.weightProperty().bindBidirectional(this.weight.valueProperty());
 		Label weightPointsLabel = new Label(TranslationController.translate("test_weight"));
 		weightPointsLabel.setMinWidth(USE_PREF_SIZE);
-		left.add(weightPointsLabel, 2, 1);
-		left.add(this.weight, 3, 1);
+		this.add(weightPointsLabel, 2, 1);
+		this.add(this.weight, 3, 1);
 
-		GridPane right = new GridPane(10, 0);
 		this.showReturns = new UserInputToggleSwitch(new ToggleSwitch(), test.getShowReturns());
 		test.showReturnsProperty().bindBidirectional(this.showReturns.valueProperty());
 		this.showReturns.setMinWidth(USE_PREF_SIZE);
 		this.showReturns.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(3));
 		Label showReturnsLabel = new Label(TranslationController.translate("test_showReturns"));
 		showReturnsLabel.setMinWidth(USE_PREF_SIZE);
-		right.add(showReturnsLabel, 0, 0);
-		right.add(this.showReturns, 1, 0);
+		this.add(showReturnsLabel, 5, 0);
+		this.add(this.showReturns, 6, 0);
 
-		Label returnsMissingLabel = new Label(TranslationController.translate("test_returnsMissing"));
+		ColumnConstraints fillerColumn = new ColumnConstraints();
+		fillerColumn.setHgrow(Priority.ALWAYS);
+
+		this.getColumnConstraints().addAll(new ColumnConstraints(), new ColumnConstraints(), new ColumnConstraints(),
+				new ColumnConstraints(), fillerColumn, new ColumnConstraints(), new ColumnConstraints());
+
+		Label returnsMissingLabel = new Label();
 		returnsMissingLabel.setMinWidth(USE_PREF_SIZE);
 		returnsMissingLabel.visibleProperty().bind(test.showReturnsProperty());
+		returnsMissingLabel.textProperty().bind(Bindings.createStringBinding(() -> {
+			if (this.returnsMissingAmount.getValue() == 0) {
+				return TranslationController.translate("test_returnsMissingNone");
+			} else {
+				return TranslationController.translate("test_returnsMissing");
+			}
+		}, this.returnsMissingAmount));
 		Label returnsMissing = new Label();
 		returnsMissing.setMinWidth(USE_PREF_SIZE);
 		returnsMissing.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(3));
 		returnsMissing.setAlignment(Pos.CENTER);
 		returnsMissing.setTextAlignment(TextAlignment.CENTER);
-		returnsMissing.textProperty().bind(Bindings
-				.createStringBinding(() -> this.returnsMissingAmount.getValue().toString(), this.returnsMissingAmount));
+		EmojiImageView emoji = new EmojiImageView("1F60E");
+		emoji.fitWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(2));
+		emoji.fitHeightProperty().bind(FontSizeController.fontSizeProperty().multiply(2));
+		this.returnsMissingAmount.subscribe(value -> {
+			if (value.intValue() == 0) {
+				returnsMissing.setGraphic(emoji);
+				returnsMissing.setText("");
+			} else {
+				returnsMissing.setGraphic(null);
+				returnsMissing.setText(value.toString());
+			}
+		});
 		returnsMissing.visibleProperty().bind(test.showReturnsProperty());
 		this.returnsMissingAmount.setValue(test.getReturns().size());
 
@@ -155,11 +177,8 @@ public class TestHeaderPane extends BorderPane {
 			}
 		});
 
-		right.add(returnsMissingLabel, 0, 1);
-		right.add(returnsMissing, 1, 1);
-
-		this.setLeft(left);
-		this.setRight(right);
+		this.add(returnsMissingLabel, 5, 1);
+		this.add(returnsMissing, 6, 1);
 	}
 
 }
