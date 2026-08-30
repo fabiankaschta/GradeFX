@@ -6,6 +6,7 @@ import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.Test.TestTask;
 import org.openjfx.gradefx.view.tableview.columns.StudentFirstNameColumn;
 import org.openjfx.gradefx.view.tableview.columns.StudentLastNameColumn;
+import org.openjfx.gradefx.view.tableview.columns.StudentReturnColumn;
 import org.openjfx.gradefx.view.tableview.columns.StudentSubgroupNameColumn;
 import org.openjfx.gradefx.view.tableview.test.columns.TestAnnotationColumn;
 import org.openjfx.gradefx.view.tableview.test.columns.TestDateColumn;
@@ -38,10 +39,12 @@ public class TableViewTestPrint extends TableViewFullSize<Student> {
 
 		this.fixedCellSizeProperty().bind(FontSizeController.fontSizeProperty().multiply(2).add(1));
 
+		StudentReturnColumn returnCol = new StudentReturnColumn(test);
 		StudentLastNameColumn lastNameCol = new StudentLastNameColumn(false);
 		StudentFirstNameColumn firstNameCol = new StudentFirstNameColumn(false);
 		StudentSubgroupNameColumn subgroupNameCol = new StudentSubgroupNameColumn(group, false);
 
+		this.getColumns().add(returnCol);
 		this.getColumns().add(lastNameCol);
 		this.getColumns().add(firstNameCol);
 		this.getColumns().add(subgroupNameCol);

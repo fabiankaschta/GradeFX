@@ -103,7 +103,7 @@ public class DialogAddTest extends DialogAdd<Test> {
 		}
 		Test test = new Test(this.group, this.name.getValue().trim(), this.shortName.getValue().trim(),
 				this.date.getValue(), this.weight.getValue(), totalPoints, false, this.useTasks.getValue(),
-				this.usePoints.getValue());
+				this.usePoints.getValue(), false);
 		if (this.group.getTestGroupRoot().isLeaf()) {
 			this.group.addTest(test, this.group.getTestGroupRoot());
 		} else {

@@ -20,7 +20,6 @@ import org.openjfx.gradefx.view.tableview.overview.columns.OverviewTestColumn;
 import org.openjfx.gradefx.view.tableview.overview.columns.OverviewTestGroupColumn;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
-import org.openjfx.kafx.view.tableview.TableCellEditControl;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -75,16 +74,6 @@ public class TableViewOverview extends TableView2<Student> {
 
 		FontSizeController.bindTableColumnWidthToFontSize(this);
 		this.getStyleClass().addAll("table-view-cell-highlight", "table-view-no-focus", "table-view-hide-empty");
-
-		// both necessary to clear selection correctly
-		this.focusedProperty().addListener((_, _, isFocused) -> {
-			if (!isFocused && this.getEditingCell() == null) {
-				this.getSelectionModel().clearSelection();
-			}
-		});
-		this.addEventHandler(TableCellEditControl.FOCUS_LOST, _ -> {
-			this.getSelectionModel().clearSelection();
-		});
 	}
 
 	@Override
@@ -122,10 +111,14 @@ public class TableViewOverview extends TableView2<Student> {
 			}
 		});
 		cell.tableRowProperty().subscribe(row -> {
-			if (row == null || this.selectedRowIndex.intValue() != row.getIndex()) {
-				cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), false);
-			} else {
-				cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), true);
+			if (row != null) {
+				row.indexProperty().subscribe(index -> {
+					if (this.selectedRowIndex.intValue() != index.intValue()) {
+						cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), false);
+					} else {
+						cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), true);
+					}
+				});
 			}
 		});
 	}

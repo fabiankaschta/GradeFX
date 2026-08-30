@@ -1,8 +1,11 @@
 package org.openjfx.gradefx.view.pane;
 
 import java.math.BigDecimal;
+import java.util.Map.Entry;
 
+import org.controlsfx.control.ToggleSwitch;
 import org.openjfx.gradefx.model.Group;
+import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
@@ -12,36 +15,43 @@ import org.openjfx.kafx.view.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.dialog.userinput.UserInputComparableInput;
 import org.openjfx.kafx.view.dialog.userinput.UserInputDatePicker;
 import org.openjfx.kafx.view.dialog.userinput.UserInputTextInput;
+import org.openjfx.kafx.view.dialog.userinput.UserInputToggleSwitch;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.collections.MapChangeListener;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.text.TextAlignment;
 
-public class TestHeaderPane extends HBox {
+public class TestHeaderPane extends BorderPane {
 
 	private final UserInputTextInput name;
 	private final UserInputDatePicker date;
 	private final UserInputComparableInput<BigDecimal> weight;
 	private final UserInputComparableInput<BigDecimal> totalPoints;
+	private final UserInputToggleSwitch showReturns;
+	private final IntegerProperty returnsMissingAmount = new SimpleIntegerProperty(this, "returnsAmount", 0);
 //	private final UserInputChoiceBoxTreeItem<TestGroup> testGroupTree;
 
 	public TestHeaderPane(Group group, Test test) {
-		super(10);
+//		super(10);
 		this.setPadding(new Insets(10));
 
 		GridPane left = new GridPane(10, 0);
 
-		this.name = new UserInputTextInput(new TextFieldPromptText(TranslationController.translate("test_name")), test.getName());
+		this.name = new UserInputTextInput(new TextFieldPromptText(TranslationController.translate("test_name")),
+				test.getName());
 		test.nameProperty().bindBidirectional(this.name.valueProperty());
 		this.name.setMinWidth(USE_PREF_SIZE);
 		this.name.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(12));
-		this.name.focusedProperty().subscribe(focused -> {
-			if (!focused) {
-				this.requestLayout();
-			}
-		});
 		Label nameLabel = new Label(TranslationController.translate("test_name"));
 		nameLabel.setMinWidth(USE_PREF_SIZE);
 		left.add(nameLabel, 0, 0);
@@ -55,9 +65,6 @@ public class TestHeaderPane extends HBox {
 		dateLabel.setMinWidth(USE_PREF_SIZE);
 		left.add(dateLabel, 0, 1);
 		left.add(this.date, 1, 1);
-		this.getChildren().add(left);
-
-		GridPane right = new GridPane(10, 0);
 
 		BigDecimalConverter totalPointsConverter = new BigDecimalConverter();
 		totalPointsConverter.getDecimalFormat().setMaximumFractionDigits(2);
@@ -76,8 +83,8 @@ public class TestHeaderPane extends HBox {
 		test.totalPointsProperty().subscribe(v -> this.totalPoints.setValue(v));
 		Label totalPointsLabel = new Label(TranslationController.translate("test_totalPoints"));
 		totalPointsLabel.setMinWidth(USE_PREF_SIZE);
-		right.add(totalPointsLabel, 0, 0);
-		right.add(this.totalPoints, 1, 0);
+		left.add(totalPointsLabel, 2, 0);
+		left.add(this.totalPoints, 3, 0);
 
 		BigDecimalConverter weightConverter = new BigDecimalConverter();
 		weightConverter.getDecimalFormat().setMaximumFractionDigits(2);
@@ -88,9 +95,71 @@ public class TestHeaderPane extends HBox {
 		test.weightProperty().bindBidirectional(this.weight.valueProperty());
 		Label weightPointsLabel = new Label(TranslationController.translate("test_weight"));
 		weightPointsLabel.setMinWidth(USE_PREF_SIZE);
-		right.add(weightPointsLabel, 0, 1);
-		right.add(this.weight, 1, 1);
-		this.getChildren().add(right);
+		left.add(weightPointsLabel, 2, 1);
+		left.add(this.weight, 3, 1);
+
+		GridPane right = new GridPane(10, 0);
+		this.showReturns = new UserInputToggleSwitch(new ToggleSwitch(), test.getShowReturns());
+		test.showReturnsProperty().bindBidirectional(this.showReturns.valueProperty());
+		this.showReturns.setMinWidth(USE_PREF_SIZE);
+		this.showReturns.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(3));
+		Label showReturnsLabel = new Label(TranslationController.translate("test_showReturns"));
+		showReturnsLabel.setMinWidth(USE_PREF_SIZE);
+		right.add(showReturnsLabel, 0, 0);
+		right.add(this.showReturns, 1, 0);
+
+		Label returnsMissingLabel = new Label(TranslationController.translate("test_returnsMissing"));
+		returnsMissingLabel.setMinWidth(USE_PREF_SIZE);
+		returnsMissingLabel.visibleProperty().bind(test.showReturnsProperty());
+		Label returnsMissing = new Label();
+		returnsMissing.setMinWidth(USE_PREF_SIZE);
+		returnsMissing.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(3));
+		returnsMissing.setAlignment(Pos.CENTER);
+		returnsMissing.setTextAlignment(TextAlignment.CENTER);
+		returnsMissing.textProperty().bind(Bindings
+				.createStringBinding(() -> this.returnsMissingAmount.getValue().toString(), this.returnsMissingAmount));
+		returnsMissing.visibleProperty().bind(test.showReturnsProperty());
+		this.returnsMissingAmount.setValue(test.getReturns().size());
+
+		final ChangeListener<Boolean> updateReturnsListener = (_, _, newValue) -> {
+			if (newValue) {
+				this.returnsMissingAmount.setValue(this.returnsMissingAmount.getValue() - 1);
+			} else {
+				this.returnsMissingAmount.setValue(this.returnsMissingAmount.getValue() + 1);
+			}
+		};
+		// add listeners to all existing returns
+		for (Entry<Student, ReadOnlyBooleanWrapper> e : test.getReturns().entrySet()) {
+			e.getValue().addListener(updateReturnsListener);
+		}
+		// update listener if new student / return is entered
+		test.getReturns().addListener((MapChangeListener<Student, ReadOnlyBooleanWrapper>) c -> {
+			// new mapping
+			if (c.getValueRemoved() == null) {
+				c.getValueAdded().addListener(updateReturnsListener);
+				if (!c.getValueAdded().get()) {
+					this.returnsMissingAmount.setValue(this.returnsMissingAmount.getValue() + 1);
+				}
+			}
+			// mapping was removed
+			else if (c.getValueAdded() == null) {
+				c.getValueRemoved().removeListener(updateReturnsListener);
+				if (!c.getValueRemoved().get()) {
+					this.returnsMissingAmount.setValue(this.returnsMissingAmount.getValue() - 1);
+				}
+			}
+			// mapping was replaced
+			else {
+				c.getValueRemoved().removeListener(updateReturnsListener);
+				c.getValueAdded().addListener(updateReturnsListener);
+			}
+		});
+
+		right.add(returnsMissingLabel, 0, 1);
+		right.add(returnsMissing, 1, 1);
+
+		this.setLeft(left);
+		this.setRight(right);
 	}
 
 }

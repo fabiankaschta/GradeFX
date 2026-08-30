@@ -62,7 +62,7 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 		this.updateStudentFilter();
 		this.group.getStudents().addListener((ListChangeListener<Student>) _ -> updateStudentFilter());
 		this.setPadding(new Insets(0));
-		
+
 		test.onlyDefaultDateProperty().subscribe(v -> this.filtered.setValue(v));
 
 		PointsSystem pointsSystem = test.getPointsSystem();
@@ -285,6 +285,8 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 			// update listener if new student / grade is entered
 			TableViewPointsSystem.this.test.getGrades()
 					.addListener((MapChangeListener<Student, ObjectProperty<Grade>>) c -> {
+						// can't access TableViewPointsSystem.this.students somehow without that call
+						updateStudentFilter();
 						if (TableViewPointsSystem.this.students.contains(c.getKey())) {
 							// new mapping
 							if (c.getValueRemoved() == null) {

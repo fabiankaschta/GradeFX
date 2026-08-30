@@ -141,6 +141,8 @@ public class TestStatisticsSidePane extends ScrollPane {
 			tendencies.setAlignment(Pos.CENTER_LEFT);
 			settingsPaneContent.getChildren().add(tendencies);
 
+			this.getStyleClass().add("titled-pane-no-focus");
+			
 			this.setContent(settingsPaneContent);
 			this.visibleProperty().bind(test.usePointsProperty());
 		}
@@ -235,6 +237,8 @@ public class TestStatisticsSidePane extends ScrollPane {
 			updateSliders();
 			sliderPaneContent.getChildren().add(sliderView);
 
+			this.getStyleClass().add("titled-pane-no-focus");
+			
 			this.setContent(sliderPaneContent);
 			this.visibleProperty().bind(test.usePointsProperty());
 		}

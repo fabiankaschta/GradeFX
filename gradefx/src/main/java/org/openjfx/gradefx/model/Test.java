@@ -310,6 +310,7 @@ public class Test {
 	private final BooleanProperty onlyDefaultDate = new SimpleBooleanProperty(this, "onlyDefaultDate");
 	private final BooleanProperty useTasks = new SimpleBooleanProperty(this, "useTasks");
 	private final BooleanProperty usePoints = new SimpleBooleanProperty(this, "usePoints");
+	private final BooleanProperty showReturns = new SimpleBooleanProperty(this, "showReturns");
 	private final ObjectProperty<PointsSystem> pointsSystem = new SimpleObjectProperty<>(this, "pointsSystem");
 	private final ObjectProperty<TestTask> tasksRoot = new SimpleObjectProperty<>(this, "tasksRoot");
 	private final ObservableMap<Student, ReadOnlyBooleanWrapper> totalPointsFixed = FXCollections.observableHashMap();
@@ -318,16 +319,17 @@ public class Test {
 	private final ObservableMap<Student, ObjectProperty<Grade>> grades = FXCollections.observableHashMap();
 	private final ObservableMap<Student, StringProperty> annotations = FXCollections.observableHashMap();
 	private final ObservableMap<Student, ObjectProperty<LocalDate>> dates = FXCollections.observableHashMap();
+	private final ObservableMap<Student, ReadOnlyBooleanWrapper> hasReturned = FXCollections.observableHashMap();
 
 	public Test(Group group, String name, String shortName, LocalDate date, BigDecimal weight, BigDecimal maxPoints,
-			boolean onlyDefaultDate, boolean useTasks, boolean usePoints) {
-		this(name, shortName, date, weight, onlyDefaultDate, useTasks, usePoints);
+			boolean onlyDefaultDate, boolean useTasks, boolean usePoints, boolean showReturns) {
+		this(name, shortName, date, weight, onlyDefaultDate, useTasks, usePoints, showReturns);
 		this.setTasksRoot(TestTask.createRoot(this, maxPoints));
 		this.setPointsSystem(group.getGradeSystem().getDefaultPointsSystem(this.totalPointsProperty()));
 	}
 
 	private Test(String name, String shortName, LocalDate date, BigDecimal weight, boolean onlyDefaultDate,
-			boolean useTasks, boolean usePoints) {
+			boolean useTasks, boolean usePoints, boolean showReturns) {
 		this.setName(name);
 		this.setShortName(shortName);
 		this.setDate(date);
@@ -335,6 +337,7 @@ public class Test {
 		this.setOnlyDefaultDate(onlyDefaultDate);
 		this.setUseTasks(useTasks);
 		this.setUsePoints(usePoints);
+		this.setShowReturns(showReturns);
 		this.useTasksProperty().addListener((_, oldValue, newValue) -> {
 			if (!oldValue && newValue) {
 				this.setUsePoints(true);
@@ -384,9 +387,11 @@ public class Test {
 		this.nameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.shortNameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.dateProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.onlyDefaultDateProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.weightProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.useTasksProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.usePointsProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.showReturnsProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 	}
 
 	public String getName() {
@@ -449,6 +454,18 @@ public class Test {
 		this.onlyDefaultDate.set(onlyDefaultDate);
 	}
 
+	public boolean getShowReturns() {
+		return showReturns.get();
+	}
+
+	public BooleanProperty showReturnsProperty() {
+		return showReturns;
+	}
+
+	public void setShowReturns(boolean showReturns) {
+		this.showReturns.set(showReturns);
+	}
+
 	public boolean getUseTasks() {
 		return useTasks.get();
 	}
@@ -505,12 +522,12 @@ public class Test {
 	}
 
 	public ReadOnlyObjectProperty<BigDecimal> totalPointsProperty() {
-		return tasksRoot.getValue().maxPointsProperty();
+		return this.tasksRoot.getValue().maxPointsProperty();
 	}
 
 	public void setTotalPoints(BigDecimal totalPoints) {
 		if (!this.getUseTasks() && this.getUsePoints()) {
-			tasksRoot.getValue().maxPoints.set(totalPoints);
+			this.tasksRoot.getValue().maxPoints.set(totalPoints);
 			this.calculateGrades();
 		} else {
 			throw new IllegalStateException("only tasks without tasks but points may have max points set manually");
@@ -524,6 +541,7 @@ public class Test {
 		this.totalPointsFixed.remove(student);
 		this.annotations.remove(student);
 		this.dates.remove(student);
+		this.hasReturned.remove(student);
 		this.tasksRoot.get().removeStudent(student);
 	}
 
@@ -538,6 +556,9 @@ public class Test {
 					"totalPointsFixed in test " + this, false);
 			StringProperty annotationProperty = new SimpleStringProperty(student, "annotation in test " + this);
 			ObjectProperty<LocalDate> dateProperty = new SimpleObjectProperty<>(student, "date in test " + this);
+			ReadOnlyBooleanWrapper hasReturnedProperty = new ReadOnlyBooleanWrapper(student,
+					"hasReturned in test " + this, false);
+
 			gradeProperty.addListener(ChangeController
 					.getConditionalListenerUnsavedChanges(() -> this.isGradeFixed(student) || !this.getUsePoints()));
 			gradeFixedProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
@@ -546,6 +567,7 @@ public class Test {
 			totalPointsFixedProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 			annotationProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 			dateProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+			hasReturnedProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 
 			gradeFixedProperty.addListener((_, oldValue, newValue) -> {
 				if (oldValue && !newValue) {
@@ -567,6 +589,7 @@ public class Test {
 			this.totalPointsFixed.put(student, totalPointsFixedProperty);
 			this.annotations.put(student, annotationProperty);
 			this.dates.put(student, dateProperty);
+			this.hasReturned.put(student, hasReturnedProperty);
 
 			this.calculateTotalPoints(student);
 			this.calculateGrade(student);
@@ -702,6 +725,25 @@ public class Test {
 		return this.dates.get(student);
 	}
 
+	public ReadOnlyBooleanProperty hasReturnedProperty(Student student) {
+		this.putStudentPropertiesIfNotExists(student);
+		return this.hasReturned.get(student);
+	}
+
+	public void setHasReturned(Student student, boolean hasReturned) {
+		this.putStudentPropertiesIfNotExists(student);
+		this.hasReturned.get(student).set(hasReturned);
+	}
+
+	public boolean getHasReturned(Student student) {
+		this.putStudentPropertiesIfNotExists(student);
+		return this.hasReturned.get(student).getValue();
+	}
+
+	public ObservableMap<Student, ReadOnlyBooleanWrapper> getReturns() {
+		return this.hasReturned;
+	}
+
 	@Override
 	public String toString() {
 		return this.getName();
@@ -718,6 +760,7 @@ public class Test {
 		private final boolean onlyDefaultDate;
 		private final boolean useTasks;
 		private final boolean usePoints;
+		private final boolean showReturns;
 		private final DataObject<PointsSystem> pointsSystem;
 		private final DataObject<TestTask> tasksRoot;
 		private final Map<DataObject<Student>, Grade> grades = new HashMap<>();
@@ -726,6 +769,7 @@ public class Test {
 		private final Map<DataObject<Student>, Boolean> totalPointsFixed = new HashMap<>();
 		private final Map<DataObject<Student>, String> annotations = new HashMap<>();
 		private final Map<DataObject<Student>, LocalDate> dates = new HashMap<>();
+		private final Map<DataObject<Student>, Boolean> hasReturned = new HashMap<>();
 
 		private transient Test test;
 
@@ -736,6 +780,7 @@ public class Test {
 			date = t.getDate();
 			weight = t.getWeight();
 			onlyDefaultDate = t.getOnlyDefaultDate();
+			showReturns = t.getShowReturns();
 			useTasks = t.getUseTasks();
 			usePoints = t.getUsePoints();
 			pointsSystem = t.getPointsSystem().serialize();
@@ -764,12 +809,15 @@ public class Test {
 			for (Entry<Student, ObjectProperty<LocalDate>> sd : t.dates.entrySet()) {
 				this.dates.put(sd.getKey().serialize(), sd.getValue().getValue());
 			}
+			for (Entry<Student, ReadOnlyBooleanWrapper> sr : t.hasReturned.entrySet()) {
+				this.hasReturned.put(sr.getKey().serialize(), sr.getValue().getValue());
+			}
 			test = t;
 		}
 
 		public Test deserialize(Object... params) {
 			if (test == null) {
-				test = new Test(name, shortName, date, weight, onlyDefaultDate, useTasks, usePoints);
+				test = new Test(name, shortName, date, weight, onlyDefaultDate, useTasks, usePoints, showReturns);
 				tasksRoot.deserialize(test);
 				test.setPointsSystem(pointsSystem.deserialize());
 				test.calculateTotalPoints();
@@ -799,6 +847,13 @@ public class Test {
 					Student student = sd.getKey().deserialize();
 					test.putStudentPropertiesIfNotExists(student);
 					test.setDate(student, sd.getValue());
+				}
+				if (hasReturned != null) { // TODO remove compatibility for < v1.6
+					for (Entry<DataObject<Student>, Boolean> sr : hasReturned.entrySet()) {
+						Student student = sr.getKey().deserialize();
+						test.putStudentPropertiesIfNotExists(student);
+						test.setHasReturned(student, sr.getValue());
+					}
 				}
 			}
 			return test;

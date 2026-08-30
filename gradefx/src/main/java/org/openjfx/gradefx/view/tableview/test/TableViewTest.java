@@ -13,6 +13,7 @@ import org.openjfx.gradefx.model.Test.TestTask;
 import org.openjfx.gradefx.view.pane.GroupsPane;
 import org.openjfx.gradefx.view.tableview.columns.StudentFirstNameColumn;
 import org.openjfx.gradefx.view.tableview.columns.StudentLastNameColumn;
+import org.openjfx.gradefx.view.tableview.columns.StudentReturnColumn;
 import org.openjfx.gradefx.view.tableview.columns.StudentSubgroupNameColumn;
 import org.openjfx.gradefx.view.tableview.test.columns.TestAnnotationColumn;
 import org.openjfx.gradefx.view.tableview.test.columns.TestDateColumn;
@@ -22,7 +23,6 @@ import org.openjfx.gradefx.view.tableview.test.columns.TestSumColumn;
 import org.openjfx.gradefx.view.tableview.test.columns.TestTaskColumn;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
-import org.openjfx.kafx.view.tableview.TableCellEditControl;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -47,6 +47,7 @@ public class TableViewTest extends TableView2<Student> {
 	private final TestDateColumn dateColumn;
 	private final IntegerProperty selectedRowIndex = new SimpleIntegerProperty(this, "selectedRow", -1);
 
+	@SuppressWarnings("unchecked")
 	public TableViewTest(Group group, Test test) {
 		super(group.getStudents());
 
@@ -63,14 +64,16 @@ public class TableViewTest extends TableView2<Student> {
 
 		Consumer<TableCell<Student, ?>> rowIndexSubscription = cell -> subscribeRowIndex(cell);
 
+		StudentReturnColumn returnCol = new StudentReturnColumn(test, rowIndexSubscription);
 		StudentLastNameColumn lastNameCol = new StudentLastNameColumn(false, rowIndexSubscription);
 		StudentFirstNameColumn firstNameCol = new StudentFirstNameColumn(false, rowIndexSubscription);
 		StudentSubgroupNameColumn subgroupNameCol = new StudentSubgroupNameColumn(group, false, rowIndexSubscription);
 
+		this.getColumns().add(returnCol);
 		this.getColumns().add(lastNameCol);
 		this.getColumns().add(firstNameCol);
 		this.getColumns().add(subgroupNameCol);
-		this.getFixedColumns().addAll(lastNameCol, firstNameCol, subgroupNameCol);
+		this.getFixedColumns().addAll(returnCol, lastNameCol, firstNameCol, subgroupNameCol);
 
 		this.sumColumn = new TestSumColumn(test, rowIndexSubscription);
 		this.ratioColumn = new TestRatioColumn(test, this.sumColumn, rowIndexSubscription);
@@ -104,15 +107,15 @@ public class TableViewTest extends TableView2<Student> {
 		FontSizeController.bindTableColumnWidthToFontSize(this);
 		this.getStyleClass().addAll("table-view-cell-highlight", "table-view-no-focus", "table-view-hide-empty");
 
-		// both necessary to clear selection correctly
-		this.focusedProperty().addListener((_, _, isFocused) -> {
-			if (!isFocused && this.getEditingCell() == null) {
-				this.getSelectionModel().clearSelection();
-			}
-		});
-		this.addEventHandler(TableCellEditControl.FOCUS_LOST, _ -> {
-			this.getSelectionModel().clearSelection();
-		});
+		// this fixes cell selection (visibly) changing when showing/hiding columns
+		for (TableColumn<Student, ?> column : this.getColumns()) {
+			column.visibleProperty().addListener((_, _, _) -> {
+				if (!this.getSelectionModel().getSelectedCells().isEmpty()) {
+					TablePosition<?, ?> pos = this.getSelectionModel().getSelectedCells().getFirst();
+					this.getSelectionModel().select(pos.getRow(), (TableColumn<Student, ?>) pos.getTableColumn());
+				}
+			});
+		}
 	}
 
 	@Override
@@ -150,10 +153,14 @@ public class TableViewTest extends TableView2<Student> {
 			}
 		});
 		cell.tableRowProperty().subscribe(row -> {
-			if (row == null || this.selectedRowIndex.intValue() != row.getIndex()) {
-				cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), false);
-			} else {
-				cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), true);
+			if (row != null) {
+				row.indexProperty().subscribe(index -> {
+					if (this.selectedRowIndex.intValue() != index.intValue()) {
+						cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), false);
+					} else {
+						cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), true);
+					}
+				});
 			}
 		});
 	}
