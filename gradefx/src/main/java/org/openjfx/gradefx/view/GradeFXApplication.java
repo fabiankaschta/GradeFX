@@ -4,6 +4,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 
+import org.openjfx.gradefx.model.GradeSystem;
 import org.openjfx.gradefx.model.Subject;
 import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
 import org.openjfx.gradefx.view.dialog.DialogFirstStart;
@@ -79,6 +80,7 @@ public class GradeFXApplication extends Application {
 		if (!ConfigController.exists("LAST_FILE") || !FileController.readFromFile()) {
 			TestGroupSystem.setDefault();
 			Subject.setDefault();
+			GradeSystem.setDefault();
 			new DialogFirstStart().showAndWait().ifPresent(buttonType -> {
 				if (buttonType == DialogFirstStart.NEW_FILE) {
 					if (!FileController.saveAs()) {

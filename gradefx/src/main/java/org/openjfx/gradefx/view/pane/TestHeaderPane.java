@@ -128,9 +128,7 @@ public class TestHeaderPane extends GridPane {
 		returnsMissing.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(3));
 		returnsMissing.setAlignment(Pos.CENTER);
 		returnsMissing.setTextAlignment(TextAlignment.CENTER);
-		EmojiImageView emoji = new EmojiImageView("1F60E");
-		emoji.fitWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(2));
-		emoji.fitHeightProperty().bind(FontSizeController.fontSizeProperty().multiply(2));
+		EmojiImageView emoji = new EmojiImageView("1F60E", FontSizeController.fontSizeProperty().multiply(2));
 		this.returnsMissingAmount.subscribe(value -> {
 			if (value.intValue() == 0) {
 				returnsMissing.setGraphic(emoji);

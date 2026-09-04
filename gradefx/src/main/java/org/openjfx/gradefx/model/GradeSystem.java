@@ -1,40 +1,110 @@
 package org.openjfx.gradefx.model;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
-import org.openjfx.gradefx.model.PointsSystem.BoundType;
+import org.openjfx.gradefx.model.Grade.Tendency;
+import org.openjfx.gradefx.view.converter.GradeConverter;
 import org.openjfx.kafx.controller.ConfigController;
+import org.openjfx.kafx.controller.TranslationController;
+import org.openjfx.kafx.io.DataObject;
 
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.util.StringConverter;
 
-public enum GradeSystem {
+public class GradeSystem {
 
-	ONE_TO_SIX, FIFTEEN_POINTS;
+	private final static ObservableList<GradeSystem> gradeSystems = FXCollections.observableArrayList();
+
+	public static ObservableList<GradeSystem> getGradeSystems() {
+		return gradeSystems;
+	}
+
+	public static void removeGradeSystem(GradeSystem gradeSystem) {
+		gradeSystems.remove(gradeSystem);
+	}
+
+	public static GradeSystem get(String name) {
+		for (GradeSystem gradeSystem : gradeSystems) {
+			if (gradeSystem.getName().equals(name)) {
+				return gradeSystem;
+			}
+		}
+		return null;
+	}
+
+	public static void setDefault() {
+		gradeSystems.clear();
+
+		GradeSystem ONE_TO_SIX = new GradeSystem(TranslationController.translate("gradeSystem_ONE_TO_SIX"), true, true,
+				BoundType.MOREOREQUAL_THAN);
+		for (int i = 6; i >= 1; i--) {
+			ONE_TO_SIX.addGrade(i, Tendency.NEGATIVE);
+			ONE_TO_SIX.addGrade(i, Tendency.NEUTRAL);
+			ONE_TO_SIX.addGrade(i, Tendency.POSITIVE);
+		}
+		ONE_TO_SIX.setDefaultRatioBound(ONE_TO_SIX.getGrade(4), BigDecimal.valueOf(0.4));
+
+		GradeSystem FIFTEEN_POINTS = new GradeSystem(TranslationController.translate("gradeSystem_FIFTEEN_POINTS"),
+				false, false, BoundType.MOREOREQUAL_THAN);
+		for (int i = 0; i <= 15; i++) {
+			FIFTEEN_POINTS.addGrade(i);
+		}
+		FIFTEEN_POINTS.setRoundingMode(FIFTEEN_POINTS.getGrade(0), RoundingMode.DOWN);
+		FIFTEEN_POINTS.setDefaultRatioBound(FIFTEEN_POINTS.getGrade(1), BigDecimal.valueOf(0.2));
+		FIFTEEN_POINTS.setDefaultRatioBound(FIFTEEN_POINTS.getGrade(4), BigDecimal.valueOf(0.4));
+	}
+
+	public static GradeSystem getDefault() {
+		return gradeSystems.getFirst();
+	}
+
+	private final String name;
+	private final boolean useTendencies;
+	private final boolean moreIsWorse;
+	private final BoundType defaultBoundType;
+//	private final BigDecimal criticalUpperAvg;
+//	private final BigDecimal criticalLowerAvg;
+	private final Set<Grade> grades = new HashSet<>();
+	private final Map<Grade, BigDecimal> defaultRatioBounds = new HashMap<>();
+	private final Map<Grade, RoundingMode> roundingModes = new HashMap<>();
+
+	private GradeSystem(String name, boolean useTendencies, boolean moreIsWorse, BoundType defaultBoundType) {
+		this.name = name;
+		this.useTendencies = useTendencies;
+		this.moreIsWorse = moreIsWorse;
+		this.defaultBoundType = defaultBoundType;
+		gradeSystems.add(this);
+	}
 
 	public Grade calculateGrade(BigDecimal avg) {
 		if (avg == null) {
 			return null;
-		}
-		switch (this) {
-		case ONE_TO_SIX:
-			return getGrade(avg.setScale(0, RoundingMode.HALF_DOWN).intValue());
-		case FIFTEEN_POINTS:
-			if (avg.compareTo(BigDecimal.ONE) < 0) {
-				return getGrade(0);
-			} else {
-				return getGrade(avg.setScale(0, RoundingMode.HALF_UP).intValue());
+		} else {
+			for (Grade grade : this.getPossibleGradesASC()) {
+				RoundingMode roundingMode = this.getRoundingMode(grade);
+				if (roundingMode == null) {
+					if (this.moreIsWorse()) {
+						roundingMode = RoundingMode.HALF_DOWN;
+					} else {
+						roundingMode = RoundingMode.HALF_UP;
+					}
+				}
+				if (avg.setScale(0, roundingMode).intValue() == grade.getNumericalValue().intValue()) {
+					return grade;
+				}
 			}
+			throw new IllegalArgumentException("no grade possible for given average " + avg);
 		}
-		throw new IllegalArgumentException("Error using grade system.");
 	}
 
 	public BigDecimal calculateAverage(BigDecimal... values) {
@@ -66,8 +136,8 @@ public enum GradeSystem {
 		return avg.setScale(2, RoundingMode.FLOOR);
 	}
 
-	public static GradeSystem getDefault() {
-		return ONE_TO_SIX;
+	public boolean useTendencies() {
+		return this.useTendencies;
 	}
 
 	/**
@@ -76,29 +146,16 @@ public enum GradeSystem {
 	 * @return
 	 */
 	public Grade[] getPossibleGradesASC() {
-		switch (this) {
-		case ONE_TO_SIX:
-			return Arrays.asList(6, 5, 4, 3, 2, 1).stream().map(x -> getGrade(x)).toArray(n -> new Grade[n]);
-		case FIFTEEN_POINTS:
-			return Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15).stream().map(x -> getGrade(x))
-					.toArray(n -> new Grade[n]);
-		}
-		throw new IllegalArgumentException("Error using grade system.");
+		return this.grades.stream().filter(g -> g.getTendency() == Tendency.NEUTRAL).sorted(this.gradeComparator)
+				.toArray(n -> new Grade[n]);
 	}
 
 	public Grade[] getPossibleGradesASCTendencies() {
-		switch (this) {
-		case ONE_TO_SIX:
-			return Arrays.asList(6, 5, 4, 3, 2, 1).stream()
-					.mapMulti((BiConsumer<Integer, Consumer<Grade>>) (x, consumer) -> {
-						for (Tendency tendency : Tendency.values()) {
-							consumer.accept(getGrade(x, tendency));
-						}
-					}).toArray(n -> new Grade[n]);
-		case FIFTEEN_POINTS:
-			return getPossibleGradesASC();
+		if (this.useTendencies()) {
+			return this.grades.stream().sorted(this.gradeComparator).toArray(n -> new Grade[n]);
+		} else {
+			throw new UnsupportedOperationException();
 		}
-		throw new IllegalArgumentException("Error using grade system.");
 	}
 
 	/**
@@ -107,235 +164,208 @@ public enum GradeSystem {
 	 * @return
 	 */
 	public Grade[] getPossibleGradesDESC() {
-		switch (this) {
-		case ONE_TO_SIX:
-			return Arrays.asList(1, 2, 3, 4, 5, 6).stream().map(x -> getGrade(x)).toArray(n -> new Grade[n]);
-		case FIFTEEN_POINTS:
-			return Arrays.asList(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0).stream().map(x -> getGrade(x))
-					.toArray(n -> new Grade[n]);
-		}
-		throw new IllegalArgumentException("Error using grade system.");
+		return this.grades.stream().filter(g -> g.getTendency() == Tendency.NEUTRAL)
+				.sorted(this.gradeComparator.reversed()).toArray(n -> new Grade[n]);
 	}
 
 	public Grade[] getPossibleGradesDESCTendencies() {
-		switch (this) {
-		case ONE_TO_SIX:
-			return Arrays.asList(1, 2, 3, 4, 5, 6).stream()
-					.mapMulti((BiConsumer<Integer, Consumer<Grade>>) (x, consumer) -> {
-						for (Tendency tendency : Tendency.valuesReversed()) {
-							consumer.accept(getGrade(x, tendency));
-						}
-					}).toArray(n -> new Grade[n]);
-		case FIFTEEN_POINTS:
-			return getPossibleGradesDESC();
+		if (this.useTendencies()) {
+			return this.grades.stream().sorted(this.gradeComparator.reversed()).toArray(n -> new Grade[n]);
+		} else {
+			throw new UnsupportedOperationException();
 		}
-		throw new IllegalArgumentException("Error using grade system.");
-	}
-
-	public BigDecimal[] getDefaultRatioBounds() {
-		switch (this) {
-		case ONE_TO_SIX:
-			return new BigDecimal[] { null, null, BigDecimal.valueOf(0.4), null, null, null };
-		case FIFTEEN_POINTS:
-			return new BigDecimal[] { null, BigDecimal.valueOf(0.2), null, null, BigDecimal.valueOf(0.4), null, null,
-					null, null, null, null, null, null, null, null, null };
-		}
-		throw new IllegalArgumentException("Error using grade system.");
 	}
 
 	public PointsSystem getDefaultPointsSystem(ObservableValue<BigDecimal> totalPoints) {
-		return new PointsSystem(totalPoints,
+		return new PointsSystem(this, totalPoints,
 				ConfigController.get("TENDENCY_BOUND").equals("null") ? null
 						: BigDecimal.valueOf(Double.valueOf(ConfigController.get("TENDENCY_BOUND"))),
-				BoundType.MOREOREQUAL_THAN, Boolean.valueOf(ConfigController.get("USE_HALF_POINTS")), this);
+				Boolean.valueOf(ConfigController.get("USE_HALF_POINTS")));
 	}
 
-	public boolean useTendencies() {
-		switch (this) {
-		case ONE_TO_SIX:
-			return true;
-		case FIFTEEN_POINTS:
-			return false;
-		}
-		throw new IllegalArgumentException("Error using grade system.");
-	}
-
-	private boolean moreIsLess() {
-		switch (this) {
-		case ONE_TO_SIX:
-			return true;
-		case FIFTEEN_POINTS:
-			return false;
-		}
-		throw new IllegalArgumentException("Error using grade system.");
+	protected boolean moreIsWorse() {
+		return this.moreIsWorse;
 	}
 
 	public Grade getWorst() {
-		return getPossibleGradesASCTendencies()[0];
+		return this.grades.stream().sorted(this.gradeComparator).toList().getFirst();
 	}
 
 	public Grade getBest() {
-		return getPossibleGradesDESCTendencies()[0];
+		return this.grades.stream().sorted(this.gradeComparator).toList().getLast();
 	}
 
-	private final Set<Grade> grades = new HashSet<>();
+	private void setDefaultRatioBound(Grade grade, BigDecimal defaultRatioBound) {
+		this.defaultRatioBounds.put(grade, defaultRatioBound);
+	}
 
-	private Grade getOrAdd(Grade tmp) {
-		for (Grade grade : grades) {
-			if (grade.equals(tmp)) {
-				return grade;
-			}
-		}
-		if (tmp.getNumericalValue() == null) {
-			throw new IllegalArgumentException("Can't add grade without numerical value");
-		} else {
-			grades.add(tmp);
-			return tmp;
-		}
+	public BigDecimal getDefaultRatioBound(Grade grade) {
+		return this.defaultRatioBounds.get(grade);
+	}
+
+	/**
+	 * If not set, default rounding modes are {@link RoundingMode.HALF_UP} if
+	 * {@link #moreIsWorse()} and {@link RoundingMode.HALF_DOWN} if not. <br>
+	 * Rounding modes are applied worst to best, so a rounding mode for a worse
+	 * grade is applied before one for a better grade (i.e. if the avg is 0.8, the
+	 * rounding mode for the worse grade with numerical value 0 is
+	 * {@link RoundingMode.DOWN} and for the better grade with numerical value 1 is
+	 * {@link RoundingMode.HALF_UP}, then the resulting grade is the one with
+	 * numerical value 0 since it is checked first).
+	 * 
+	 * @param grade
+	 * @param roundingMode
+	 */
+	private void setRoundingMode(Grade grade, RoundingMode roundingMode) {
+		this.roundingModes.put(grade, roundingMode);
+	}
+
+	public RoundingMode getRoundingMode(Grade grade) {
+		return this.roundingModes.get(grade);
+	}
+
+	public BoundType getDefaultBoundType() {
+		return this.defaultBoundType;
+	}
+
+	public StringConverter<Grade> getGradeConverter() {
+		return new GradeConverter(this);
 	}
 
 	public Grade getGrade(Integer numericalValue) {
-		return getOrAdd(new Grade(numericalValue, "" + numericalValue));
-	}
-
-	public Grade getGrade(Integer numericalValue, Tendency tendency) {
-		return getOrAdd(new Grade(numericalValue, "" + numericalValue, tendency));
+		return getGrade(numericalValue, String.valueOf(numericalValue), Tendency.NEUTRAL);
 	}
 
 	public Grade getGrade(Integer numericalValue, String displayedValue) {
-		return getOrAdd(new Grade(numericalValue, displayedValue));
+		return getGrade(numericalValue, displayedValue, Tendency.NEUTRAL);
+	}
+
+	public Grade getGrade(Integer numericalValue, Tendency tendency) {
+		return getGrade(numericalValue, String.valueOf(numericalValue), tendency);
 	}
 
 	public Grade getGrade(Integer numericalValue, String displayedValue, Tendency tendency) {
-		return getOrAdd(new Grade(numericalValue, displayedValue, tendency));
-	}
-
-	private Grade getGrade(String displayedValue, Tendency tendency) {
-		return getOrAdd(new Grade(null, displayedValue, tendency));
-	}
-
-	public enum Tendency implements Comparable<Tendency> {
-		// natural order for compare
-		NEGATIVE, NONE, POSITIVE;
-
-		@Override
-		public String toString() {
-			switch (this) {
-			case NEGATIVE:
-				return "-";
-			case NONE:
-				return "";
-			case POSITIVE:
-				return "+";
-			}
-			return super.toString();
-		}
-
-		private static Tendency[] valuesReversed() {
-			return new Tendency[] { POSITIVE, NONE, NEGATIVE };
-		}
-
-	}
-
-	private final StringConverter<Grade> converter = new StringConverter<>() {
-
-		@Override
-		public String toString(Grade object) {
-			if (useTendencies()) {
-				return object.displayedValue + object.tendency.toString();
-			} else {
-				return object.displayedValue;
+		for (Grade grade : this.grades) {
+			if (grade.getNumericalValue().equals(numericalValue) && grade.getDisplayedValue().equals(displayedValue)
+					&& grade.getTendency().equals(tendency)) {
+				return grade;
 			}
 		}
-
-		@Override
-		public Grade fromString(String string) {
-			if (useTendencies()) {
-				for (Tendency tendency : Tendency.values()) {
-					int index = string.lastIndexOf(tendency.toString());
-					if (index != -1 && tendency.toString().length() > 0) {
-						if (index + tendency.toString().length() == string.length()) {
-							return getGrade(string.substring(0, index), tendency);
-						} else {
-							throw new IllegalArgumentException(
-									"Can't parse grades with characaters after tendency indicator");
-						}
-					}
-				}
-				return getGrade(string, Tendency.NONE);
-			} else {
-				return getGrade(string, Tendency.NONE);
-			}
-		}
-
-	};
-
-	public StringConverter<Grade> getGradeConverter() {
-		return this.converter;
+		return null;
 	}
 
-	public class Grade implements Comparable<Grade>, Serializable {
+	public Grade getGrade(String displayedValue) {
+		return getGrade(displayedValue, Tendency.NEUTRAL);
+	}
 
-		private static final long serialVersionUID = 4060606045262948871L;
-
-		private Grade(Integer numericalValue, String displayedValue) {
-			this(numericalValue, displayedValue, Tendency.NONE);
+	public Grade getGrade(String displayedValue, Tendency tendency) {
+		for (Grade grade : this.grades) {
+			if (grade.getDisplayedValue().equals(displayedValue) && grade.getTendency().equals(tendency)) {
+				return grade;
+			}
 		}
+		return null;
+	}
 
-		private Grade(Integer numericalValue, String displayedValue, Tendency tendency) {
-			this.numericalValue = numericalValue;
-			this.displayedValue = displayedValue;
-			this.tendency = tendency;
-		}
+	private void addGrade(Integer numericalValue) {
+		this.addGrade(numericalValue, String.valueOf(numericalValue), Tendency.NEUTRAL);
+	}
 
-		private final Integer numericalValue;
-		private final String displayedValue;
-		private final Tendency tendency;
+	@SuppressWarnings("unused")
+	private void addGrade(Integer numericalValue, String displayedValue) {
+		this.addGrade(numericalValue, displayedValue, Tendency.NEUTRAL);
+	}
 
-		public Integer getNumericalValue() {
-			return this.numericalValue;
-		}
+	private void addGrade(Integer numericalValue, Tendency tendency) {
+		this.addGrade(numericalValue, String.valueOf(numericalValue), tendency);
+	}
 
-		public Tendency getTendency() {
-			return this.tendency;
-		}
+	private void addGrade(Integer numericalValue, String displayedValue, Tendency tendency) {
+		this.grades.add(Grade.forGradeSystem(this, numericalValue, displayedValue, tendency));
+	}
 
-		public Grade setTendency(Tendency tendency) {
-			return getGrade(this.numericalValue, this.displayedValue, tendency);
-		}
+	private final Comparator<Grade> gradeComparator = new Comparator<Grade>() {
 
 		@Override
-		public String toString() {
-			return converter.toString(this);
-		}
-
-		@Override
-		public int hashCode() {
-			return displayedValue.hashCode() ^ tendency.hashCode();
-		}
-
-		@Override
-		public int compareTo(Grade o) {
-			int compare = this.numericalValue.compareTo(o.numericalValue);
+		public int compare(Grade g1, Grade g2) {
+			int compare = g1.getNumericalValue().compareTo(g2.getNumericalValue());
 			if (compare == 0) {
-				return this.tendency.compareTo(o.tendency);
-			} else if (moreIsLess()) {
+				return g1.getTendency().compareTo(g2.getTendency());
+			} else if (GradeSystem.this.moreIsWorse()) {
 				return compare * (-1);
 			} else {
 				return compare;
 			}
 		}
+	};
 
-		@Override
-		public boolean equals(Object o) {
-			if (o == null || !(o instanceof Grade)) {
-				return false;
-			} else {
-				Grade grade = (Grade) o;
-				return this.displayedValue.equals(grade.displayedValue) && this.tendency.equals(grade.tendency);
+	public Comparator<Grade> getGradeComparator() {
+		return this.gradeComparator;
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	private static class GradeSystemS implements DataObject<GradeSystem> {
+
+		private static final long serialVersionUID = -3790532903681625300L;
+
+		private transient GradeSystem gradeSystem;
+
+		private final String name;
+		private final boolean useTendencies;
+		private final boolean moreIsWorse;
+		private final BoundType defaultBoundType;
+		private final Set<Grade> grades = new HashSet<>();
+		private final Map<Grade, BigDecimal> defaultRatioBounds = new HashMap<>();
+		private final Map<Grade, RoundingMode> roundingModes = new HashMap<>();
+
+		private GradeSystemS(GradeSystem g) {
+			DataObject.putSerialized(g, this);
+			this.name = g.getName();
+			this.useTendencies = g.useTendencies();
+			this.moreIsWorse = g.moreIsWorse();
+			this.defaultBoundType = g.getDefaultBoundType();
+			for (Grade grade : g.grades) {
+				this.grades.add(grade);
 			}
+			for (Entry<Grade, BigDecimal> gd : g.defaultRatioBounds.entrySet()) {
+				this.defaultRatioBounds.put(gd.getKey(), gd.getValue());
+			}
+			for (Entry<Grade, RoundingMode> gr : g.roundingModes.entrySet()) {
+				this.roundingModes.put(gr.getKey(), gr.getValue());
+			}
+			this.gradeSystem = g;
 		}
 
+		@Override
+		public GradeSystem deserialize(Object... params) {
+			if (gradeSystem == null) {
+				gradeSystem = new GradeSystem(name, useTendencies, moreIsWorse, defaultBoundType);
+				for (Grade grade : grades) {
+					gradeSystem.grades.add(grade);
+				}
+				for (Entry<Grade, BigDecimal> gd : defaultRatioBounds.entrySet()) {
+					gradeSystem.defaultRatioBounds.put(gd.getKey(), gd.getValue());
+				}
+				for (Entry<Grade, RoundingMode> gr : roundingModes.entrySet()) {
+					gradeSystem.roundingModes.put(gr.getKey(), gr.getValue());
+				}
+			}
+			return gradeSystem;
+		}
+
+	}
+
+	@SuppressWarnings("unchecked")
+	public DataObject<GradeSystem> serialize() {
+		DataObject<?> gradeSystem = DataObject.getSerialized(this);
+		if (gradeSystem == null) {
+			return new GradeSystemS(this);
+		} else {
+			return (DataObject<GradeSystem>) gradeSystem;
+		}
 	}
 
 }

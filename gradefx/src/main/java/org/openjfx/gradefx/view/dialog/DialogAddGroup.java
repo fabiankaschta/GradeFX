@@ -46,7 +46,7 @@ public class DialogAddGroup extends DialogAdd<Group> {
 		super.addInput(this.useSubgroups, TranslationController.translate("group_useSubgroups"));
 
 		ChoiceBox<GradeSystem> gradeSystemChoiceBox = new ChoiceBox<>(
-				FXCollections.observableArrayList(GradeSystem.values()));
+				FXCollections.observableArrayList(GradeSystem.getGradeSystems()));
 		gradeSystemChoiceBox.setConverter(new GradeSystemConverter());
 		this.gradeSystem = new UserInputChoiceBox<>(gradeSystemChoiceBox, GradeSystem.getDefault());
 		super.addInput(this.gradeSystem, TranslationController.translate("group_gradeSystem"));
@@ -57,8 +57,8 @@ public class DialogAddGroup extends DialogAdd<Group> {
 				TestGroupSystem.getTestGroupSystems().get(0));
 		super.addInput(this.testGroupSystem, TranslationController.translate("group_testGroupSystem"));
 
-		this.color = new UserInputColorPicker(new ColorPicker(),
-				Color.web(ConfigController.get("DEFAULT_GROUP_COLOR")), false);
+		this.color = new UserInputColorPicker(new ColorPicker(), Color.web(ConfigController.get("DEFAULT_GROUP_COLOR")),
+				false);
 		super.addInput(this.color, TranslationController.translate("group_color"));
 	}
 

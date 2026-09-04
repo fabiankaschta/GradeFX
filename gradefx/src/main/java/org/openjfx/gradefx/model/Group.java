@@ -285,7 +285,7 @@ public class Group {
 		private final boolean useSubgroups;
 		private final List<DataObject<Student>> students = new ArrayList<>();
 		private final List<DataObject<Test>> tests = new ArrayList<>();
-		private final GradeSystem gradeSystem;
+		private final DataObject<GradeSystem> gradeSystem;
 		private final DataObject<TestGroupSystem> testGroupSystem;
 		private final DataObject<TestGroup> testGroupRoot;
 		private final String color;
@@ -297,7 +297,7 @@ public class Group {
 			this.name = g.getName();
 			this.subject = g.getSubject().serialize();
 			this.useSubgroups = g.getUseSubgroups();
-			this.gradeSystem = g.getGradeSystem();
+			this.gradeSystem = g.getGradeSystem().serialize();
 			this.testGroupSystem = g.getTestGroupSystem().serialize();
 			this.testGroupRoot = g.getTestGroupRoot().serialize();
 			this.color = Styles.toHexString(g.getColor());
@@ -307,13 +307,13 @@ public class Group {
 			for (Test t : g.tests) {
 				this.tests.add(t.serialize());
 			}
-			group = g;
+			this.group = g;
 		}
 
 		public Group deserialize(Object... params) {
 			if (group == null) {
-				group = new Group(name, subject.deserialize(), useSubgroups, gradeSystem, testGroupSystem.deserialize(),
-						Color.web(color));
+				group = new Group(name, subject.deserialize(), useSubgroups, gradeSystem.deserialize(),
+						testGroupSystem.deserialize(), Color.web(color));
 				group.testGroupRoot.set(testGroupRoot.deserialize());
 				for (DataObject<Student> s : students) {
 					group.students.add(s.deserialize());

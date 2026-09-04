@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.openjfx.gradefx.model.GradeSystem.Grade;
+import org.openjfx.gradefx.model.Grade;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.PointsSystem;
 import org.openjfx.gradefx.model.Student;

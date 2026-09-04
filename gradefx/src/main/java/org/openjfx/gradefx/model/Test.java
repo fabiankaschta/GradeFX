@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.openjfx.gradefx.model.GradeSystem.Grade;
 import org.openjfx.gradefx.view.converter.TestTaskConverter;
 import org.openjfx.kafx.controller.ChangeController;
 import org.openjfx.kafx.io.DataObject;
@@ -848,12 +847,10 @@ public class Test {
 					test.putStudentPropertiesIfNotExists(student);
 					test.setDate(student, sd.getValue());
 				}
-				if (hasReturned != null) { // TODO remove compatibility for < v1.6
-					for (Entry<DataObject<Student>, Boolean> sr : hasReturned.entrySet()) {
-						Student student = sr.getKey().deserialize();
-						test.putStudentPropertiesIfNotExists(student);
-						test.setHasReturned(student, sr.getValue());
-					}
+				for (Entry<DataObject<Student>, Boolean> sr : hasReturned.entrySet()) {
+					Student student = sr.getKey().deserialize();
+					test.putStudentPropertiesIfNotExists(student);
+					test.setHasReturned(student, sr.getValue());
 				}
 			}
 			return test;

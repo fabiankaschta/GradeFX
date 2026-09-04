@@ -3,12 +3,12 @@ package org.openjfx.gradefx.io;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openjfx.gradefx.model.BoundType;
 import org.openjfx.gradefx.model.GradeSystem;
-import org.openjfx.gradefx.model.GradeSystem.Grade;
-import org.openjfx.gradefx.model.GradeSystem.Tendency;
+import org.openjfx.gradefx.model.Grade;
+import org.openjfx.gradefx.model.Grade.Tendency;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.PointsSystem;
-import org.openjfx.gradefx.model.PointsSystem.BoundType;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Subject;
 import org.openjfx.gradefx.model.Test;
@@ -42,6 +42,8 @@ public class GradeFXFileIO extends EncryptedFileIO {
 			testGroupSystems.forEach(tgs -> tgs.deserialize());
 			ArrayList<DataObject<Subject>> subjects = (ArrayList<DataObject<Subject>>) data.get("subjects");
 			subjects.forEach(s -> s.deserialize());
+			ArrayList<DataObject<GradeSystem>> gradeSystems = (ArrayList<DataObject<GradeSystem>>) data.get("gradeSystems");
+			gradeSystems.forEach(gs -> gs.deserialize());
 
 			int selectedGroup = (int) data.get("selectedGroup");
 			GroupsPane.select(selectedGroup);
@@ -56,7 +58,6 @@ public class GradeFXFileIO extends EncryptedFileIO {
 	@Override
 	public List<Class<?>> getPermittedSerializableClasses() {
 		List<Class<?>> list = super.getPermittedSerializableClasses();
-		list.add(GradeSystem.class);
 		list.add(BoundType.class);
 		list.add(Grade.class);
 		list.add(Tendency.class);
@@ -66,6 +67,7 @@ public class GradeFXFileIO extends EncryptedFileIO {
 	@Override
 	public List<Class<?>> getPermittedDataObjectClasses() {
 		List<Class<?>> list = super.getPermittedSerializableClasses();
+		list.add(GradeSystem.class);
 		list.add(Group.class);
 		list.add(PointsSystem.class);
 		list.add(Student.class);
@@ -90,6 +92,8 @@ public class GradeFXFileIO extends EncryptedFileIO {
 				TestGroupSystem.getTestGroupSystems().stream().map(tgs -> tgs.serialize()).toList()));
 		data.put("subjects",
 				new ArrayList<DataObject<Subject>>(Subject.getSubjects().stream().map(s -> s.serialize()).toList()));
+		data.put("gradeSystems", new ArrayList<DataObject<GradeSystem>>(
+				GradeSystem.getGradeSystems().stream().map(gs -> gs.serialize()).toList()));
 
 		data.put("selectedGroup", GroupsPane.getSelectedGroupIndex());
 		return data;

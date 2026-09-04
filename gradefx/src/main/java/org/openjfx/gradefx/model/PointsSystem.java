@@ -3,8 +3,7 @@ package org.openjfx.gradefx.model;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import org.openjfx.gradefx.model.GradeSystem.Grade;
-import org.openjfx.gradefx.model.GradeSystem.Tendency;
+import org.openjfx.gradefx.model.Grade.Tendency;
 import org.openjfx.kafx.controller.ChangeController;
 import org.openjfx.kafx.io.DataObject;
 
@@ -21,35 +20,32 @@ public class PointsSystem {
 	private final static Integer SCALE = 7;
 	private final static RoundingMode ROUNDINGMODE = RoundingMode.HALF_UP;
 
-	public enum BoundType {
-		LESS_THAN, LESSOREQUAL_THAN, MOREOREQUAL_THAN, MORE_THAN;
-	}
-
 	private final ObjectProperty<BigDecimal> totalPoints = new SimpleObjectProperty<>(this, "totalPoints");
 	private final ObjectProperty<BoundType> boundType = new SimpleObjectProperty<>(this, "boundType");
 	private final BooleanProperty useHalfPoints = new SimpleBooleanProperty(this, "useHalfPoints", true);
 	private final ObjectProperty<BigDecimal> tendencyBound = new SimpleObjectProperty<>(this, "tendencyBound");
 	private final ObjectProperty<BigDecimal>[] ratioBounds;
 	private final Grade[] grades;
+	private final GradeSystem gradeSystem;
 	private final ObjectProperty<BigDecimal>[] lowerBounds;
 	private final ObjectProperty<BigDecimal>[] upperBounds;
 	private final ChangeListener<BigDecimal> updateListener = (_, _, _) -> this.callListener();
 	private Runnable updateSubscription;
 
 	@SuppressWarnings("unchecked")
-	public PointsSystem(ObservableValue<BigDecimal> totalPoints, BigDecimal tendencyBound, BoundType boundType, boolean useHalfPoints,
-			GradeSystem gradeSystem) {
+	public PointsSystem(GradeSystem gradeSystem, ObservableValue<BigDecimal> totalPoints, BigDecimal tendencyBound,
+			boolean useHalfPoints) {
+		this.gradeSystem = gradeSystem;
 		this.totalPoints.bind(totalPoints);
-		this.setBoundType(boundType);
+		this.setBoundType(gradeSystem.getDefaultBoundType());
 		this.setUseHalfPoints(useHalfPoints);
 		this.grades = gradeSystem.getPossibleGradesASC();
 		this.lowerBounds = new ObjectProperty[grades.length];
 		this.upperBounds = new ObjectProperty[grades.length];
 		this.ratioBounds = new ObjectProperty[grades.length];
-		BigDecimal[] ratioBounds = gradeSystem.getDefaultRatioBounds();
 		for (int i = 0; i < grades.length; i++) {
 			this.ratioBounds[i] = new SimpleObjectProperty<>(this, "ratio bound for grade " + grades[i],
-					ratioBounds[i]);
+					gradeSystem.getDefaultRatioBound(grades[i]));
 			this.lowerBounds[i] = new SimpleObjectProperty<>(this, "lower bound for grade " + grades[i]);
 			this.upperBounds[i] = new SimpleObjectProperty<>(this, "upper bound for grade " + grades[i]);
 			if (i > 0) {
@@ -94,8 +90,10 @@ public class PointsSystem {
 	}
 
 	@SuppressWarnings("unchecked")
-	private PointsSystem(BigDecimal totalPoints, BigDecimal tendencyBound, BoundType boundType, boolean useHalfPoints,
-			Grade[] grades, BigDecimal[] lowerBounds, BigDecimal[] upperBounds, BigDecimal[] ratioBounds) {
+	private PointsSystem(GradeSystem gradeSystem, BigDecimal totalPoints, BigDecimal tendencyBound, BoundType boundType,
+			boolean useHalfPoints, Grade[] grades, BigDecimal[] lowerBounds, BigDecimal[] upperBounds,
+			BigDecimal[] ratioBounds) {
+		this.gradeSystem = gradeSystem;
 		this.setTotalPoints(totalPoints);
 		this.setTendencyBound(tendencyBound);
 		this.setBoundType(boundType);
@@ -422,11 +420,13 @@ public class PointsSystem {
 				if (this.getTendencyBound() != null) {
 					if (i == 0 && points.subtract(getTendencyBound()).compareTo(BigDecimal.ZERO) <= 0
 							|| points.subtract(getTendencyBound()).compareTo(this.lowerBounds[i].get()) <= 0) {
-						grade = grade.setTendency(Tendency.NEGATIVE);
+						grade = gradeSystem.getGrade(grade.getNumericalValue(), grade.getDisplayedValue(),
+								Tendency.NEGATIVE);
 					}
 					if (i == this.grades.length - 1 && points.add(getTendencyBound()).compareTo(getTotalPoints()) >= 0
 							|| points.add(getTendencyBound()).compareTo(this.upperBounds[i].get()) >= 0) {
-						grade = grade.setTendency(Tendency.POSITIVE);
+						grade = gradeSystem.getGrade(grade.getNumericalValue(), grade.getDisplayedValue(),
+								Tendency.POSITIVE);
 					}
 				}
 				return grade;
@@ -497,6 +497,7 @@ public class PointsSystem {
 		private final boolean useHalfPoints;
 		private final BigDecimal[] ratioBounds;
 		private final Grade[] grades;
+		private final DataObject<GradeSystem> gradeSystem;
 		private final BigDecimal[] lowerBounds;
 		private final BigDecimal[] upperBounds;
 
@@ -509,6 +510,7 @@ public class PointsSystem {
 			this.boundType = ps.getBoundType();
 			this.useHalfPoints = ps.isUseHalfPoints();
 			this.grades = ps.grades;
+			this.gradeSystem = ps.gradeSystem.serialize();
 			this.lowerBounds = new BigDecimal[ps.grades.length];
 			this.upperBounds = new BigDecimal[ps.grades.length];
 			this.ratioBounds = new BigDecimal[ps.grades.length];
@@ -522,8 +524,8 @@ public class PointsSystem {
 
 		public PointsSystem deserialize(Object... params) {
 			if (pointsSystem == null) {
-				pointsSystem = new PointsSystem(totalPoints, tendencyBound, boundType, useHalfPoints, grades,
-						lowerBounds, upperBounds, ratioBounds);
+				pointsSystem = new PointsSystem(gradeSystem.deserialize(), totalPoints, tendencyBound, boundType,
+						useHalfPoints, grades, lowerBounds, upperBounds, ratioBounds);
 			}
 			return pointsSystem;
 		}

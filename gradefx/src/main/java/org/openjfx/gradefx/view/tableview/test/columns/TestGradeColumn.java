@@ -2,13 +2,14 @@ package org.openjfx.gradefx.view.tableview.test.columns;
 
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
-import org.openjfx.gradefx.model.GradeSystem.Grade;
+import org.openjfx.gradefx.model.Grade;
+import org.openjfx.gradefx.model.GradeSystem;
 
 import java.util.function.Consumer;
 
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.kafx.controller.TranslationController;
-import org.openjfx.kafx.view.tableview.TableCellEditComparable;
+import org.openjfx.kafx.view.tableview.TableCellEditComparator;
 
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
@@ -26,8 +27,9 @@ public class TestGradeColumn extends TableColumn<Student, Grade> {
 			Consumer<TableCell<Student, ?>> cellSubscription) {
 		super(TranslationController.translate("test_grade"));
 		this.setCellValueFactory(data -> test.gradeProperty(data.getValue()));
-		this.setCellFactory(_ -> new TableCellEditComparable<>(group.getGradeSystem().getWorst(),
-				group.getGradeSystem().getBest(), group.getGradeSystem().getGradeConverter(), Pos.CENTER, true) {
+		GradeSystem gradeSystem = group.getGradeSystem();
+		this.setCellFactory(_ -> new TableCellEditComparator<>(gradeSystem.getGradeComparator(), gradeSystem.getWorst(),
+				gradeSystem.getBest(), gradeSystem.getGradeConverter(), Pos.CENTER, true) {
 
 			Subscription studentSubscription;
 			Subscription fixedSubscription;
@@ -53,12 +55,13 @@ public class TestGradeColumn extends TableColumn<Student, Grade> {
 				}
 			}
 		});
+		this.setComparator(gradeSystem.getGradeComparator());
 		this.setSortable(true);
 		this.setReorderable(false);
 		this.setOnEditCommit(e -> {
 			if (e.getNewValue() != e.getOldValue() && (e.getNewValue() == null && e.getOldValue() != null
 					|| e.getNewValue() != null && e.getOldValue() == null
-					|| e.getNewValue().compareTo(e.getOldValue()) != 0)) {
+					|| gradeSystem.getGradeComparator().compare(e.getNewValue(), e.getOldValue()) != 0)) {
 				if (test.getUsePoints()) {
 					test.setGradeFixed(e.getRowValue(), true);
 				}

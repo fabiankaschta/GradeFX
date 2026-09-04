@@ -2,9 +2,9 @@ package org.openjfx.gradefx.view.pane.statistics;
 
 import java.math.BigDecimal;
 
-import org.openjfx.gradefx.model.GradeSystem.Grade;
+import org.openjfx.gradefx.model.Grade;
 import org.openjfx.gradefx.model.Group;
-import org.openjfx.gradefx.model.PointsSystem.BoundType;
+import org.openjfx.gradefx.model.BoundType;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.view.converter.BoundTypeConverter;
 import org.openjfx.gradefx.view.tableview.TableViewPointsSystem;
@@ -142,7 +142,7 @@ public class TestStatisticsSidePane extends ScrollPane {
 			settingsPaneContent.getChildren().add(tendencies);
 
 			this.getStyleClass().add("titled-pane-no-focus");
-			
+
 			this.setContent(settingsPaneContent);
 			this.visibleProperty().bind(test.usePointsProperty());
 		}
@@ -238,7 +238,7 @@ public class TestStatisticsSidePane extends ScrollPane {
 			sliderPaneContent.getChildren().add(sliderView);
 
 			this.getStyleClass().add("titled-pane-no-focus");
-			
+
 			this.setContent(sliderPaneContent);
 			this.visibleProperty().bind(test.usePointsProperty());
 		}
@@ -260,7 +260,8 @@ public class TestStatisticsSidePane extends ScrollPane {
 
 		private void updateSliders() {
 			// inverted order
-			sliderList.sort((s1, s2) -> -s1.getSelectedGrade().compareTo(s2.getSelectedGrade()));
+			sliderList.sort((s1, s2) -> group.getGradeSystem().getGradeComparator().reversed()
+					.compare(s1.getSelectedGrade(), s2.getSelectedGrade()));
 			for (int i = 0; i < sliderList.size(); i++) {
 				RatioSlider box = sliderList.get(i);
 				box.slider.minProperty().unbind();
@@ -326,7 +327,7 @@ public class TestStatisticsSidePane extends ScrollPane {
 								slider.gradeList.add(oldSelection);
 							}
 							// inverted order
-							slider.gradeList.sort((g1, g2) -> -g1.compareTo(g2));
+							slider.gradeList.sort(group.getGradeSystem().getGradeComparator().reversed());
 						}
 					}
 					if (oldSelection != null) {
@@ -342,7 +343,7 @@ public class TestStatisticsSidePane extends ScrollPane {
 							slider.gradeList.add(this.getSelectedGrade());
 						}
 						// inverted order
-						slider.gradeList.sort((g1, g2) -> -g1.compareTo(g2));
+						slider.gradeList.sort(group.getGradeSystem().getGradeComparator().reversed());
 					}
 					updateSliders();
 					updatePointsSystem();

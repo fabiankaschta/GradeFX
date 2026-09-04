@@ -48,7 +48,7 @@ public class DialogEditGroup extends DialogEdit<Group> {
 		super.addInput(this.useSubgroups, TranslationController.translate("group_useSubgroups"));
 
 		ChoiceBox<GradeSystem> gradeSystemChoiceBox = new ChoiceBox<>(
-				FXCollections.observableArrayList(GradeSystem.values()));
+				FXCollections.observableArrayList(GradeSystem.getGradeSystems()));
 		gradeSystemChoiceBox.setConverter(new GradeSystemConverter());
 		this.gradeSystem = new UserInputChoiceBox<>(gradeSystemChoiceBox, group.getGradeSystem());
 		super.addInput(this.gradeSystem, TranslationController.translate("group_gradeSystem"));

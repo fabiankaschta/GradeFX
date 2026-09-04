@@ -1,7 +1,7 @@
 package org.openjfx.gradefx.view.tableview.overview.columns;
 
 import org.openjfx.gradefx.model.Student;
-import org.openjfx.gradefx.model.GradeSystem.Grade;
+import org.openjfx.gradefx.model.Grade;
 
 import java.util.function.Consumer;
 
@@ -33,6 +33,7 @@ public class OverviewGradeColumn extends TableColumn<Student, Grade> {
 				}
 			}
 		});
+		this.setComparator(group.getGradeSystem().getGradeComparator());
 		this.setSortable(true);
 		this.setReorderable(false);
 		this.setEditable(false); // TODO editable end grade?

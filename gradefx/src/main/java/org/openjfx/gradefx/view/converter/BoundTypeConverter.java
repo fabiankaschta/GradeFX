@@ -1,6 +1,6 @@
 package org.openjfx.gradefx.view.converter;
 
-import org.openjfx.gradefx.model.PointsSystem.BoundType;
+import org.openjfx.gradefx.model.BoundType;
 
 import javafx.util.StringConverter;
 

@@ -2,7 +2,7 @@ package org.openjfx.gradefx.view.tableview.overview.columns;
 
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
-import org.openjfx.gradefx.model.GradeSystem.Grade;
+import org.openjfx.gradefx.model.Grade;
 
 import java.util.function.Consumer;
 
