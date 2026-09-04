@@ -27,7 +27,15 @@ public class GradeFXFileIO extends EncryptedFileIO {
 	@SuppressWarnings("unchecked")
 	public boolean handleData(Data data) {
 		try {
-			Group.clearGroups();
+			// TODO maybe move to config?
+			ArrayList<DataObject<TestGroupSystem>> testGroupSystems = (ArrayList<DataObject<TestGroupSystem>>) data
+					.get("testGroupSystems");
+			testGroupSystems.forEach(tgs -> tgs.deserialize());
+			ArrayList<DataObject<Subject>> subjects = (ArrayList<DataObject<Subject>>) data.get("subjects");
+			subjects.forEach(s -> s.deserialize());
+			ArrayList<DataObject<GradeSystem>> gradeSystems = (ArrayList<DataObject<GradeSystem>>) data
+					.get("gradeSystems");
+			gradeSystems.forEach(gs -> gs.deserialize());
 
 			ArrayList<DataObject<Group>> groups = (ArrayList<DataObject<Group>>) data.get("groups");
 			ArrayList<Integer> selectedTabInGroup = (ArrayList<Integer>) data.get("selectedTabInGroup");
@@ -35,15 +43,6 @@ public class GradeFXFileIO extends EncryptedFileIO {
 				Group group = groups.get(i).deserialize();
 				GroupsPane.selectTab(group, selectedTabInGroup.get(i));
 			}
-
-			// TODO maybe move to config?
-			ArrayList<DataObject<TestGroupSystem>> testGroupSystems = (ArrayList<DataObject<TestGroupSystem>>) data
-					.get("testGroupSystems");
-			testGroupSystems.forEach(tgs -> tgs.deserialize());
-			ArrayList<DataObject<Subject>> subjects = (ArrayList<DataObject<Subject>>) data.get("subjects");
-			subjects.forEach(s -> s.deserialize());
-			ArrayList<DataObject<GradeSystem>> gradeSystems = (ArrayList<DataObject<GradeSystem>>) data.get("gradeSystems");
-			gradeSystems.forEach(gs -> gs.deserialize());
 
 			int selectedGroup = (int) data.get("selectedGroup");
 			GroupsPane.select(selectedGroup);
@@ -96,6 +95,7 @@ public class GradeFXFileIO extends EncryptedFileIO {
 				GradeSystem.getGradeSystems().stream().map(gs -> gs.serialize()).toList()));
 
 		data.put("selectedGroup", GroupsPane.getSelectedGroupIndex());
+
 		return data;
 	}
 

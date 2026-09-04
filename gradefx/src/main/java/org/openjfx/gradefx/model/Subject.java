@@ -99,6 +99,10 @@ public class Subject {
 				TranslationController.translate("subject_seminarP_short"));
 	}
 
+	public static void clearSubjects() {
+		subjects.clear();
+	}
+
 	private final StringProperty name = new SimpleStringProperty(this, "name");
 	private final StringProperty shortName = new SimpleStringProperty(this, "shortName");
 

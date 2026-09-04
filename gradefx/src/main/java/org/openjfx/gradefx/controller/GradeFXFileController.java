@@ -1,5 +1,7 @@
 package org.openjfx.gradefx.controller;
 
+import java.io.File;
+
 import org.openjfx.gradefx.io.GradeFXFileIO;
 import org.openjfx.gradefx.model.GradeSystem;
 import org.openjfx.gradefx.model.Group;
@@ -15,15 +17,19 @@ public class GradeFXFileController extends FileController {
 
 	@Override
 	protected void handleNewFile() {
+		Group.clearGroups();
 		TestGroupSystem.setDefault();
 		Subject.setDefault();
 		GradeSystem.setDefault();
+		super.handleNewFile();
+	}
+
+	@Override
+	protected boolean handleOpenFile(File file) {
 		Group.clearGroups();
-		if (!handleSaveAs()) {
-			readFromFile();
-//			return readFromFile();
-		} else {
-//			return false;
-		}
+		Subject.clearSubjects();
+		GradeSystem.clearGradeSystems();
+		TestGroupSystem.clearTestGroupSystems();
+		return super.handleOpenFile(file);
 	}
 }

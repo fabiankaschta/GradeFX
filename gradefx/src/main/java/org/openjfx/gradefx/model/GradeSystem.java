@@ -64,6 +64,10 @@ public class GradeSystem {
 		FIFTEEN_POINTS.setDefaultRatioBound(FIFTEEN_POINTS.getGrade(4), BigDecimal.valueOf(0.4));
 	}
 
+	public static void clearGradeSystems() {
+		gradeSystems.clear();
+	}
+
 	public static GradeSystem getDefault() {
 		return gradeSystems.getFirst();
 	}

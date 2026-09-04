@@ -34,6 +34,10 @@ public class TestGroup extends TreeItem<TestGroup> {
 			testGroupSystems.remove(testGroupSystem);
 		}
 
+		public static void clearTestGroupSystems() {
+			testGroupSystems.clear();
+		}
+
 		public static TestGroupSystem get(String name) {
 			for (TestGroupSystem testGroupSystem : testGroupSystems) {
 				if (testGroupSystem.getName().equals(name)) {
