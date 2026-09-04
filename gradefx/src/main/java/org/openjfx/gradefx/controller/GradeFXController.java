@@ -2,6 +2,7 @@ package org.openjfx.gradefx.controller;
 
 import java.util.ResourceBundle;
 
+import org.openjfx.kafx.controller.AutoSaveController;
 import org.openjfx.kafx.controller.ChangeController;
 import org.openjfx.kafx.controller.ConfigController;
 import org.openjfx.kafx.controller.Controller;
@@ -24,6 +25,7 @@ public class GradeFXController extends Controller {
 		EncryptionController.init(new EncryptionControllerDefault("KAFXBase".getBytes()));
 		ChangeController.init(new GradeFXChangeController());
 		FileController.init(new GradeFXFileController());
+		AutoSaveController.init();
 		PrintController.init(new GradeFXPrintController());
 		PluginController.init(new JarPluginManager());
 		ConfigController.putIfNotExists("USE_HALF_POINTS", String.valueOf(true));

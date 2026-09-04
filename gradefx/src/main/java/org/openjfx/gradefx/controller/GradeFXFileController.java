@@ -16,12 +16,12 @@ public class GradeFXFileController extends FileController {
 	}
 
 	@Override
-	protected void handleNewFile() {
+	protected boolean handleNewFile(File file) {
 		Group.clearGroups();
 		TestGroupSystem.setDefault();
 		Subject.setDefault();
 		GradeSystem.setDefault();
-		super.handleNewFile();
+		return super.handleNewFile(file);
 	}
 
 	@Override

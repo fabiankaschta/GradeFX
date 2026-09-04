@@ -1,5 +1,6 @@
 package org.openjfx.gradefx.view;
 
+import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -10,6 +11,7 @@ import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
 import org.openjfx.gradefx.view.dialog.DialogFirstStart;
 import org.openjfx.gradefx.view.pane.GroupsPane;
 import org.openjfx.gradefx.view.pane.MainMenuBar;
+import org.openjfx.kafx.controller.AutoSaveController;
 import org.openjfx.kafx.controller.CloseController;
 import org.openjfx.kafx.controller.ConfigController;
 import org.openjfx.kafx.controller.Controller;
@@ -62,7 +64,10 @@ public class GradeFXApplication extends Application {
 		});
 
 		primaryStage.setScene(scene);
-		primaryStage.setOnShown(_ -> checkVersion());
+		primaryStage.setOnShown(_ -> {
+			AutoSaveController.start();
+			checkVersion();
+		});
 
 		FontSizeController.fontSizeProperty().subscribe(fontSize -> root.setStyle("-fx-font-size: " + fontSize));
 		root.setOnScroll(event -> {
@@ -77,13 +82,14 @@ public class GradeFXApplication extends Application {
 			}
 		});
 
-		if (!ConfigController.exists("LAST_FILE") || !FileController.readFromFile()) {
+		if (!ConfigController.exists("LAST_FILE") || !(new File(ConfigController.get("LAST_FILE")).exists())
+				|| !FileController.openLastFile()) {
 			TestGroupSystem.setDefault();
 			Subject.setDefault();
 			GradeSystem.setDefault();
 			new DialogFirstStart().showAndWait().ifPresent(buttonType -> {
 				if (buttonType == DialogFirstStart.NEW_FILE) {
-					if (!FileController.saveAs()) {
+					if (!FileController.newFile()) {
 						CloseController.close();
 					} else {
 						primaryStage.show();
