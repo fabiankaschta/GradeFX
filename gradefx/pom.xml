@@ -16,7 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>25</java.version>
         <javafx.version>25</javafx.version>
-        <kafx.version>1.8.0</kafx.version>
+        <kafx.version>1.8.1</kafx.version>
 	    <moditect.version>1.3.0.Final</moditect.version>
         <pdfbox.version>3.0.8</pdfbox.version>
         <commons.logging.version>1.4.0</commons.logging.version>
