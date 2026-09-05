@@ -201,7 +201,8 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 		List<Observable> observables = new ArrayList<>();
 		observables.add(this.filtered);
 		observables.add(this.test.dateProperty());
-		observables.addAll(this.group.getStudents().stream().map(student -> this.test.dateProperty(student)).toList());
+		observables.addAll(this.group.getStudents().stream().map(student -> this.test.dateProperty(student))
+				.filter(date -> date != null).toList());
 		this.students.predicateProperty().bind(Bindings.createObjectBinding(() -> {
 			return student -> !this.filtered.get() || this.test.getDate() == null || this.test.getDate(student) == null
 					|| this.test.getDate(student).equals(this.test.getDate());
