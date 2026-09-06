@@ -117,7 +117,6 @@ public class TestStatisticsSidePane extends ScrollPane {
 			Label halfPointsLabel = new Label(TranslationController.translate("pointsSytem_halfPoints"));
 			HBox halfPoints = new HBox(5, halfPointsLabel, halfPointsCheckBox);
 			halfPoints.setAlignment(Pos.CENTER_LEFT);
-			settingsPaneContent.getChildren().add(halfPoints);
 
 			CheckBox tendenciesCheckBox = new CheckBox();
 			Label tendenciesLabel = new Label(TranslationController.translate("pointsSytem_tendencies"));
@@ -138,12 +137,20 @@ public class TestStatisticsSidePane extends ScrollPane {
 			});
 			HBox tendencies = new HBox(5, tendenciesLabel, tendenciesCheckBox, tendencyBoundLabel, tendencyBoundField);
 			tendencies.setAlignment(Pos.CENTER_LEFT);
-			settingsPaneContent.getChildren().add(tendencies);
+
+			test.usePointsProperty().subscribe(usePoints -> {
+				if (usePoints) {
+					settingsPaneContent.getChildren().add(0, halfPoints);
+					settingsPaneContent.getChildren().add(1, tendencies);
+				} else {
+					settingsPaneContent.getChildren().remove(halfPoints);
+					settingsPaneContent.getChildren().remove(tendencies);
+				}
+			});
 
 			this.getStyleClass().add("titled-pane-no-focus");
 
 			this.setContent(settingsPaneContent);
-			this.visibleProperty().bind(test.usePointsProperty());
 		}
 
 	}

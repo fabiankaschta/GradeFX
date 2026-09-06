@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.openjfx.gradefx.model.BoundType;
 import org.openjfx.gradefx.model.GradeSystem;
+import org.openjfx.gradefx.model.GradeSystem.GradeSystemBaseType;
+import org.openjfx.gradefx.model.GradeSystem.Level;
 import org.openjfx.gradefx.model.Grade;
 import org.openjfx.gradefx.model.Grade.Tendency;
 import org.openjfx.gradefx.model.Group;
@@ -60,6 +62,8 @@ public class GradeFXFileIO extends EncryptedFileIO {
 		list.add(BoundType.class);
 		list.add(Grade.class);
 		list.add(Tendency.class);
+		list.add(GradeSystemBaseType.class);
+		list.add(Level.class);
 		return list;
 	}
 

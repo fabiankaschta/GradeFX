@@ -1,11 +1,11 @@
 package org.openjfx.gradefx.model;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -22,6 +22,18 @@ import javafx.collections.ObservableList;
 import javafx.util.StringConverter;
 
 public class GradeSystem {
+
+	// used for divisions
+	private final static Integer SCALE = 7;
+	private final static RoundingMode ROUNDINGMODE = RoundingMode.HALF_UP;
+
+	public static enum GradeSystemBaseType {
+		ONE_TO_SIX, FIFTEEN_POINTS
+	}
+
+	public static enum Level {
+		TOO_GOOD, AMAZING, NICE, GOOD, OKAY, BAD, TOO_BAD
+	}
 
 	private final static ObservableList<GradeSystem> gradeSystems = FXCollections.observableArrayList();
 
@@ -45,19 +57,23 @@ public class GradeSystem {
 	public static void setDefault() {
 		gradeSystems.clear();
 
-		GradeSystem ONE_TO_SIX = new GradeSystem(TranslationController.translate("gradeSystem_ONE_TO_SIX"), true, true,
-				BoundType.MOREOREQUAL_THAN);
+		GradeSystem ONE_TO_SIX = new GradeSystem(GradeSystemBaseType.ONE_TO_SIX,
+				TranslationController.translate("gradeSystem_ONE_TO_SIX"), true, true, BoundType.MOREOREQUAL_THAN,
+				BigDecimal.valueOf(1.8), BoundType.LESS_THAN, BigDecimal.valueOf(4.2), BoundType.MORE_THAN,
+				BigDecimal.valueOf(0.4), BoundType.MORE_THAN);
 		for (int i = 6; i >= 1; i--) {
-			ONE_TO_SIX.addGrade(i, Tendency.NEGATIVE);
-			ONE_TO_SIX.addGrade(i, Tendency.NEUTRAL);
-			ONE_TO_SIX.addGrade(i, Tendency.POSITIVE);
+			ONE_TO_SIX.addGrade(i, Tendency.NEGATIVE, i > 4);
+			ONE_TO_SIX.addGrade(i, Tendency.NEUTRAL, i > 4);
+			ONE_TO_SIX.addGrade(i, Tendency.POSITIVE, i > 4);
 		}
 		ONE_TO_SIX.setDefaultRatioBound(ONE_TO_SIX.getGrade(4), BigDecimal.valueOf(0.4));
 
-		GradeSystem FIFTEEN_POINTS = new GradeSystem(TranslationController.translate("gradeSystem_FIFTEEN_POINTS"),
-				false, false, BoundType.MOREOREQUAL_THAN);
+		GradeSystem FIFTEEN_POINTS = new GradeSystem(GradeSystemBaseType.FIFTEEN_POINTS,
+				TranslationController.translate("gradeSystem_FIFTEEN_POINTS"), false, false, BoundType.MOREOREQUAL_THAN,
+				BigDecimal.valueOf(11.6), BoundType.MORE_THAN, BigDecimal.valueOf(4.4), BoundType.LESS_THAN,
+				BigDecimal.valueOf(0.4), BoundType.MORE_THAN);
 		for (int i = 0; i <= 15; i++) {
-			FIFTEEN_POINTS.addGrade(i);
+			FIFTEEN_POINTS.addGrade(i, i < 4);
 		}
 		FIFTEEN_POINTS.setRoundingMode(FIFTEEN_POINTS.getGrade(0), RoundingMode.DOWN);
 		FIFTEEN_POINTS.setDefaultRatioBound(FIFTEEN_POINTS.getGrade(1), BigDecimal.valueOf(0.2));
@@ -75,19 +91,124 @@ public class GradeSystem {
 	private final String name;
 	private final boolean useTendencies;
 	private final boolean moreIsWorse;
+	private final GradeSystemBaseType baseType;
 	private final BoundType defaultBoundType;
-//	private final BigDecimal criticalUpperAvg;
-//	private final BigDecimal criticalLowerAvg;
+	private final BigDecimal criticalGoodAvg;
+	private final BoundType criticalGoodAvgMode;
+	private final BigDecimal criticalBadAvg;
+	private final BoundType criticalBadAvgMode;
+	private final BigDecimal criticalGradesRatio;
+	private final BoundType criticalGradesMode;
 	private final Set<Grade> grades = new HashSet<>();
 	private final Map<Grade, BigDecimal> defaultRatioBounds = new HashMap<>();
 	private final Map<Grade, RoundingMode> roundingModes = new HashMap<>();
 
-	private GradeSystem(String name, boolean useTendencies, boolean moreIsWorse, BoundType defaultBoundType) {
+	private GradeSystem(GradeSystemBaseType baseType, String name, boolean useTendencies, boolean moreIsWorse,
+			BoundType defaultBoundType, BigDecimal criticalGoodAvg, BoundType criticalGoodAvgMode,
+			BigDecimal criticalBadAvg, BoundType criticalBadAvgMode, BigDecimal criticalGradesRatio,
+			BoundType criticalGradesMode) {
+		this.baseType = baseType;
 		this.name = name;
 		this.useTendencies = useTendencies;
 		this.moreIsWorse = moreIsWorse;
 		this.defaultBoundType = defaultBoundType;
+		this.criticalGoodAvg = criticalGoodAvg;
+		this.criticalGoodAvgMode = criticalGoodAvgMode;
+		this.criticalBadAvg = criticalBadAvg;
+		this.criticalBadAvgMode = criticalBadAvgMode;
+		this.criticalGradesRatio = criticalGradesRatio;
+		this.criticalGradesMode = criticalGradesMode;
 		gradeSystems.add(this);
+	}
+
+	public GradeSystemBaseType getBaseType() {
+		return this.baseType;
+	}
+
+	public Level getLevel(BigDecimal avg) {
+		if (this.moreIsWorse()) {
+			if (this.criticalGoodAvgMode == BoundType.LESS_THAN) {
+				if (avg.compareTo(this.criticalGoodAvg) < 0) {
+					return Level.TOO_GOOD;
+				}
+			} else if (this.criticalGoodAvgMode == BoundType.LESSOREQUAL_THAN) {
+				if (avg.compareTo(this.criticalGoodAvg) <= 0) {
+					return Level.TOO_GOOD;
+				}
+			} else {
+				throw new UnsupportedOperationException("Illegal bound type for GradeSystem");
+			}
+			if (this.criticalBadAvgMode == BoundType.MORE_THAN) {
+				if (avg.compareTo(this.criticalBadAvg) > 0) {
+					return Level.TOO_BAD;
+				}
+			} else if (this.criticalBadAvgMode == BoundType.MOREOREQUAL_THAN) {
+				if (avg.compareTo(this.criticalBadAvg) >= 0) {
+					return Level.TOO_BAD;
+				}
+			} else {
+				throw new UnsupportedOperationException("Illegal bound type for GradeSystem");
+			}
+			BigDecimal range = this.criticalBadAvg.subtract(this.criticalGoodAvg);
+			int steps = Level.values().length - 2;
+			BigDecimal step = range.divide(BigDecimal.valueOf(steps), SCALE, ROUNDINGMODE);
+			BigDecimal currentBound = this.criticalGoodAvg.add(step);
+			for (int i = 0; i < steps; i++) {
+				// not critical, this just uses less than
+				if (avg.compareTo(currentBound) < 0) {
+					return Level.values()[i + 1];
+				}
+				currentBound = currentBound.add(step);
+			}
+			return Level.values()[steps + 1];
+		} else {
+			if (this.criticalGoodAvgMode == BoundType.MORE_THAN) {
+				if (avg.compareTo(this.criticalGoodAvg) > 0) {
+					return Level.TOO_GOOD;
+				}
+			} else if (this.criticalGoodAvgMode == BoundType.MOREOREQUAL_THAN) {
+				if (avg.compareTo(this.criticalGoodAvg) >= 0) {
+					return Level.TOO_GOOD;
+				}
+			} else {
+				throw new UnsupportedOperationException("Illegal bound type for GradeSystem");
+			}
+			if (this.criticalBadAvgMode == BoundType.LESS_THAN) {
+				if (avg.compareTo(this.criticalBadAvg) < 0) {
+					return Level.TOO_BAD;
+				}
+			} else if (this.criticalBadAvgMode == BoundType.LESSOREQUAL_THAN) {
+				if (avg.compareTo(this.criticalBadAvg) <= 0) {
+					return Level.TOO_BAD;
+				}
+			} else {
+				throw new UnsupportedOperationException("Illegal bound type for GradeSystem");
+			}
+			BigDecimal range = this.criticalGoodAvg.subtract(this.criticalBadAvg);
+			int steps = Level.values().length - 2;
+			BigDecimal step = range.divide(BigDecimal.valueOf(steps), SCALE, ROUNDINGMODE);
+			BigDecimal currentBound = this.criticalGoodAvg.subtract(step);
+			for (int i = 0; i < steps; i++) {
+				// not critical, this just uses greater than
+				if (avg.compareTo(currentBound) > 0) {
+					return Level.values()[i + 1];
+				}
+				currentBound = currentBound.add(step);
+			}
+			return Level.values()[steps + 1];
+		}
+	}
+
+	public BigDecimal mapAvgToOther(BigDecimal avg, GradeSystemBaseType mapTo) {
+		if (this.baseType == mapTo) {
+			return avg;
+		} else if (this.baseType == GradeSystemBaseType.ONE_TO_SIX && baseType == GradeSystemBaseType.FIFTEEN_POINTS) {
+			return BigDecimal.valueOf(17).subtract(avg.multiply(BigDecimal.valueOf(3)));
+		} else if (this.baseType == GradeSystemBaseType.FIFTEEN_POINTS && baseType == GradeSystemBaseType.ONE_TO_SIX) {
+			return BigDecimal.valueOf(17).subtract(avg).divide(BigDecimal.valueOf(3), SCALE, ROUNDINGMODE);
+		} else {
+			throw new UnsupportedOperationException("Can't map from " + this.baseType + " to " + baseType);
+		}
 	}
 
 	public Grade calculateGrade(BigDecimal avg) {
@@ -119,7 +240,7 @@ public class GradeSystem {
 		for (BigDecimal v : values) {
 			sum = sum.add(v);
 		}
-		BigDecimal avg = sum.divide(new BigDecimal(values.length), MathContext.DECIMAL64);
+		BigDecimal avg = sum.divide(new BigDecimal(values.length), SCALE, ROUNDINGMODE);
 		return avg.setScale(2, RoundingMode.FLOOR);
 	}
 
@@ -136,7 +257,7 @@ public class GradeSystem {
 			sum = sum.add(values[i].multiply(weights[i]));
 			divisor = divisor.add(weights[i]);
 		}
-		BigDecimal avg = sum.divide(divisor, MathContext.DECIMAL64);
+		BigDecimal avg = sum.divide(divisor, SCALE, ROUNDINGMODE);
 		return avg.setScale(2, RoundingMode.FLOOR);
 	}
 
@@ -236,6 +357,18 @@ public class GradeSystem {
 		return new GradeConverter(this);
 	}
 
+	public List<Grade> getCriticalGrades() {
+		return this.grades.stream().filter(grade -> grade.isCritical()).toList();
+	}
+
+	public BigDecimal getCriticalGradesRatio() {
+		return this.criticalGradesRatio;
+	}
+
+	public BoundType getCriticalGradesMode() {
+		return this.criticalGradesMode;
+	}
+
 	public Grade getGrade(Integer numericalValue) {
 		return getGrade(numericalValue, String.valueOf(numericalValue), Tendency.NEUTRAL);
 	}
@@ -271,21 +404,41 @@ public class GradeSystem {
 		return null;
 	}
 
+	@SuppressWarnings("unused")
 	private void addGrade(Integer numericalValue) {
-		this.addGrade(numericalValue, String.valueOf(numericalValue), Tendency.NEUTRAL);
+		this.addGrade(numericalValue, String.valueOf(numericalValue), Tendency.NEUTRAL, false);
+	}
+
+	private void addGrade(Integer numericalValue, boolean isCritical) {
+		this.addGrade(numericalValue, String.valueOf(numericalValue), Tendency.NEUTRAL, isCritical);
 	}
 
 	@SuppressWarnings("unused")
 	private void addGrade(Integer numericalValue, String displayedValue) {
-		this.addGrade(numericalValue, displayedValue, Tendency.NEUTRAL);
+		this.addGrade(numericalValue, displayedValue, Tendency.NEUTRAL, false);
 	}
 
+	@SuppressWarnings("unused")
+	private void addGrade(Integer numericalValue, String displayedValue, boolean isCritical) {
+		this.addGrade(numericalValue, displayedValue, Tendency.NEUTRAL, isCritical);
+	}
+
+	@SuppressWarnings("unused")
 	private void addGrade(Integer numericalValue, Tendency tendency) {
-		this.addGrade(numericalValue, String.valueOf(numericalValue), tendency);
+		this.addGrade(numericalValue, String.valueOf(numericalValue), tendency, false);
 	}
 
+	private void addGrade(Integer numericalValue, Tendency tendency, boolean isCritical) {
+		this.addGrade(numericalValue, String.valueOf(numericalValue), tendency, isCritical);
+	}
+
+	@SuppressWarnings("unused")
 	private void addGrade(Integer numericalValue, String displayedValue, Tendency tendency) {
-		this.grades.add(Grade.forGradeSystem(this, numericalValue, displayedValue, tendency));
+		this.grades.add(Grade.forGradeSystem(this, numericalValue, displayedValue, tendency, false));
+	}
+
+	private void addGrade(Integer numericalValue, String displayedValue, Tendency tendency, boolean isCritical) {
+		this.grades.add(Grade.forGradeSystem(this, numericalValue, displayedValue, tendency, isCritical));
 	}
 
 	private final Comparator<Grade> gradeComparator = new Comparator<Grade>() {
@@ -320,7 +473,14 @@ public class GradeSystem {
 		private final String name;
 		private final boolean useTendencies;
 		private final boolean moreIsWorse;
+		private final GradeSystemBaseType baseType;
 		private final BoundType defaultBoundType;
+		private final BigDecimal criticalGoodAvg;
+		private final BoundType criticalGoodAvgMode;
+		private final BigDecimal criticalBadAvg;
+		private final BoundType criticalBadAvgMode;
+		private final BigDecimal criticalGradesRatio;
+		private final BoundType criticalGradesMode;
 		private final Set<Grade> grades = new HashSet<>();
 		private final Map<Grade, BigDecimal> defaultRatioBounds = new HashMap<>();
 		private final Map<Grade, RoundingMode> roundingModes = new HashMap<>();
@@ -330,7 +490,14 @@ public class GradeSystem {
 			this.name = g.getName();
 			this.useTendencies = g.useTendencies();
 			this.moreIsWorse = g.moreIsWorse();
+			this.baseType = g.getBaseType();
 			this.defaultBoundType = g.getDefaultBoundType();
+			this.criticalGoodAvg = g.criticalGoodAvg;
+			this.criticalGoodAvgMode = g.criticalGoodAvgMode;
+			this.criticalBadAvg = g.criticalBadAvg;
+			this.criticalBadAvgMode = g.criticalBadAvgMode;
+			this.criticalGradesRatio = g.getCriticalGradesRatio();
+			this.criticalGradesMode = g.getCriticalGradesMode();
 			for (Grade grade : g.grades) {
 				this.grades.add(grade);
 			}
@@ -346,7 +513,9 @@ public class GradeSystem {
 		@Override
 		public GradeSystem deserialize(Object... params) {
 			if (gradeSystem == null) {
-				gradeSystem = new GradeSystem(name, useTendencies, moreIsWorse, defaultBoundType);
+				gradeSystem = new GradeSystem(baseType, name, useTendencies, moreIsWorse, defaultBoundType,
+						criticalGoodAvg, criticalGoodAvgMode, criticalBadAvg, criticalBadAvgMode, criticalGradesRatio,
+						criticalGradesMode);
 				for (Grade grade : grades) {
 					gradeSystem.grades.add(grade);
 				}

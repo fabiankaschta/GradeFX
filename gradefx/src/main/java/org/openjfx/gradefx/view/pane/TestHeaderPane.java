@@ -83,6 +83,7 @@ public class TestHeaderPane extends GridPane {
 		test.totalPointsProperty().subscribe(v -> this.totalPoints.setValue(v));
 		Label totalPointsLabel = new Label(TranslationController.translate("test_totalPoints"));
 		totalPointsLabel.setMinWidth(USE_PREF_SIZE);
+		totalPointsLabel.visibleProperty().bind(test.usePointsProperty());
 		this.add(totalPointsLabel, 2, 0);
 		this.add(this.totalPoints, 3, 0);
 

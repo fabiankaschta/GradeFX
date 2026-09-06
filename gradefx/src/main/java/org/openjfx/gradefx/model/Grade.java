@@ -26,10 +26,10 @@ public class Grade implements Serializable {
 	}
 
 	public static Grade forGradeSystem(GradeSystem gradeSystem, Integer numericalValue, String displayedValue,
-			Tendency tendency) {
+			Tendency tendency, boolean isCritical) {
 		Grade grade = gradeSystem.getGrade(numericalValue, displayedValue, tendency);
 		if (grade == null) {
-			grade = new Grade(numericalValue, displayedValue, tendency);
+			grade = new Grade(numericalValue, displayedValue, tendency, isCritical);
 		}
 		return grade;
 	}
@@ -37,11 +37,13 @@ public class Grade implements Serializable {
 	private final Integer numericalValue;
 	private final String displayedValue;
 	private final Tendency tendency;
+	private final boolean isCritical;
 
-	private Grade(Integer numericalValue, String displayedValue, Tendency tendency) {
+	private Grade(Integer numericalValue, String displayedValue, Tendency tendency, boolean isCritical) {
 		this.numericalValue = numericalValue;
 		this.displayedValue = displayedValue;
 		this.tendency = tendency;
+		this.isCritical = isCritical;
 	}
 
 	public Integer getNumericalValue() {
@@ -54,6 +56,10 @@ public class Grade implements Serializable {
 
 	public Tendency getTendency() {
 		return this.tendency;
+	}
+
+	public boolean isCritical() {
+		return this.isCritical;
 	}
 
 	@Override

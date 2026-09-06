@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.openjfx.gradefx.model.Grade;
+import org.openjfx.gradefx.model.Grade.Tendency;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.PointsSystem;
 import org.openjfx.gradefx.model.Student;
@@ -50,6 +51,8 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 	private final BooleanProperty filtered = new SimpleBooleanProperty(this, "filtered", false);
 	private final AmountColumn amountColumn;
 	private final ReadOnlyObjectWrapper<BigDecimal> gradeAVG = new ReadOnlyObjectWrapper<>(this, "gradeAVG");
+	private final ReadOnlyObjectWrapper<BigDecimal> criticalGradesRatio = new ReadOnlyObjectWrapper<>(this,
+			"criticalGradesRatio");
 	private final ReadOnlyIntegerWrapper graded = new ReadOnlyIntegerWrapper(this, "graded");
 
 	public TableViewPointsSystem(Group group, Test test, boolean printMode) {
@@ -141,6 +144,23 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 			}
 			return sum;
 		}, this.amountColumn.amounts));
+		this.criticalGradesRatio.bind(Bindings.createObjectBinding(() -> {
+			int sum = 0;
+			for (IntegerProperty amount : amountColumn.amounts) {
+				sum += amount.get();
+			}
+			if (sum == 0) {
+				return null;
+			} else {
+				int amount = 0;
+				for (Grade criticalGrade : group.getGradeSystem().getCriticalGrades()) {
+					if (criticalGrade.getTendency() == Tendency.NEUTRAL) {
+						amount += amountColumn.amounts[indexOf(criticalGrade)].get();
+					}
+				}
+				return BigDecimal.valueOf(amount).divide(BigDecimal.valueOf(sum), 5, RoundingMode.FLOOR);
+			}
+		}, this.amountColumn.amounts));
 
 		this.getColumns().add(fromColumn);
 		this.getColumns().add(toColumn);
@@ -180,6 +200,10 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 		return this.graded.get();
 	}
 
+	public FilteredList<Student> getFilteredStudents() {
+		return this.students;
+	}
+
 	public ReadOnlyObjectProperty<BigDecimal> gradeAVGProperty() {
 		return this.gradeAVG.getReadOnlyProperty();
 	}
@@ -188,10 +212,20 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 		return this.gradeAVG.get();
 	}
 
+	public ReadOnlyObjectProperty<BigDecimal> criticalGradesRatioProperty() {
+		return this.criticalGradesRatio.getReadOnlyProperty();
+	}
+
+	public BigDecimal getCriticalGradesRatio() {
+		return this.criticalGradesRatio.get();
+	}
+
 	private int indexOf(Grade grade) {
-		for (int i = 0; i < this.grades.length; i++) {
-			if (grade != null && grade.getNumericalValue().equals(this.grades[i].getNumericalValue())) {
-				return i;
+		if (grade != null) {
+			for (int i = 0; i < this.grades.length; i++) {
+				if (grade.getNumericalValue().equals(this.grades[i].getNumericalValue())) {
+					return i;
+				}
 			}
 		}
 		return -1;
