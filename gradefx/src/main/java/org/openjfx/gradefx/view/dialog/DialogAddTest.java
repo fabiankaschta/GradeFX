@@ -34,16 +34,36 @@ public class DialogAddTest extends DialogAdd<Test> {
 	private final UserInputComparableInput<BigDecimal> totalPoints;
 	private final UserInputChoiceBoxTreeItem<TestGroup> testGroupTree;
 
+	private boolean hasTypedShortName = false;
+
 	public DialogAddTest(Group group) {
 		super(TranslationController.translate("dialog_add_test_title"));
 		this.group = group;
 
-		this.name = new UserInputTextInput(new TextFieldPromptText(TranslationController.translate("test_name")));
+		TextFieldPromptText nameTextField = new TextFieldPromptText(TranslationController.translate("test_name"));
+		this.name = new UserInputTextInput(nameTextField);
 		super.addInput(this.name, TranslationController.translate("test_name"));
 
-		this.shortName = new UserInputTextInput(
-				new TextFieldPromptText(TranslationController.translate("test_shortName")));
+		TextFieldPromptText shortNameTextField = new TextFieldPromptText(
+				TranslationController.translate("test_shortName"));
+		this.shortName = new UserInputTextInput(shortNameTextField);
 		super.addInput(this.shortName, TranslationController.translate("test_shortName"));
+
+		nameTextField.textProperty().addListener((_, _, text) -> {
+			if (!hasTypedShortName && text != null && text.length() > 0) {
+				String firstChar = text.replaceAll("[^a-zA-Z]", "");
+				if (firstChar.length() > 0) {
+					firstChar = firstChar.substring(0, 1);
+				}
+				String number = text.replaceAll("\\D+", "");
+				this.shortName.setValue(firstChar + number);
+			}
+		});
+		shortNameTextField.textProperty().addListener((_, _, _) -> {
+			if (shortNameTextField.isFocused()) {
+				hasTypedShortName = true;
+			}
+		});
 
 		this.date = new UserInputDatePicker(new DatePicker());
 		super.addInput(date, TranslationController.translate("test_date"));
@@ -93,6 +113,12 @@ public class DialogAddTest extends DialogAdd<Test> {
 				new ChoiceBoxTreeItem<TestGroup>(group.getTestGroupRoot(), new TestGroupConverter()));
 		super.addInput(this.testGroupTree, TranslationController.translate("test_testGroupTree"));
 		this.testGroupTree.visibleProperty().bind(group.getTestGroupRoot().leafProperty().not());
+	}
+
+	@Override
+	public void resetInputsToDefault() {
+		this.hasTypedShortName = false;
+		super.resetInputsToDefault();
 	}
 
 	@Override
