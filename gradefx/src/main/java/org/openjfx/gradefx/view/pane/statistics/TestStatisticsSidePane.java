@@ -90,7 +90,6 @@ public class TestStatisticsSidePane extends ScrollPane {
 		this.skinProperty().addListener((_, _, _) -> {
 			ScrollBar scrollBarVertical = (ScrollBar) this
 					.queryAccessibleAttribute(AccessibleAttribute.VERTICAL_SCROLLBAR);
-			scrollBarVertical.setStyle("-fx-background-insets: 0, 0; -fx-padding: 0;");
 			content.paddingProperty().bind(Bindings.createObjectBinding(
 					() -> scrollBarVertical.isVisible() ? new Insets(10, 10 + scrollBarVertical.getWidth(), 10, 10)
 							: new Insets(10),

@@ -61,7 +61,8 @@ public class TestMenu extends Menu {
 		this.menuItemPrint.setOnAction(_ -> {
 			Group g = GroupsPane.getSelectedGroup();
 			Test t = GroupsPane.getSelectedTest();
-			PrintController.showPrintSinglePreview(new TestPrintPane(g, t), PrintController.A4_LANDSCAPE);
+			TestPrintPane tpp = new TestPrintPane(g, t);
+			PrintController.showPrintSinglePreview(tpp, tpp.getOptionsPane(), PrintController.A4_LANDSCAPE);
 		});
 		this.getItems().add(menuItemPrint);
 

@@ -26,6 +26,17 @@ import javafx.scene.text.Text;
 
 public class TableViewTestPrint extends TableViewFullSize<Student> {
 
+	private final StudentReturnColumn returnColumn;
+	private final StudentLastNameColumn lastNameColumn;
+	private final StudentFirstNameColumn firstNameColumn;
+	private final StudentSubgroupNameColumn subgroupNameColumn;
+
+	private final TestSumColumn sumColumn;
+	private final TestRatioColumn ratioColumn;
+	private final TestGradeColumn gradeColumn;
+	private final TestAnnotationColumn annotationColumn;
+	private final TestDateColumn dateColumn;
+
 	public TableViewTestPrint(Group group, Test test) {
 		// create a new list, so that sorting is not reflected to the "real" list
 		// adding/removing is not supported (no need to)
@@ -39,40 +50,56 @@ public class TableViewTestPrint extends TableViewFullSize<Student> {
 
 		this.fixedCellSizeProperty().bind(FontSizeController.fontSizeProperty().multiply(2).add(1));
 
-		StudentReturnColumn returnCol = new StudentReturnColumn(test);
-		StudentLastNameColumn lastNameCol = new StudentLastNameColumn(false);
-		StudentFirstNameColumn firstNameCol = new StudentFirstNameColumn(false);
-		StudentSubgroupNameColumn subgroupNameCol = new StudentSubgroupNameColumn(group, false);
+		this.returnColumn = new StudentReturnColumn(test);
+		this.lastNameColumn = new StudentLastNameColumn(false);
+		this.firstNameColumn = new StudentFirstNameColumn(false);
+		this.subgroupNameColumn = new StudentSubgroupNameColumn(group, false);
 
-		this.getColumns().add(returnCol);
-		this.getColumns().add(lastNameCol);
-		this.getColumns().add(firstNameCol);
-		this.getColumns().add(subgroupNameCol);
+		this.getColumns().add(this.returnColumn);
+		this.getColumns().add(this.lastNameColumn);
+		this.getColumns().add(this.firstNameColumn);
+		this.getColumns().add(this.subgroupNameColumn);
 
-		TestSumColumn sumColumn = new TestSumColumn(test);
-		TestRatioColumn ratioColumn = new TestRatioColumn(test, sumColumn);
-		TestGradeColumn gradeColumn = new TestGradeColumn(group, test, sumColumn);
-		TestAnnotationColumn annotationColumn = new TestAnnotationColumn(test);
-		TestDateColumn dateColumn = new TestDateColumn(test);
+		this.sumColumn = new TestSumColumn(test);
+		this.ratioColumn = new TestRatioColumn(test, this.sumColumn);
+		this.gradeColumn = new TestGradeColumn(group, test, this.sumColumn);
+		this.annotationColumn = new TestAnnotationColumn(test);
+		this.dateColumn = new TestDateColumn(test);
 
 		if (!test.getTasksRoot().isLeaf()) {
 			for (TreeItem<TestTask> task : test.getTasksRoot().getChildren()) {
 				this.getColumns().add(createTestTaskColumn((TestTask) task));
 			}
 		}
-		this.getColumns().add(sumColumn);
-		this.getColumns().add(ratioColumn);
-		this.getColumns().add(gradeColumn);
-		this.getColumns().add(annotationColumn);
-		this.getColumns().add(dateColumn);
+		this.getColumns().add(this.sumColumn);
+		this.getColumns().add(this.ratioColumn);
+		this.getColumns().add(this.gradeColumn);
+		this.getColumns().add(this.annotationColumn);
+		this.getColumns().add(this.dateColumn);
 
 		FontSizeController.bindTableColumnWidthToFontSize(this);
 		Styles.subscribeThemeColor(this, group.colorProperty());
-		this.getStyleClass().addAll("table-view-cell-highlight", "table-view-no-focus", "table-view-hide-empty");
+//		this.getStyleClass().addAll("table-view-cell-highlight", "table-view-no-focus");
 	}
 
 	private TestTaskColumn createTestTaskColumn(TestTask task) {
 		return new TestTaskColumn(task, t -> createTestTaskColumn(t));
+	}
+
+	public StudentReturnColumn getReturnColumn() {
+		return this.returnColumn;
+	}
+
+	public StudentSubgroupNameColumn getSubgroupNameColumn() {
+		return this.subgroupNameColumn;
+	}
+
+	public TestAnnotationColumn getAnnotationColumn() {
+		return this.annotationColumn;
+	}
+
+	public TestDateColumn getDateColumn() {
+		return this.dateColumn;
 	}
 
 	@Override

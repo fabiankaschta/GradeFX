@@ -9,6 +9,7 @@ import org.openjfx.gradefx.model.Student;
 import org.openjfx.kafx.controller.ExceptionController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.io.CSVParser;
+import org.openjfx.kafx.view.dialog.DialogPaneCustom;
 import org.openjfx.kafx.view.dialog.DialogUserInput;
 import org.openjfx.kafx.view.dialog.userinput.UserInputCheckBox;
 import org.openjfx.kafx.view.dialog.userinput.UserInputChoiceBox;
@@ -31,6 +32,7 @@ import javafx.util.StringConverter;
 // TODO move most to KAFXBase
 public class StudentParserDialog extends DialogUserInput<Boolean> {
 
+	private final DialogPaneCustom dialogPane;
 	private final UserInputChoiceBox<Character> separator;
 	private final UserInputChoiceBox<Character> quotationMark;
 	private final UserInputCheckBox labeled;
@@ -39,7 +41,9 @@ public class StudentParserDialog extends DialogUserInput<Boolean> {
 	private int previewAmount = 3;
 
 	public StudentParserDialog(Group group, File file) throws IOException {
-		super(TranslationController.translate("dialog_import_students_title"));
+		super(TranslationController.translate("dialog_import_students_title"), new DialogPaneCustom());
+
+		this.dialogPane = (DialogPaneCustom) this.getDialogPane();
 
 		ObservableList<Student> studentPreview = FXCollections.observableArrayList();
 
@@ -189,7 +193,7 @@ public class StudentParserDialog extends DialogUserInput<Boolean> {
 		});
 		super.addInput(this.labeled, TranslationController.translate("dialog_import_students_labeled"));
 
-		this.getDialogPane().setExpandableContent(this.preview);
+		this.dialogPane.setExpandableContent(this.preview);
 		this.preview.getColumns().addListener((ListChangeListener<TableColumn<Student, ?>>) _ -> {
 			try {
 				studentPreview.setAll(csvReader.preview(previewAmount));
@@ -197,13 +201,16 @@ public class StudentParserDialog extends DialogUserInput<Boolean> {
 				ExceptionController.exception(e);
 			}
 		});
-		this.getDialogPane().expandedProperty().subscribe(() -> this.setResizable(false));
-		this.getDialogPane().setExpanded(true);
+		this.dialogPane.expandedProperty().subscribe(() -> this.setResizable(false));
+		this.dialogPane.setExpanded(true);
 
 		ButtonType doneButtonType = new ButtonType(TranslationController.translate("dialog_button_done"),
 				ButtonData.OK_DONE);
-		this.getDialogPane().getButtonTypes().add(doneButtonType);
-		// TODO this.getDialogPane().detailsButton
+		this.dialogPane.getButtonTypes().add(doneButtonType);
+		this.dialogPane
+				.setDetailsButtonMoreText(TranslationController.translate("dialog_import_students_preview_show"));
+		this.dialogPane
+				.setDetailsButtonLessText(TranslationController.translate("dialog_import_students_preview_hide"));
 
 		this.setResultConverter(r -> {
 			if (r != null) {
