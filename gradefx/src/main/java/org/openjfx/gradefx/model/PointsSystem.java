@@ -276,12 +276,14 @@ public class PointsSystem {
 			case LESSOREQUAL_THAN:
 				if (isUseHalfPoints()) {
 					bound = bound.multiply(BigDecimal.TWO);
-					bound = bound.setScale(0, RoundingMode.DOWN);
+					bound = bound.setScale(0, RoundingMode.UP);
 					bound = bound.divide(BigDecimal.TWO, 1, RoundingMode.HALF_UP);
 				} else {
-					bound = bound.setScale(0, RoundingMode.DOWN);
+					bound = bound.setScale(0, RoundingMode.UP);
 				}
-				this.upperBounds[i].set(bound);
+				if (i != this.grades.length - 1) {
+					this.upperBounds[i].set(bound);
+				}
 				break;
 			case MORE_THAN:
 				if (isUseHalfPoints()) {
@@ -298,7 +300,9 @@ public class PointsSystem {
 				} else {
 					bound = bound.setScale(0, RoundingMode.UP);
 				}
-				this.lowerBounds[i].set(bound);
+				if (i != 0) {
+					this.lowerBounds[i].set(bound);
+				}
 				break;
 			}
 		}
@@ -353,13 +357,18 @@ public class PointsSystem {
 						: this.ratioBounds[indexFrom].get();
 				BigDecimal ratioTo = indexTo == -1 ? BigDecimal.ZERO : this.ratioBounds[indexTo].get();
 				BigDecimal ratioDiff = ratioFrom.subtract(ratioTo);
-				BigDecimal pointStep = this.totalPoints.get().multiply(ratioDiff).divide(steps, SCALE, ROUNDINGMODE);
+				BigDecimal pointStep = this.totalPoints.get().multiply(ratioDiff).divide(steps, SCALE + 1,
+						ROUNDINGMODE);
 				for (int i = indexFrom - 1; i >= indexTo; i--) {
 					if (i >= 0) {
 						bounds[i] = bounds[i + 1].subtract(pointStep);
 					}
 				}
 				indexFrom = indexTo;
+			}
+			for (int i = 0; i < bounds.length-1; i++) {
+				// this gets scaled one down to avoid rounding errors
+				bounds[i] = bounds[i].setScale(SCALE, RoundingMode.UP);
 			}
 			break;
 		case MOREOREQUAL_THAN:
@@ -373,13 +382,18 @@ public class PointsSystem {
 				BigDecimal ratioTo = indexTo == this.ratioBounds.length ? BigDecimal.ONE
 						: this.ratioBounds[indexTo].get();
 				BigDecimal ratioDiff = ratioTo.subtract(ratioFrom);
-				BigDecimal pointStep = this.totalPoints.get().multiply(ratioDiff).divide(steps, SCALE, ROUNDINGMODE);
+				BigDecimal pointStep = this.totalPoints.get().multiply(ratioDiff).divide(steps, SCALE + 1,
+						ROUNDINGMODE);
 				for (int i = indexFrom + 1; i <= indexTo; i++) {
 					if (i < this.ratioBounds.length) {
 						bounds[i] = bounds[i - 1].add(pointStep);
 					}
 				}
 				indexFrom = indexTo;
+			}
+			for (int i = 1; i < bounds.length; i++) {
+				// this gets scaled one down to avoid rounding errors
+				bounds[i] = bounds[i].setScale(SCALE, RoundingMode.DOWN);
 			}
 			break;
 		}
