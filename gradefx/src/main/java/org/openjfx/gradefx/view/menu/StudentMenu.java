@@ -7,12 +7,14 @@ import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.view.dialog.DialogAddStudent;
 import org.openjfx.gradefx.view.dialog.DialogEditStudent;
-import org.openjfx.gradefx.view.dialog.StudentParserDialog;
 import org.openjfx.gradefx.view.pane.GroupsPane;
+import org.openjfx.gradefx.view.tableview.TableViewStudentImportPreview;
 import org.openjfx.kafx.controller.ConfigController;
 import org.openjfx.kafx.controller.ExceptionController;
 import org.openjfx.kafx.controller.TranslationController;
+import org.openjfx.kafx.io.CSVParser;
 import org.openjfx.kafx.view.alert.AlertDelete;
+import org.openjfx.kafx.view.dialog.DialogCSVImport;
 
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Menu;
@@ -44,8 +46,8 @@ public class StudentMenu extends Menu {
 		this.menuItemDelete.setOnAction(_ -> {
 			Group g = GroupsPane.getSelectedGroup();
 			Student s = GroupsPane.getSelectedStudent();
-			new AlertDelete(TranslationController.translate("student") + " " + s.getFirstName() + " " + s.getLastName()).showAndWait()
-					.ifPresent(response -> {
+			new AlertDelete(TranslationController.translate("student") + " " + s.getFirstName() + " " + s.getLastName())
+					.showAndWait().ifPresent(response -> {
 						if (response == ButtonType.OK) {
 							g.removeStudent(s);
 						} else {
@@ -65,8 +67,21 @@ public class StudentMenu extends Menu {
 			}
 			File file = this.fileChooser.showOpenDialog(getParentPopup());
 			if (file != null) {
+				TableViewStudentImportPreview preview = new TableViewStudentImportPreview(group);
+				CSVParser<Student> csvParser = new CSVParser<>(values -> {
+					if (values.length < 2) {
+						return null;
+					} else if (values.length == 2) {
+						return new Student(values[preview.indexOfFirstNameColumn()],
+								values[preview.indexOfLastNameColumn()]);
+					} else {
+						return new Student(values[preview.indexOfFirstNameColumn()],
+								values[preview.indexOfLastNameColumn()], values[preview.indexOfSubgroupNameColumn()]);
+					}
+				}, file, ';');
 				try {
-					new StudentParserDialog(group, file).showAndWait();
+					new DialogCSVImport<>(TranslationController.translate("dialog_import_students_title"), file,
+							csvParser, preview, 3, s -> group.addStudent(s)).showAndWait();
 				} catch (IOException e) {
 					ExceptionController.exception(e);
 				}
