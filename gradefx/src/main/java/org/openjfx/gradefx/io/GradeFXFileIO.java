@@ -28,6 +28,10 @@ public class GradeFXFileIO extends EncryptedFileIO {
 	@Override
 	@SuppressWarnings("unchecked")
 	public boolean handleData(Data data) {
+		Group.clearGroups();
+		Subject.clearSubjects();
+		GradeSystem.clearGradeSystems();
+		TestGroupSystem.clearTestGroupSystems();
 		try {
 			// TODO maybe move to config?
 			ArrayList<DataObject<TestGroupSystem>> testGroupSystems = (ArrayList<DataObject<TestGroupSystem>>) data

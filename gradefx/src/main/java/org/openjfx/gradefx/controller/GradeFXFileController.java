@@ -23,13 +23,4 @@ public class GradeFXFileController extends FileController {
 		GradeSystem.setDefault();
 		return super.handleNewFile(file);
 	}
-
-	@Override
-	protected boolean handleOpenFile(File file) {
-		Group.clearGroups();
-		Subject.clearSubjects();
-		GradeSystem.clearGradeSystems();
-		TestGroupSystem.clearTestGroupSystems();
-		return super.handleOpenFile(file);
-	}
 }
