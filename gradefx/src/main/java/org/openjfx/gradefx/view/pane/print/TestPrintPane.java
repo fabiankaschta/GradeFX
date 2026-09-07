@@ -54,7 +54,6 @@ public class TestPrintPane extends BorderPane {
 		statisticsHeader.setStyle("-fx-font-weight: bold;");
 
 		TableViewPointsSystem pointsSystem = new TableViewPointsSystem(group, test, true);
-		pointsSystem.setSelectionModel(null); // disable selection
 
 		VBox statisticsHeaderBox = new VBox(10, statisticsHeader, pointsSystem);
 		statisticsHeaderBox.setAlignment(Pos.CENTER);

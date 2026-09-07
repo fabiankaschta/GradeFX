@@ -21,20 +21,13 @@ import javafx.scene.layout.RowConstraints;
 
 public class StatisticsGrid extends GridPane {
 
-	private final static EmojiImageView emojiWarning = new EmojiImageView("26A0",
-			FontSizeController.fontSizeProperty().multiply(2));
-	private final static EmojiImageView emojiWarning2 = new EmojiImageView("26A0",
-			FontSizeController.fontSizeProperty().multiply(2));
-	private final static EmojiImageView emojiAmazing = new EmojiImageView("1F600",
-			FontSizeController.fontSizeProperty().multiply(2));
-	private final static EmojiImageView emojiNice = new EmojiImageView("1F603",
-			FontSizeController.fontSizeProperty().multiply(2));
-	private final static EmojiImageView emojiGood = new EmojiImageView("1F642",
-			FontSizeController.fontSizeProperty().multiply(2));
-	private final static EmojiImageView emojiOkay = new EmojiImageView("1F610",
-			FontSizeController.fontSizeProperty().multiply(2));
-	private final static EmojiImageView emojiBad = new EmojiImageView("1F641",
-			FontSizeController.fontSizeProperty().multiply(2));
+	// unicode identifiers for emojis
+	private final static String emojiWarning = "26A0";
+	private final static String emojiAmazing = "1F600";
+	private final static String emojiNice = "1F603";
+	private final static String emojiGood = "1F642";
+	private final static String emojiOkay = "1F610";
+	private final static String emojiBad = "1F641";
 
 	public StatisticsGrid(Group group, TableViewPointsSystem tableViewPointsSystem) {
 		super(10, 0);
@@ -72,23 +65,29 @@ public class StatisticsGrid extends GridPane {
 			if (avg != null) {
 				switch (group.getGradeSystem().getLevel(avg)) {
 				case AMAZING:
-					avgValueOneToSix.setGraphic(emojiAmazing);
+					avgValueOneToSix.setGraphic(
+							new EmojiImageView(emojiAmazing, FontSizeController.fontSizeProperty().multiply(2)));
 					break;
 				case NICE:
-					avgValueOneToSix.setGraphic(emojiNice);
+					avgValueOneToSix.setGraphic(
+							new EmojiImageView(emojiNice, FontSizeController.fontSizeProperty().multiply(2)));
 					break;
 				case GOOD:
-					avgValueOneToSix.setGraphic(emojiGood);
+					avgValueOneToSix.setGraphic(
+							new EmojiImageView(emojiGood, FontSizeController.fontSizeProperty().multiply(2)));
 					break;
 				case OKAY:
-					avgValueOneToSix.setGraphic(emojiOkay);
+					avgValueOneToSix.setGraphic(
+							new EmojiImageView(emojiOkay, FontSizeController.fontSizeProperty().multiply(2)));
 					break;
 				case BAD:
-					avgValueOneToSix.setGraphic(emojiBad);
+					avgValueOneToSix.setGraphic(
+							new EmojiImageView(emojiBad, FontSizeController.fontSizeProperty().multiply(2)));
 					break;
 				case TOO_BAD:
 				case TOO_GOOD:
-					avgValueOneToSix.setGraphic(emojiWarning);
+					avgValueOneToSix.setGraphic(
+							new EmojiImageView(emojiWarning, FontSizeController.fontSizeProperty().multiply(2)));
 					break;
 				default:
 					avgValueOneToSix.setGraphic(null);
@@ -126,28 +125,32 @@ public class StatisticsGrid extends GridPane {
 				switch (mode) {
 				case LESSOREQUAL_THAN:
 					if (ratio.compareTo(criticalRatio) <= 0) {
-						criticalGradesValue.setGraphic(emojiWarning2);
+						criticalGradesValue.setGraphic(
+								new EmojiImageView(emojiWarning, FontSizeController.fontSizeProperty().multiply(2)));
 					} else {
 						criticalGradesValue.setGraphic(null);
 					}
 					break;
 				case LESS_THAN:
 					if (ratio.compareTo(criticalRatio) < 0) {
-						criticalGradesValue.setGraphic(emojiWarning2);
+						criticalGradesValue.setGraphic(
+								new EmojiImageView(emojiWarning, FontSizeController.fontSizeProperty().multiply(2)));
 					} else {
 						criticalGradesValue.setGraphic(null);
 					}
 					break;
 				case MOREOREQUAL_THAN:
 					if (ratio.compareTo(criticalRatio) >= 0) {
-						criticalGradesValue.setGraphic(emojiWarning2);
+						criticalGradesValue.setGraphic(
+								new EmojiImageView(emojiWarning, FontSizeController.fontSizeProperty().multiply(2)));
 					} else {
 						criticalGradesValue.setGraphic(null);
 					}
 					break;
 				case MORE_THAN:
 					if (ratio.compareTo(criticalRatio) > 0) {
-						criticalGradesValue.setGraphic(emojiWarning2);
+						criticalGradesValue.setGraphic(
+								new EmojiImageView(emojiWarning, FontSizeController.fontSizeProperty().multiply(2)));
 					} else {
 						criticalGradesValue.setGraphic(null);
 					}
@@ -160,7 +163,7 @@ public class StatisticsGrid extends GridPane {
 				criticalGradesValue.setGraphic(null);
 			}
 		});
-		
+
 		final RowConstraints rowFixedHeight = new RowConstraints(50);
 		rowFixedHeight.setMinHeight(USE_PREF_SIZE);
 		rowFixedHeight.setMaxHeight(USE_PREF_SIZE);

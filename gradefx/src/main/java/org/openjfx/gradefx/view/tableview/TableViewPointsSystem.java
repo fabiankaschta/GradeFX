@@ -2,8 +2,6 @@ package org.openjfx.gradefx.view.tableview;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map.Entry;
 
 import org.openjfx.gradefx.model.Grade;
@@ -35,7 +33,8 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
-import javafx.collections.MapChangeListener;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -43,10 +42,9 @@ import javafx.scene.control.TableColumn;
 
 public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 
-	private final Group group;
 	private final Test test;
 	private final Grade[] grades;
-	private final FilteredList<Student> students;
+	private final ObservableList<Student> students;
 	private final BooleanProperty filtered = new SimpleBooleanProperty(this, "filtered", false);
 	private final AmountColumn amountColumn;
 	private final ReadOnlyObjectWrapper<BigDecimal> gradeAVG = new ReadOnlyObjectWrapper<>(this, "gradeAVG");
@@ -57,18 +55,32 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 	public TableViewPointsSystem(Group group, Test test, boolean printMode) {
 		super(FontSizeController.fontSizeProperty().multiply(2),
 				FXCollections.observableArrayList(group.getGradeSystem().getPossibleGradesDESC()));
-		this.group = group;
 		this.test = test;
 		this.grades = group.getGradeSystem().getPossibleGradesDESC();
-		this.students = new FilteredList<>(group.getStudents());
-		this.updateStudentFilter();
-		// this causes crash when first print, then add
-		// not needed since updateStudentFilter() is done anyway in amountColum's
-		// listener
-		// maybe needs rework when students are different between group and test
-		// this.group.getStudents().addListener((ListChangeListener<Student>) _ ->
-		// updateStudentFilter());
+
 		this.setPadding(new Insets(0));
+
+		if (printMode) {
+			this.students = new FilteredList<>(group.getStudents(),
+					student -> !this.filtered.get() || this.test.getDate() == null || this.test.getDate(student) == null
+							|| this.test.getDate(student).equals(this.test.getDate()));
+		} else {
+			ObservableList<Student> baseList = FXCollections.observableArrayList(student -> new Observable[] {
+					this.filtered, this.test.dateProperty(), this.test.dateProperty(student) });
+			baseList.addAll(group.getStudents());
+			this.students = new FilteredList<>(baseList, student -> !this.filtered.get() || this.test.getDate() == null
+					|| this.test.getDate(student) == null || this.test.getDate(student).equals(this.test.getDate()));
+			group.getStudents().addListener((ListChangeListener<Student>) c -> {
+				while (c.next()) {
+					if (c.wasAdded()) {
+						baseList.addAll(c.getAddedSubList());
+					}
+					if (c.wasRemoved()) {
+						baseList.removeAll(c.getRemoved());
+					}
+				}
+			});
+		}
 
 		test.onlyDefaultDateProperty().subscribe(v -> this.filtered.setValue(v));
 
@@ -79,7 +91,7 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 		TableColumn<Grade, BigDecimal> fromColumn = new TableColumn<>(
 				TranslationController.translate("pointsSystem_from"));
 		fromColumn.setCellValueFactory(data -> pointsSystem.lowerBoundForGrade(data.getValue()));
-		fromColumn.setCellFactory(_ -> {
+		fromColumn.setCellFactory(printMode ? TableCellCustom.forTableColumn(pointsConverter, Pos.CENTER) : _ -> {
 			TableCellEditComparable<Grade, BigDecimal> cell = new TableCellEditComparable<>(BigDecimal.ZERO, null,
 					pointsConverter, Pos.CENTER);
 			cell.tableRowProperty().addListener((_, _, newValue) -> {
@@ -107,7 +119,7 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 
 		TableColumn<Grade, BigDecimal> toColumn = new TableColumn<>(TranslationController.translate("pointsSystem_to"));
 		toColumn.setCellValueFactory(data -> pointsSystem.upperBoundForGrade(data.getValue()));
-		toColumn.setCellFactory(_ -> {
+		toColumn.setCellFactory(printMode ? TableCellCustom.forTableColumn(pointsConverter, Pos.CENTER) : _ -> {
 			TableCellEditComparable<Grade, BigDecimal> cell = new TableCellEditComparable<>(BigDecimal.ZERO, null,
 					pointsConverter, Pos.CENTER);
 			cell.tableRowProperty().addListener((_, _, newValue) -> {
@@ -204,7 +216,7 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 		return this.graded.get();
 	}
 
-	public FilteredList<Student> getFilteredStudents() {
+	public ObservableList<Student> getFilteredStudents() {
 		return this.students;
 	}
 
@@ -233,18 +245,6 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 			}
 		}
 		return -1;
-	}
-
-	private void updateStudentFilter() {
-		List<Observable> observables = new ArrayList<>();
-		observables.add(this.filtered);
-		observables.add(this.test.dateProperty());
-		observables.addAll(this.group.getStudents().stream().map(student -> this.test.dateProperty(student))
-				.filter(date -> date != null).toList());
-		this.students.predicateProperty().bind(Bindings.createObjectBinding(() -> {
-			return student -> !this.filtered.get() || this.test.getDate() == null || this.test.getDate(student) == null
-					|| this.test.getDate(student).equals(this.test.getDate());
-		}, observables.toArray(n -> new Observable[n])));
 	}
 
 	private class RatioColumn extends TableColumn<Grade, BigDecimal> {
@@ -300,61 +300,33 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 				this.amounts[i] = new SimpleIntegerProperty(this, "amount for grade " + grade, 0);
 				this.amounts[i].subscribe(_ -> updateAVG());
 			}
-			// subscribe to predicate if filter changes
-			TableViewPointsSystem.this.students.predicateProperty().subscribe(_ -> {
-				for (int i = 0; i < this.amounts.length; i++) {
-					Grade grade = TableViewPointsSystem.this.grades[i];
-					this.amounts[i].set(0);
-					for (Student student : TableViewPointsSystem.this.students) {
-						ObjectProperty<Grade> g = TableViewPointsSystem.this.test.gradeProperty(student);
-						// use numerical values here since we don't want to take tendencies into account
-						if (g.get() != null && g.get().getNumericalValue().equals(grade.getNumericalValue())) {
-							this.amounts[i].set(this.amounts[i].get() + 1);
-						}
-					}
-				}
-				// add listeners to all existing grades
-				for (Entry<Student, ObjectProperty<Grade>> e : TableViewPointsSystem.this.test.getGrades().entrySet()) {
-					e.getValue().removeListener(this.updateAmountsListenerGrade);
-					if (TableViewPointsSystem.this.students.contains(e.getKey())) {
-						e.getValue().addListener(this.updateAmountsListenerGrade);
-					}
-				}
-			});
-			// update listener if new student / grade is entered
-			TableViewPointsSystem.this.test.getGrades()
-					.addListener((MapChangeListener<Student, ObjectProperty<Grade>>) c -> {
-						// can't access TableViewPointsSystem.this.students somehow without that call
-						updateStudentFilter();
-						if (TableViewPointsSystem.this.students.contains(c.getKey())) {
-							// new mapping
-							if (c.getValueRemoved() == null) {
-								c.getValueAdded().addListener(this.updateAmountsListenerGrade);
-								Grade grade = c.getValueAdded().get();
-								if (grade != null) {
-									int i = TableViewPointsSystem.this.indexOf(grade);
-									this.amounts[i].set(this.amounts[i].get() + 1);
-								}
-							}
-							// mapping was removed
-							else if (c.getValueAdded() == null) {
-								c.getValueRemoved().removeListener(this.updateAmountsListenerGrade);
-								Grade grade = c.getValueRemoved().get();
-								if (grade != null) {
-									int i = TableViewPointsSystem.this.indexOf(grade);
-									this.amounts[i].set(this.amounts[i].get() - 1);
-								}
-							}
-							// mapping was replaced
-							else {
-								c.getValueRemoved().removeListener(this.updateAmountsListenerGrade);
-								c.getValueAdded().addListener(this.updateAmountsListenerGrade);
-							}
-						}
-					});
+			calculateAmounts();
+
+			TableViewPointsSystem.this.students.addListener((ListChangeListener<Student>) _ -> calculateAmounts());
 		}
 
-		void updateAVG() {
+		private void calculateAmounts() {
+			for (int i = 0; i < this.amounts.length; i++) {
+				Grade grade = TableViewPointsSystem.this.grades[i];
+				this.amounts[i].set(0);
+				for (Student student : TableViewPointsSystem.this.students) {
+					ObjectProperty<Grade> g = TableViewPointsSystem.this.test.gradeProperty(student);
+					// use numerical values here since we don't want to take tendencies into account
+					if (g.get() != null && g.get().getNumericalValue().equals(grade.getNumericalValue())) {
+						this.amounts[i].set(this.amounts[i].get() + 1);
+					}
+				}
+			}
+			// add listeners to all existing grades
+			for (Entry<Student, ObjectProperty<Grade>> e : TableViewPointsSystem.this.test.getGrades().entrySet()) {
+				e.getValue().removeListener(this.updateAmountsListenerGrade);
+				if (TableViewPointsSystem.this.students.contains(e.getKey())) {
+					e.getValue().addListener(this.updateAmountsListenerGrade);
+				}
+			}
+		}
+
+		private void updateAVG() {
 			int sum = 0;
 			int count = 0;
 			for (int i = 0; i < this.amounts.length; i++) {
