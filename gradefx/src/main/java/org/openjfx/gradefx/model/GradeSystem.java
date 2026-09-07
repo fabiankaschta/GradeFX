@@ -202,12 +202,12 @@ public class GradeSystem {
 	public BigDecimal mapAvgToOther(BigDecimal avg, GradeSystemBaseType mapTo) {
 		if (this.baseType == mapTo) {
 			return avg;
-		} else if (this.baseType == GradeSystemBaseType.ONE_TO_SIX && baseType == GradeSystemBaseType.FIFTEEN_POINTS) {
+		} else if (this.baseType == GradeSystemBaseType.ONE_TO_SIX && mapTo == GradeSystemBaseType.FIFTEEN_POINTS) {
 			return BigDecimal.valueOf(17).subtract(avg.multiply(BigDecimal.valueOf(3)));
-		} else if (this.baseType == GradeSystemBaseType.FIFTEEN_POINTS && baseType == GradeSystemBaseType.ONE_TO_SIX) {
+		} else if (this.baseType == GradeSystemBaseType.FIFTEEN_POINTS && mapTo == GradeSystemBaseType.ONE_TO_SIX) {
 			return BigDecimal.valueOf(17).subtract(avg).divide(BigDecimal.valueOf(3), SCALE, ROUNDINGMODE);
 		} else {
-			throw new UnsupportedOperationException("Can't map from " + this.baseType + " to " + baseType);
+			throw new UnsupportedOperationException("Can't map from " + this.baseType + " to " + mapTo);
 		}
 	}
 
