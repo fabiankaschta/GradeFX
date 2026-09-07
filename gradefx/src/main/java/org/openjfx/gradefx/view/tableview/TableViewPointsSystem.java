@@ -35,7 +35,6 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
@@ -63,7 +62,12 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 		this.grades = group.getGradeSystem().getPossibleGradesDESC();
 		this.students = new FilteredList<>(group.getStudents());
 		this.updateStudentFilter();
-		this.group.getStudents().addListener((ListChangeListener<Student>) _ -> updateStudentFilter());
+		// this causes crash when first print, then add
+		// not needed since updateStudentFilter() is done anyway in amountColum's
+		// listener
+		// maybe needs rework when students are different between group and test
+		// this.group.getStudents().addListener((ListChangeListener<Student>) _ ->
+		// updateStudentFilter());
 		this.setPadding(new Insets(0));
 
 		test.onlyDefaultDateProperty().subscribe(v -> this.filtered.setValue(v));

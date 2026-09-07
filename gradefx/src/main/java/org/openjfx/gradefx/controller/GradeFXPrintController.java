@@ -13,6 +13,9 @@ public class GradeFXPrintController extends PrintController {
 	protected Dialog<Boolean> createPrintPreviewDialog(Node printable, Node options) {
 		Dialog<Boolean> dialog = super.createPrintPreviewDialog(printable, options);
 		Styles.subscribeThemeColor(dialog.getDialogPane(), GroupsPane.getSelectedGroup().colorProperty());
+		// -theme-color-bright-heavy is used as faded background color.
+		// replace with white to save ink
+		dialog.getDialogPane().setStyle(dialog.getDialogPane().getStyle() + "-theme-color-bright-heavy: white;");
 		return dialog;
 	}
 

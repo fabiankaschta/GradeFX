@@ -79,7 +79,6 @@ public class TableViewTestPrint extends TableViewFullSize<Student> {
 
 		FontSizeController.bindTableColumnWidthToFontSize(this);
 		Styles.subscribeThemeColor(this, group.colorProperty());
-//		this.getStyleClass().addAll("table-view-cell-highlight", "table-view-no-focus");
 	}
 
 	private TestTaskColumn createTestTaskColumn(TestTask task) {
