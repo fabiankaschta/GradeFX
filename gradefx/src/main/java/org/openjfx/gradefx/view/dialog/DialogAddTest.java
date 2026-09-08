@@ -113,6 +113,8 @@ public class DialogAddTest extends DialogAdd<Test> {
 				new ChoiceBoxTreeItem<TestGroup>(group.getTestGroupRoot(), new TestGroupConverter()));
 		super.addInput(this.testGroupTree, TranslationController.translate("test_testGroupTree"));
 		this.testGroupTree.visibleProperty().bind(group.getTestGroupRoot().leafProperty().not());
+
+		this.setDefaultButtonAdd();
 	}
 
 	@Override
