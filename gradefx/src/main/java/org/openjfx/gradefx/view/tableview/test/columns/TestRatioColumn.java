@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.kafx.controller.FontSizeController;
-import org.openjfx.kafx.view.converter.BigDecimalPercentConverter;
+import org.openjfx.kafx.converter.BigDecimalPercentConverter;
 import org.openjfx.kafx.view.tableview.TableCellCustom;
 
 import javafx.beans.binding.Bindings;

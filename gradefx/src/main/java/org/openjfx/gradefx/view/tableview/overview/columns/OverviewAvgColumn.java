@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Grade;
 import org.openjfx.gradefx.model.Group;
-import org.openjfx.kafx.view.converter.BigDecimalConverter;
+import org.openjfx.kafx.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.tableview.TableCellCustom;
 
 import javafx.beans.property.ObjectProperty;

@@ -9,8 +9,8 @@ import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.view.tableview.TableViewPointsSystem;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
-import org.openjfx.kafx.view.converter.BigDecimalConverter;
-import org.openjfx.kafx.view.converter.BigDecimalPercentConverter;
+import org.openjfx.kafx.converter.BigDecimalConverter;
+import org.openjfx.kafx.converter.BigDecimalPercentConverter;
 import org.openjfx.kafx.view.imageview.EmojiImageView;
 
 import javafx.beans.binding.Bindings;

@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 
 import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
 import org.openjfx.kafx.controller.TranslationController;
+import org.openjfx.kafx.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.control.ComparableField;
 import org.openjfx.kafx.view.control.TextFieldPromptText;
-import org.openjfx.kafx.view.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.dialog.DialogAdd;
 import org.openjfx.kafx.view.dialog.userinput.UserInputComparableInput;
 import org.openjfx.kafx.view.dialog.userinput.UserInputTextInput;

@@ -10,9 +10,9 @@ import org.openjfx.gradefx.view.converter.BoundTypeConverter;
 import org.openjfx.gradefx.view.tableview.TableViewPointsSystem;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
+import org.openjfx.kafx.converter.BigDecimalConverter;
+import org.openjfx.kafx.converter.DoublePercentConverter;
 import org.openjfx.kafx.view.control.ComparableField;
-import org.openjfx.kafx.view.converter.BigDecimalConverter;
-import org.openjfx.kafx.view.converter.DoublePercentConverter;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;

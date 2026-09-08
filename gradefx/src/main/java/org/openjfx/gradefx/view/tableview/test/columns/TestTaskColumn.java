@@ -7,7 +7,7 @@ import java.util.function.Function;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test.TestTask;
 import org.openjfx.kafx.controller.TranslationController;
-import org.openjfx.kafx.view.converter.BigDecimalConverter;
+import org.openjfx.kafx.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.tableview.TableCellEditComparable;
 
 import javafx.geometry.Pos;
