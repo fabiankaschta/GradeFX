@@ -1,5 +1,6 @@
 package org.openjfx.gradefx.view.tab;
 
+import org.openjfx.gradefx.controller.GradeFXController;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.view.pane.GroupContentPane;
 import org.openjfx.kafx.controller.FontSizeController;
@@ -42,6 +43,28 @@ public class GroupTab extends Tab {
 
 		this.setGraphic(label);
 		this.setContent(this.pane);
+
+		this.selectedProperty().addListener((_, _, selected) -> {
+			if (selected) {
+				GradeFXController.setSelectedGroup(group);
+				Tab selectedTab = this.pane.getSelectionModel().getSelectedItem();
+				if (selectedTab != null) {
+					if (selectedTab instanceof TestTab) {
+						TestTab selectedTestTab = (TestTab) selectedTab;
+						GradeFXController.setSelectedTest(selectedTestTab.getTest());
+						GradeFXController.setSelectedStudent(selectedTestTab.getSelectedStudent());
+					} else {
+						GroupOverviewTab selectedOverviewTab = (GroupOverviewTab) selectedTab;
+						GradeFXController.setSelectedTest(null);
+						GradeFXController.setSelectedStudent(selectedOverviewTab.getSelectedStudent());
+					}
+				} else {
+					GradeFXController.setSelectedTest(null);
+					GradeFXController.setSelectedStudent(null);
+				}
+			}
+		});
+
 		Styles.subscribeThemeColor(this, this.group.colorProperty());
 	}
 

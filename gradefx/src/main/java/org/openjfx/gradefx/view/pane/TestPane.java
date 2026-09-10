@@ -4,24 +4,24 @@ import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.view.pane.statistics.TestStatisticsSidePane;
+import org.openjfx.gradefx.view.tableview.test.TableViewTest;
 
-import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 
 public class TestPane extends ScrollPane {
 
 	private final TestHeaderPane testHeaderPane;
-	private final TestContentPane testContentPane;
+	private final TableViewTest testTableView;
 	private final TestStatisticsSidePane testStatisticsSidePane;
 
 	public TestPane(Group group, Test test) {
 		BorderPane centerPane = new BorderPane();
 		this.testHeaderPane = new TestHeaderPane(group, test);
-		this.testContentPane = new TestContentPane(group, test);
+		this.testTableView = new TableViewTest(group, test);
 		this.testStatisticsSidePane = new TestStatisticsSidePane(group, test);
 		centerPane.setTop(this.testHeaderPane);
-		centerPane.setCenter(this.testContentPane);
+		centerPane.setCenter(this.testTableView);
 		BorderPane fullPane = new BorderPane();
 		fullPane.setCenter(centerPane);
 		fullPane.setRight(this.testStatisticsSidePane);
@@ -30,12 +30,12 @@ public class TestPane extends ScrollPane {
 		this.setContent(fullPane);
 	}
 
-	public ReadOnlyObjectProperty<Student> selectedStudentProperty() {
-		return testContentPane.selectedStudentProperty();
+	public void selectStudent(Student student) {
+		this.testTableView.getSelectionModel().select(student);
 	}
 
-	public Student getSelectedStudent() {
-		return testContentPane.getSelectedStudent();
+	public Student getSelectStudent() {
+		return this.testTableView.getSelectionModel().getSelectedItem();
 	}
 
 }

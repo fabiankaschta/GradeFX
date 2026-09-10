@@ -3,11 +3,11 @@ package org.openjfx.gradefx.view.menu;
 import java.io.File;
 import java.io.IOException;
 
+import org.openjfx.gradefx.controller.GradeFXController;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.view.dialog.DialogAddStudent;
 import org.openjfx.gradefx.view.dialog.DialogEditStudent;
-import org.openjfx.gradefx.view.pane.GroupsPane;
 import org.openjfx.gradefx.view.tableview.TableViewStudentImportPreview;
 import org.openjfx.kafx.controller.ConfigController;
 import org.openjfx.kafx.controller.ExceptionController;
@@ -32,20 +32,20 @@ public class StudentMenu extends Menu {
 
 		this.menuItemNew = new MenuItem(TranslationController.translate("menu_student_new"));
 		this.menuItemNew.setOnAction(_ -> {
-			new DialogAddStudent(GroupsPane.getSelectedGroup()).showAndWait();
+			new DialogAddStudent(GradeFXController.getSelectedGroup()).showAndWait();
 		});
 		this.getItems().add(this.menuItemNew);
 
 		this.menuItemEdit = new MenuItem(TranslationController.translate("menu_student_edit"));
 		this.menuItemEdit.setOnAction(_ -> {
-			new DialogEditStudent(GroupsPane.getSelectedGroup(), GroupsPane.getSelectedStudent()).showAndWait();
+			new DialogEditStudent(GradeFXController.getSelectedGroup(), GradeFXController.getSelectedStudent()).showAndWait();
 		});
 		this.getItems().add(this.menuItemEdit);
 
 		this.menuItemDelete = new MenuItem(TranslationController.translate("menu_student_delete"));
 		this.menuItemDelete.setOnAction(_ -> {
-			Group g = GroupsPane.getSelectedGroup();
-			Student s = GroupsPane.getSelectedStudent();
+			Group g = GradeFXController.getSelectedGroup();
+			Student s = GradeFXController.getSelectedStudent();
 			new AlertDelete(TranslationController.translate("student") + " " + s.getFirstName() + " " + s.getLastName())
 					.showAndWait().ifPresent(response -> {
 						if (response == ButtonType.OK) {
@@ -61,7 +61,7 @@ public class StudentMenu extends Menu {
 
 		this.menuItemImport = new MenuItem(TranslationController.translate("menu_student_import"));
 		this.menuItemImport.setOnAction(_ -> {
-			Group group = GroupsPane.getSelectedGroup();
+			Group group = GradeFXController.getSelectedGroup();
 			if (ConfigController.exists("LAST_FILE")) {
 				fileChooser.setInitialDirectory(new File(ConfigController.get("LAST_FILE")).getParentFile());
 			}
@@ -89,9 +89,9 @@ public class StudentMenu extends Menu {
 		});
 		this.getItems().add(this.menuItemImport);
 
-		this.menuItemNew.disableProperty().bind(GroupsPane.selectedGroupProperty().isNull());
-		this.menuItemEdit.disableProperty().bind(GroupsPane.selectedStudentProperty().isNull());
-		this.menuItemDelete.disableProperty().bind(GroupsPane.selectedStudentProperty().isNull());
+		this.menuItemNew.disableProperty().bind(GradeFXController.selectedGroupProperty().isNull());
+		this.menuItemEdit.disableProperty().bind(GradeFXController.selectedStudentProperty().isNull());
+		this.menuItemDelete.disableProperty().bind(GradeFXController.selectedStudentProperty().isNull());
 	}
 
 }

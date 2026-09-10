@@ -1,12 +1,11 @@
 package org.openjfx.gradefx.view.tab;
 
+import org.openjfx.gradefx.controller.GradeFXController;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
-import org.openjfx.gradefx.view.pane.GroupsPane;
 import org.openjfx.gradefx.view.pane.TestPane;
 
-import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 
@@ -23,27 +22,23 @@ public class TestTab extends Tab {
 		label.setStyle("-fx-text-fill: -fx-text-base-color;");
 		this.setGraphic(label);
 
-		this.selectedProperty().addListener((_, _, selected) -> {
-			if (selected) {
-				GroupsPane.setSelectedTest(test);
-			} else {
-				GroupsPane.setSelectedTest(null);
-			}
-		});
-
 		this.pane = new TestPane(group, this.test);
 		this.setContent(this.pane);
+
+		this.selectedProperty().addListener((_, _, selected) -> {
+			if (selected) {
+				GradeFXController.setSelectedTest(test);
+				this.pane.selectStudent(GradeFXController.getSelectedStudent());
+			}
+		});
 	}
 
 	public Test getTest() {
 		return this.test;
 	}
 
-	public ReadOnlyObjectProperty<Student> selectedStudentProperty() {
-		return this.pane.selectedStudentProperty();
+	public Student getSelectedStudent() {
+		return this.pane.getSelectStudent();
 	}
 
-	public Student getSelectedStudent() {
-		return this.pane.getSelectedStudent();
-	}
 }

@@ -1,10 +1,10 @@
 package org.openjfx.gradefx.view.menu;
 
+import org.openjfx.gradefx.controller.GradeFXController;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.view.dialog.DialogAddGroup;
 import org.openjfx.gradefx.view.dialog.DialogEditGroup;
 import org.openjfx.gradefx.view.dialog.DialogEditSubjects;
-import org.openjfx.gradefx.view.pane.GroupsPane;
 import org.openjfx.gradefx.view.pane.print.GroupOverviewPrintPane;
 import org.openjfx.kafx.controller.PrintController;
 import org.openjfx.kafx.controller.TranslationController;
@@ -25,12 +25,12 @@ public class GroupMenu extends Menu {
 		this.getItems().add(menuItemNew);
 
 		MenuItem menuItemEdit = new MenuItem(TranslationController.translate("menu_group_edit"));
-		menuItemEdit.setOnAction(_ -> new DialogEditGroup(GroupsPane.getSelectedGroup()).showAndWait());
+		menuItemEdit.setOnAction(_ -> new DialogEditGroup(GradeFXController.getSelectedGroup()).showAndWait());
 		this.getItems().add(menuItemEdit);
 
 		MenuItem menuItemDelete = new MenuItem(TranslationController.translate("menu_group_delete"));
 		menuItemDelete.setOnAction(_ -> {
-			Group g = GroupsPane.getSelectedGroup();
+			Group g = GradeFXController.getSelectedGroup();
 			new AlertDelete(TranslationController.translate("group") + " " + g.getName()).showAndWait()
 					.ifPresent(response -> {
 						if (response == ButtonType.OK) {
@@ -44,7 +44,7 @@ public class GroupMenu extends Menu {
 
 		MenuItem menuItemPrint = new MenuItem(TranslationController.translate("menu_group_print"));
 		menuItemPrint.setOnAction(_ -> {
-			PrintController.showPrintSinglePreview(new GroupOverviewPrintPane(GroupsPane.getSelectedGroup()),
+			PrintController.showPrintSinglePreview(new GroupOverviewPrintPane(GradeFXController.getSelectedGroup()),
 					PrintController.A4_LANDSCAPE);
 		});
 		getItems().add(menuItemPrint);
@@ -55,8 +55,8 @@ public class GroupMenu extends Menu {
 		menuItemEditSubjects.setOnAction(_ -> new DialogEditSubjects().showAndWait());
 		this.getItems().add(menuItemEditSubjects);
 
-		menuItemEdit.disableProperty().bind(GroupsPane.selectedGroupProperty().isNull());
-		menuItemDelete.disableProperty().bind(GroupsPane.selectedGroupProperty().isNull());
+		menuItemEdit.disableProperty().bind(GradeFXController.selectedGroupProperty().isNull());
+		menuItemDelete.disableProperty().bind(GradeFXController.selectedGroupProperty().isNull());
 	}
 
 }

@@ -1,20 +1,12 @@
 package org.openjfx.gradefx.view.pane;
 
+import org.openjfx.gradefx.controller.GradeFXController;
 import org.openjfx.gradefx.model.Group;
-import org.openjfx.gradefx.model.Student;
-import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.view.dialog.DialogAddGroup;
-import org.openjfx.gradefx.view.tab.GroupOverviewTab;
 import org.openjfx.gradefx.view.tab.GroupTab;
-import org.openjfx.gradefx.view.tab.TestTab;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.view.pane.AddTabPane;
 
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.ObjectBinding;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Side;
 import javafx.scene.control.Tab;
@@ -25,99 +17,6 @@ public class GroupsPane extends AddTabPane {
 
 	public static GroupsPane get() {
 		return instance;
-	}
-
-	public static Group getSelectedGroup() {
-		return ((GroupTab) instance.getSelectionModel().getSelectedItem()).getGroup();
-	}
-
-	public static int getSelectedGroupIndex() {
-		return instance.getSelectionModel().getSelectedIndex();
-	}
-
-	private final static ObjectProperty<Student> selectedStudentProperty = new SimpleObjectProperty<>();
-
-	public static ReadOnlyObjectProperty<Student> selectedStudentProperty() {
-		return selectedStudentProperty;
-	}
-
-	public static Student getSelectedStudent() {
-		return selectedStudentProperty.get();
-	}
-
-	public static void setSelectedStudent(Student student) {
-		selectedStudentProperty.set(student);
-	}
-
-	private final static ObjectProperty<Test> selectedTestProperty = new SimpleObjectProperty<>();
-
-	public static ReadOnlyObjectProperty<Test> selectedTestProperty() {
-		return selectedTestProperty;
-	}
-
-	private final static ObjectBinding<Group> selectedGroupProperty = Bindings.createObjectBinding(() -> {
-		Tab tab = instance.getSelectionModel().getSelectedItem();
-		if (tab instanceof GroupTab) {
-			return ((GroupTab) tab).getGroup();
-		} else {
-			return null;
-		}
-	}, instance.getSelectionModel().selectedItemProperty());
-
-	public static ObjectBinding<Group> selectedGroupProperty() {
-		return selectedGroupProperty;
-	}
-
-	public static Test getSelectedTest() {
-		return selectedTestProperty.get();
-	}
-
-	public static void setSelectedTest(Test test) {
-		selectedTestProperty.set(test);
-	}
-
-	public static int getSelectedTabInGroupIndex(Group group) {
-		for (Tab tab : instance.getTabs()) {
-			if (tab instanceof GroupTab) {
-				GroupTab groupTab = (GroupTab) tab;
-				if (groupTab.getGroup() == group) {
-					return groupTab.getSelectedTabIndex();
-				}
-			}
-		}
-		return 0;
-	}
-
-	public static Tab getSelectedTabInGroup() {
-		GroupTab groupTab = getSelectedTab();
-		if (groupTab != null) {
-			return groupTab.getSelectedTab();
-		} else {
-			return null;
-		}
-	}
-
-	public static GroupTab getSelectedTab() {
-		for (Tab tab : instance.getTabs()) {
-			if (tab instanceof GroupTab && tab.isSelected()) {
-				return (GroupTab) tab;
-			}
-		}
-		return null;
-	}
-
-	public static void select(int index) {
-		instance.getSelectionModel().select(index);
-	}
-
-	public static void selectTab(Group group, int index) {
-		for (Tab tab : instance.getTabs()) {
-			GroupTab groupTab = (GroupTab) tab;
-			if (groupTab.getGroup() == group) {
-				groupTab.select(index);
-				return;
-			}
-		}
 	}
 
 	public static void addTab(Group group) {
@@ -150,23 +49,12 @@ public class GroupsPane extends AddTabPane {
 		this.getSelectionModel().selectedItemProperty().addListener((_, _, newTab) -> {
 			if (newTab instanceof GroupTab) {
 				GroupTab groupTab = (GroupTab) newTab;
-				Tab selectedSubTab = groupTab.getSelectedTab();
-				if (selectedSubTab instanceof GroupOverviewTab) {
-					GroupOverviewTab tab = (GroupOverviewTab) selectedSubTab;
-					selectedStudentProperty.set(tab.getSelectedStudent());
-					selectedTestProperty.set(null);
-				} else if (selectedSubTab instanceof TestTab) {
-					TestTab tab = (TestTab) selectedSubTab;
-					selectedStudentProperty.set(tab.getSelectedStudent());
-					selectedTestProperty.set(tab.getTest());
-				} else {
-					selectedStudentProperty.set(null);
-					selectedTestProperty.set(null);
-				}
+				GradeFXController.setSelectedGroup(groupTab.getGroup());
 			} else {
-				selectedStudentProperty.set(null);
-				selectedTestProperty.set(null);
+				GradeFXController.setSelectedGroup(null);
 			}
+			GradeFXController.setSelectedTest(null);
+			GradeFXController.setSelectedStudent(null);
 		});
 		this.getTabs().addListener((ListChangeListener<Tab>) c -> {
 			boolean permutate = false;
@@ -192,5 +80,9 @@ public class GroupsPane extends AddTabPane {
 	@Override
 	protected boolean createNewTab() {
 		return new DialogAddGroup().showAndWait().isPresent();
+	}
+
+	public static void select(int index) {
+		instance.getSelectionModel().select(index);
 	}
 }

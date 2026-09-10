@@ -6,11 +6,11 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.controlsfx.control.tableview2.TableView2;
+import org.openjfx.gradefx.controller.GradeFXController;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.Test.TestTask;
-import org.openjfx.gradefx.view.pane.GroupsPane;
 import org.openjfx.gradefx.view.tableview.columns.StudentFirstNameColumn;
 import org.openjfx.gradefx.view.tableview.columns.StudentLastNameColumn;
 import org.openjfx.gradefx.view.tableview.columns.StudentReturnColumn;
@@ -54,9 +54,10 @@ public class TableViewTest extends TableView2<Student> {
 		this.setEditable(true);
 
 		this.getSelectionModel().setCellSelectionEnabled(true);
-		this.getSelectionModel().selectedItemProperty().subscribe(item -> this.selectedRowIndex
-				.setValue(item == null ? -1 : this.getSelectionModel().getSelectedCells().getFirst().getRow()));
-		this.getSelectionModel().selectedItemProperty().subscribe(selected -> GroupsPane.setSelectedStudent(selected));
+		this.getSelectionModel().selectedItemProperty()
+				.subscribe(item -> this.selectedRowIndex.setValue(item == null ? -1 : this.getItems().indexOf(item)));
+		this.getSelectionModel().selectedItemProperty()
+				.subscribe(selected -> GradeFXController.setSelectedStudent(selected));
 
 		this.setPlaceholder(new Text(TranslationController.translate("tab_overview_no_students")));
 

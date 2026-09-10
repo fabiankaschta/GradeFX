@@ -3,6 +3,7 @@ package org.openjfx.gradefx.io;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openjfx.gradefx.controller.GradeFXController;
 import org.openjfx.gradefx.model.BoundType;
 import org.openjfx.gradefx.model.GradeSystem;
 import org.openjfx.gradefx.model.GradeSystem.GradeSystemBaseType;
@@ -33,25 +34,12 @@ public class GradeFXFileIO extends EncryptedFileIO {
 		GradeSystem.clearGradeSystems();
 		TestGroupSystem.clearTestGroupSystems();
 		try {
-			// TODO maybe move to config?
-			ArrayList<DataObject<TestGroupSystem>> testGroupSystems = (ArrayList<DataObject<TestGroupSystem>>) data
-					.get("testGroupSystems");
-			testGroupSystems.forEach(tgs -> tgs.deserialize());
-			ArrayList<DataObject<Subject>> subjects = (ArrayList<DataObject<Subject>>) data.get("subjects");
-			subjects.forEach(s -> s.deserialize());
-			ArrayList<DataObject<GradeSystem>> gradeSystems = (ArrayList<DataObject<GradeSystem>>) data
-					.get("gradeSystems");
-			gradeSystems.forEach(gs -> gs.deserialize());
+			((ArrayList<DataObject<TestGroupSystem>>) data.get("testGroupSystems")).forEach(tgs -> tgs.deserialize());
+			((ArrayList<DataObject<Subject>>) data.get("subjects")).forEach(s -> s.deserialize());
+			((ArrayList<DataObject<GradeSystem>>) data.get("gradeSystems")).forEach(gs -> gs.deserialize());
+			((ArrayList<DataObject<Group>>) data.get("groups")).forEach(g -> g.deserialize());
 
-			ArrayList<DataObject<Group>> groups = (ArrayList<DataObject<Group>>) data.get("groups");
-			ArrayList<Integer> selectedTabInGroup = (ArrayList<Integer>) data.get("selectedTabInGroup");
-			for (int i = 0; i < groups.size(); i++) {
-				Group group = groups.get(i).deserialize();
-				GroupsPane.selectTab(group, selectedTabInGroup.get(i));
-			}
-
-			int selectedGroup = (int) data.get("selectedGroup");
-			GroupsPane.select(selectedGroup);
+			GroupsPane.select((int) data.get("selectedGroup"));
 
 			return true;
 		} catch (Exception e) {
@@ -90,19 +78,15 @@ public class GradeFXFileIO extends EncryptedFileIO {
 	public Data collectData() {
 		Data data = new Data();
 
-		data.put("groups", new ArrayList<>(Group.getGroups().stream().map(g -> g.serialize()).toList()));
-		data.put("selectedTabInGroup", new ArrayList<>(
-				Group.getGroups().stream().map(g -> GroupsPane.getSelectedTabInGroupIndex(g)).toList()));
-
-		// TODO maybe move to config?
 		data.put("testGroupSystems", new ArrayList<DataObject<TestGroupSystem>>(TestGroupSystem.getTestGroupSystems()
 				.stream().filter(tgs -> tgs != TestGroupSystem.NONE).map(tgs -> tgs.serialize()).toList()));
 		data.put("subjects",
 				new ArrayList<DataObject<Subject>>(Subject.getSubjects().stream().map(s -> s.serialize()).toList()));
 		data.put("gradeSystems", new ArrayList<DataObject<GradeSystem>>(
 				GradeSystem.getGradeSystems().stream().map(gs -> gs.serialize()).toList()));
+		data.put("groups", new ArrayList<>(Group.getGroups().stream().map(g -> g.serialize()).toList()));
 
-		data.put("selectedGroup", GroupsPane.getSelectedGroupIndex());
+		data.put("selectedGroup", Group.getGroups().indexOf(GradeFXController.getSelectedGroup()));
 
 		return data;
 	}

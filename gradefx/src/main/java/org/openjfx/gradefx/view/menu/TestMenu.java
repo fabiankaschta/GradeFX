@@ -1,12 +1,12 @@
 package org.openjfx.gradefx.view.menu;
 
+import org.openjfx.gradefx.controller.GradeFXController;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.view.dialog.DialogAddTest;
 import org.openjfx.gradefx.view.dialog.DialogEditTest;
 import org.openjfx.gradefx.view.dialog.DialogEditTestGroupSystems;
 import org.openjfx.gradefx.view.dialog.DialogEditTestTasks;
-import org.openjfx.gradefx.view.pane.GroupsPane;
 import org.openjfx.gradefx.view.pane.print.TestPrintPane;
 import org.openjfx.kafx.controller.PluginController;
 import org.openjfx.kafx.controller.PrintController;
@@ -32,20 +32,20 @@ public class TestMenu extends Menu {
 
 		this.menuItemNew = new MenuItem(TranslationController.translate("menu_test_new"));
 		this.menuItemNew.setOnAction(_ -> {
-			new DialogAddTest(GroupsPane.getSelectedGroup()).showAndWait();
+			new DialogAddTest(GradeFXController.getSelectedGroup()).showAndWait();
 		});
 		this.getItems().add(this.menuItemNew);
 
 		this.menuItemEdit = new MenuItem(TranslationController.translate("menu_test_edit"));
 		this.menuItemEdit.setOnAction(_ -> {
-			new DialogEditTest(GroupsPane.getSelectedGroup(), GroupsPane.getSelectedTest()).showAndWait();
+			new DialogEditTest(GradeFXController.getSelectedGroup(), GradeFXController.getSelectedTest()).showAndWait();
 		});
 		this.getItems().add(this.menuItemEdit);
 
 		this.menuItemDelete = new MenuItem(TranslationController.translate("menu_test_delete"));
 		this.menuItemDelete.setOnAction(_ -> {
-			Group g = GroupsPane.getSelectedGroup();
-			Test t = GroupsPane.getSelectedTest();
+			Group g = GradeFXController.getSelectedGroup();
+			Test t = GradeFXController.getSelectedTest();
 			new AlertDelete(TranslationController.translate("test") + " " + t.getName()).showAndWait()
 					.ifPresent(response -> {
 						if (response == ButtonType.OK) {
@@ -59,8 +59,8 @@ public class TestMenu extends Menu {
 
 		this.menuItemPrint = new MenuItem(TranslationController.translate("menu_test_print"));
 		this.menuItemPrint.setOnAction(_ -> {
-			Group g = GroupsPane.getSelectedGroup();
-			Test t = GroupsPane.getSelectedTest();
+			Group g = GradeFXController.getSelectedGroup();
+			Test t = GradeFXController.getSelectedTest();
 			TestPrintPane tpp = new TestPrintPane(g, t);
 			PrintController.showPrintSinglePreview(tpp, tpp.getOptionsPane(), PrintController.A4_LANDSCAPE);
 		});
@@ -70,7 +70,7 @@ public class TestMenu extends Menu {
 
 		this.menuItemTasks = new MenuItem(TranslationController.translate("menu_test_tasks"));
 		this.menuItemTasks.setOnAction(_ -> {
-			new DialogEditTestTasks(GroupsPane.getSelectedTest()).showAndWait();
+			new DialogEditTestTasks(GradeFXController.getSelectedTest()).showAndWait();
 		});
 		this.getItems().add(this.menuItemTasks);
 
@@ -82,16 +82,16 @@ public class TestMenu extends Menu {
 		});
 		this.getItems().add(this.menuItemGroups);
 
-		this.menuItemNew.disableProperty().bind(GroupsPane.selectedGroupProperty().isNull());
-		this.menuItemEdit.disableProperty().bind(GroupsPane.selectedTestProperty().isNull());
-		this.menuItemDelete.disableProperty().bind(GroupsPane.selectedTestProperty().isNull());
-		this.menuItemPrint.disableProperty().bind(GroupsPane.selectedTestProperty().isNull());
-		if (GroupsPane.getSelectedTest() == null) {
+		this.menuItemNew.disableProperty().bind(GradeFXController.selectedGroupProperty().isNull());
+		this.menuItemEdit.disableProperty().bind(GradeFXController.selectedTestProperty().isNull());
+		this.menuItemDelete.disableProperty().bind(GradeFXController.selectedTestProperty().isNull());
+		this.menuItemPrint.disableProperty().bind(GradeFXController.selectedTestProperty().isNull());
+		if (GradeFXController.getSelectedTest() == null) {
 			this.menuItemTasks.disableProperty().set(true);
 		} else {
-			this.menuItemTasks.disableProperty().bind(GroupsPane.getSelectedTest().useTasksProperty().not());
+			this.menuItemTasks.disableProperty().bind(GradeFXController.getSelectedTest().useTasksProperty().not());
 		}
-		GroupsPane.selectedTestProperty().addListener((_, _, newValue) -> {
+		GradeFXController.selectedTestProperty().addListener((_, _, newValue) -> {
 			this.menuItemTasks.disableProperty().unbind();
 			if (newValue != null) {
 				this.menuItemTasks.disableProperty().bind(newValue.useTasksProperty().not());

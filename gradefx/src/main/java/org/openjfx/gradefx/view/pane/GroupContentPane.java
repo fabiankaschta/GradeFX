@@ -2,6 +2,7 @@ package org.openjfx.gradefx.view.pane;
 
 import java.util.List;
 
+import org.openjfx.gradefx.controller.GradeFXController;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.view.dialog.DialogAddTest;
@@ -43,6 +44,15 @@ public class GroupContentPane extends AddTabPane {
 		for (Test t : group.getTests()) {
 			addTestTab(t);
 		}
+
+		this.getSelectionModel().selectedItemProperty().addListener((_, _, newTab) -> {
+			if (newTab instanceof TestTab) {
+				TestTab testTab = (TestTab) newTab;
+				GradeFXController.setSelectedTest(testTab.getTest());
+			} else if (newTab instanceof GroupOverviewTab) {
+				GradeFXController.setSelectedTest(null);
+			}
+		});
 
 		Styles.subscribeThemeColor(this, group.colorProperty());
 		this.getStyleClass().addAll("tab-pane-selected-bold");
