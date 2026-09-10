@@ -25,7 +25,7 @@ public class GradeFXController extends Controller {
 				.addProperties(GradeFXController.class.getResourceAsStream("/org/openjfx/gradefx/gradefx.properties"));
 		TranslationController.addBundle(ResourceBundle.getBundle("org.openjfx.gradefx.lang.gradefx"));
 		EncryptionController.init(new EncryptionControllerDefault("KAFXBase".getBytes()));
-		ChangeController.init(new GradeFXChangeController());
+		ChangeController.init();
 		FileController.init(new GradeFXFileController());
 		AutoSaveController.init();
 		PrintController.init(new GradeFXPrintController());
