@@ -8,11 +8,14 @@ import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Subject;
 import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
 import org.openjfx.kafx.controller.FileController;
+import org.openjfx.kafx.controller.TranslationController;
+
+import javafx.stage.FileChooser.ExtensionFilter;
 
 public class GradeFXFileController extends FileController {
 
 	public GradeFXFileController() {
-		super(new GradeFXFileIO());
+		super(new GradeFXFileIO(), new ExtensionFilter(TranslationController.translate("file_extension"), "*.gradefx"));
 	}
 
 	@Override
