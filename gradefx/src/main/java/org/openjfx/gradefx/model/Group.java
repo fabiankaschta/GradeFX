@@ -313,7 +313,8 @@ public class Group {
 		public Group deserialize(Object... params) {
 			if (group == null) {
 				group = new Group(name, subject.deserialize(), useSubgroups, gradeSystem.deserialize(),
-						testGroupSystem.deserialize(), Color.web(color));
+						testGroupSystem == null ? TestGroupSystem.NONE : testGroupSystem.deserialize(),
+						Color.web(color));
 				group.testGroupRoot.set(testGroupRoot.deserialize());
 				for (DataObject<Student> s : students) {
 					group.students.add(s.deserialize());

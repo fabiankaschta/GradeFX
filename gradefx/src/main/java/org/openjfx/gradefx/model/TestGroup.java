@@ -25,6 +25,12 @@ public class TestGroup extends TreeItem<TestGroup> {
 	public static class TestGroupSystem extends TreeItem<TestGroupSystem> {
 
 		private final static ObservableList<TestGroupSystem> testGroupSystems = FXCollections.observableArrayList();
+		public final static TestGroupSystem NONE = createRoot(
+				TranslationController.translate("testGroupSystem_NO_GROUPS"));
+
+		static {
+			testGroupSystems.add(NONE);
+		}
 
 		public static ObservableList<TestGroupSystem> getTestGroupSystems() {
 			return testGroupSystems;
@@ -36,15 +42,7 @@ public class TestGroup extends TreeItem<TestGroup> {
 
 		public static void clearTestGroupSystems() {
 			testGroupSystems.clear();
-		}
-
-		public static TestGroupSystem get(String name) {
-			for (TestGroupSystem testGroupSystem : testGroupSystems) {
-				if (testGroupSystem.getName().equals(name)) {
-					return testGroupSystem;
-				}
-			}
-			return null;
+			testGroupSystems.add(NONE);
 		}
 
 		public static TestGroupSystem createRoot(String name) {
@@ -56,10 +54,7 @@ public class TestGroup extends TreeItem<TestGroup> {
 		}
 
 		public static void setDefault() {
-			testGroupSystems.clear();
-			{
-				createRoot(TranslationController.translate("testGroupSystem_NO_GROUPS"));
-			}
+			clearTestGroupSystems();
 			{
 				TestGroupSystem root = createRoot(TranslationController.translate("testGroupSystem_SMALL_LARGE"));
 				root.getChildren().removeListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
@@ -179,16 +174,13 @@ public class TestGroup extends TreeItem<TestGroup> {
 			@Override
 			public TestGroupSystem deserialize(Object... params) {
 				if (testGroupSystem == null) {
-					testGroupSystem = TestGroupSystem.get(name);
-					if (testGroupSystem == null) {
-						if (isRoot) {
-							testGroupSystem = createRoot(name);
-						} else {
-							testGroupSystem = createSubSystem(name, weight);
-						}
-						for (DataObject<TestGroupSystem> t : children) {
-							testGroupSystem.addSubgroup(t.deserialize());
-						}
+					if (isRoot) {
+						testGroupSystem = createRoot(name);
+					} else {
+						testGroupSystem = createSubSystem(name, weight);
+					}
+					for (DataObject<TestGroupSystem> t : children) {
+						testGroupSystem.addSubgroup(t.deserialize());
 					}
 				}
 				return testGroupSystem;
@@ -198,11 +190,15 @@ public class TestGroup extends TreeItem<TestGroup> {
 
 		@SuppressWarnings("unchecked")
 		public DataObject<TestGroupSystem> serialize() {
-			DataObject<?> testGroupSystem = DataObject.getSerialized(this);
-			if (testGroupSystem == null) {
-				return new TestGroupSystemS(this);
+			if (this == NONE) {
+				return null;
 			} else {
-				return (DataObject<TestGroupSystem>) testGroupSystem;
+				DataObject<?> testGroupSystem = DataObject.getSerialized(this);
+				if (testGroupSystem == null) {
+					return new TestGroupSystemS(this);
+				} else {
+					return (DataObject<TestGroupSystem>) testGroupSystem;
+				}
 			}
 		}
 

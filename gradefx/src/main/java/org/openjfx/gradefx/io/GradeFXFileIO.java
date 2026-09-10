@@ -95,8 +95,8 @@ public class GradeFXFileIO extends EncryptedFileIO {
 				Group.getGroups().stream().map(g -> GroupsPane.getSelectedTabInGroupIndex(g)).toList()));
 
 		// TODO maybe move to config?
-		data.put("testGroupSystems", new ArrayList<DataObject<TestGroupSystem>>(
-				TestGroupSystem.getTestGroupSystems().stream().map(tgs -> tgs.serialize()).toList()));
+		data.put("testGroupSystems", new ArrayList<DataObject<TestGroupSystem>>(TestGroupSystem.getTestGroupSystems()
+				.stream().filter(tgs -> tgs != TestGroupSystem.NONE).map(tgs -> tgs.serialize()).toList()));
 		data.put("subjects",
 				new ArrayList<DataObject<Subject>>(Subject.getSubjects().stream().map(s -> s.serialize()).toList()));
 		data.put("gradeSystems", new ArrayList<DataObject<GradeSystem>>(

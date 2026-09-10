@@ -118,8 +118,7 @@ public class DialogEditTestTasks extends DialogCustom<Boolean> {
 		};
 		this.treeViewTestTask.setEditable(true);
 		this.treeViewTestTask.setCellFactory(new DragAndDropCellFactory<>(new TestTaskConverter(),
-				_ -> new TreeCellCustomNodeAddRemove<TestTask>(converter, item -> addTo(item), null,
-						item -> remove(item))));
+				_ -> new TreeCellCustomNodeAddRemove<TestTask>(converter, item -> addTo(item), item -> remove(item))));
 		this.treeViewTestTask.getSelectionModel().selectedIndexProperty()
 				.subscribe(index -> this.treeViewTestTask.scrollTo(index.intValue()));
 
@@ -214,9 +213,9 @@ public class DialogEditTestTasks extends DialogCustom<Boolean> {
 			if (event.getTarget() == target) {
 				if (event.getCode() == KeyCode.DOWN) {
 					event.consume();
-					if (event.isShiftDown()) {
+					if (event.isShiftDown() || testTask.isRoot()) {
 						this.treeViewTestTask.getSelectionModel().selectNext();
-					} else if (!testTask.isRoot()) {
+					} else {
 						TestTask nextsibling = (TestTask) testTask.nextSibling();
 						if (nextsibling == null) {
 							addTo(testTask.getParent());
