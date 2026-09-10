@@ -9,9 +9,8 @@ module org.openjfx.gradefx {
 	requires org.controlsfx.controls;
 	
     exports org.openjfx.gradefx.view to javafx.graphics;
-    
+
+    exports org.openjfx.gradefx.controller;
     exports org.openjfx.gradefx.model;
     exports org.openjfx.gradefx.view.menu;
-    exports org.openjfx.gradefx.view.pane;
-    exports org.openjfx.gradefx.view.tab;
 }
