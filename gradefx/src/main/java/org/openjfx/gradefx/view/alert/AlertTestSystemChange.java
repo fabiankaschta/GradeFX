@@ -1,12 +1,10 @@
 package org.openjfx.gradefx.view.alert;
 
 import org.openjfx.gradefx.model.Group;
-import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
+import org.openjfx.kafx.view.alert.AlertCustom;
 
-import javafx.scene.control.Alert;
-
-public class AlertTestSystemChange extends Alert {
+public class AlertTestSystemChange extends AlertCustom {
 
 	public AlertTestSystemChange(Group group) {
 		super(AlertType.CONFIRMATION);
@@ -14,8 +12,6 @@ public class AlertTestSystemChange extends Alert {
 		this.setHeaderText(group.getName());
 		this.setTitle(TranslationController.translate("alert_testSystemChange_title"));
 		this.setContentText(TranslationController.translate("alert_testSystemChange_main"));
-		FontSizeController.fontSizeProperty()
-				.subscribe(fontSize -> this.getDialogPane().setStyle("-fx-font-size: " + fontSize));
 	}
 
 }

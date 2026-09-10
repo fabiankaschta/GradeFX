@@ -1,6 +1,10 @@
 package org.openjfx.gradefx.view.dialog;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import org.openjfx.gradefx.model.Test;
@@ -11,6 +15,7 @@ import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.pattern.PatternGuesser;
 import org.openjfx.kafx.view.control.ComparableField;
+import org.openjfx.kafx.view.dialog.DialogCustom;
 import org.openjfx.kafx.view.dialog.DialogPaneCustom;
 import org.openjfx.kafx.view.dialog.userinput.UserInputComparableInput;
 import org.openjfx.kafx.view.dialog.userinput.UserInputTextInput;
@@ -19,13 +24,14 @@ import org.openjfx.kafx.view.treeview.DragAndDropCellFactory;
 import org.openjfx.kafx.view.treeview.TreeCellCustomNodeAddRemove;
 
 import javafx.application.Platform;
+import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.StringProperty;
 import javafx.event.EventHandler;
 import javafx.event.EventTarget;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
@@ -34,12 +40,13 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 
-public class DialogEditTestTasks extends Dialog<Boolean> {
+public class DialogEditTestTasks extends DialogCustom<Boolean> {
 
 	private final Test test;
 	private final TreeView<TestTask> treeViewTestTask;
-	private final ButtonType doneButtonType = new ButtonType(TranslationController.translate("dialog_button_done"),
-			ButtonData.OK_DONE);
+
+	private final Map<TestTask, StringProperty> nameProperties = new HashMap<>();
+	private final Map<TestTask, ObjectProperty<BigDecimal>> pointsProperties = new HashMap<>();
 
 	public DialogEditTestTasks(Test test) {
 		this.test = test;
@@ -71,6 +78,7 @@ public class DialogEditTestTasks extends Dialog<Boolean> {
 					}
 				});
 				nameField.addEventFilter(KeyEvent.KEY_PRESSED, getKeyHandler(nameField, testTask));
+				this.nameProperties.put(testTask, nameField.textProperty());
 
 				Label pointsLabel = new Label(TranslationController.translate("test_points_short") + ":");
 				pointsLabel.prefHeightProperty().bind(box.heightProperty());
@@ -93,6 +101,7 @@ public class DialogEditTestTasks extends Dialog<Boolean> {
 					}
 				});
 				pointsField.addEventFilter(KeyEvent.KEY_PRESSED, getKeyHandler(pointsField, testTask));
+				this.pointsProperties.put(testTask, pointsField.valueProperty());
 
 				this.treeViewTestTask.getSelectionModel().selectedItemProperty().subscribe(item -> {
 					if (item == testTask) {
@@ -103,6 +112,7 @@ public class DialogEditTestTasks extends Dialog<Boolean> {
 				});
 
 				box.getChildren().addAll(name, pointsLabel, points);
+				createDisableBinding();
 				return box;
 			}
 		};
@@ -118,8 +128,10 @@ public class DialogEditTestTasks extends Dialog<Boolean> {
 
 		dialogPane.setContent(testTaskTree);
 		this.setDialogPane(dialogPane);
+		this.setHeight(FontSizeController.getFontSize() * 40);
 
-		dialogPane.getButtonTypes().add(this.doneButtonType);
+		dialogPane.getButtonTypes().add(DONE);
+		createDisableBinding();
 		this.setOnShown(_ -> {
 			testTaskTree.requestFocus();
 			if (this.test.getTasksRoot().isLeaf()) {
@@ -129,18 +141,13 @@ public class DialogEditTestTasks extends Dialog<Boolean> {
 
 		this.setResultConverter(_ -> {
 			if (test.getTasksRoot().isLeaf()) {
-				// TODO alert?
 				test.setUseTasks(false);
 				if (test.getTotalPoints() == null || test.getTotalPoints().compareTo(BigDecimal.ZERO) <= 0) {
-					// TODO user input
 					test.setUsePoints(false);
 				}
 			}
 			return true;
 		});
-
-		FontSizeController.fontSizeProperty()
-				.subscribe(fontSize -> this.getDialogPane().setStyle("-fx-font-size: " + fontSize));
 	}
 
 	private void remove(TreeItem<TestTask> item) {
@@ -150,11 +157,15 @@ public class DialogEditTestTasks extends Dialog<Boolean> {
 		} else {
 			TestTask parentNode = (TestTask) parent;
 			parentNode.removeSubtask((TestTask) item);
+			this.nameProperties.remove(item);
+			this.pointsProperties.remove(item);
+			createDisableBinding();
 		}
 	}
 
 	private TestTask addTo(TreeItem<TestTask> item) {
 		if (item == null) {
+			createDisableBinding();
 			return null;
 		} else {
 			String name;
@@ -175,6 +186,27 @@ public class DialogEditTestTasks extends Dialog<Boolean> {
 			this.treeViewTestTask.getSelectionModel().select(task);
 			return task;
 		}
+	}
+
+	private void createDisableBinding() {
+		Button button = (Button) this.getDialogPane().lookupButton(DONE);
+		List<Observable> observables = new ArrayList<>();
+		observables.addAll(this.nameProperties.values());
+		observables.addAll(this.pointsProperties.values());
+		button.disableProperty().unbind();
+		button.disableProperty().bind(Bindings.createBooleanBinding(() -> {
+			for (StringProperty name : this.nameProperties.values()) {
+				if (name.get() == null || name.get().length() <= 0) {
+					return true;
+				}
+			}
+			for (ObjectProperty<BigDecimal> points : this.pointsProperties.values()) {
+				if (points.get() == null || points.get().signum() != 1) {
+					return true;
+				}
+			}
+			return false;
+		}, observables.toArray(n -> new Observable[n])));
 	}
 
 	private EventHandler<KeyEvent> getKeyHandler(EventTarget target, TestTask testTask) {
@@ -202,7 +234,7 @@ public class DialogEditTestTasks extends Dialog<Boolean> {
 							addTo(testTask.getParent().getParent());
 						}
 					} else if (event.isControlDown()) {
-						((Button) this.getDialogPane().lookupButton(this.doneButtonType)).fire();
+						((Button) this.getDialogPane().lookupButton(DONE)).fire();
 						event.consume();
 					} else {
 						event.consume();
