@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.openjfx.gradefx.converter.GradeConverter;
 import org.openjfx.gradefx.model.Grade.Tendency;
-import org.openjfx.gradefx.view.converter.GradeConverter;
 import org.openjfx.kafx.controller.ConfigController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.io.DataObject;

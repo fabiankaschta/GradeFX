@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 
 import org.openjfx.gradefx.model.Grade;
 import org.openjfx.gradefx.model.Group;
+import org.openjfx.gradefx.converter.BoundTypeConverter;
 import org.openjfx.gradefx.model.BoundType;
 import org.openjfx.gradefx.model.Test;
-import org.openjfx.gradefx.view.converter.BoundTypeConverter;
 import org.openjfx.gradefx.view.tableview.TableViewPointsSystem;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;

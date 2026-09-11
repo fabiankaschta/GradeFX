@@ -1,8 +1,8 @@
 package org.openjfx.gradefx.view.dialog;
 
+import org.openjfx.gradefx.converter.GroupConverter;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
-import org.openjfx.gradefx.view.converter.GroupConverter;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.dialog.DialogCustom;

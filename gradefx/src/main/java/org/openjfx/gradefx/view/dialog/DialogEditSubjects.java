@@ -1,8 +1,8 @@
 package org.openjfx.gradefx.view.dialog;
 
+import org.openjfx.gradefx.converter.SubjectConverter;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Subject;
-import org.openjfx.gradefx.view.converter.SubjectConverter;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.alert.AlertDelete;
 import org.openjfx.kafx.view.control.TextFieldPromptText;

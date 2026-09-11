@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openjfx.gradefx.view.converter.TestGroupConverter;
+import org.openjfx.gradefx.converter.TestGroupConverter;
 import org.openjfx.kafx.controller.ChangeController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.io.DataObject;

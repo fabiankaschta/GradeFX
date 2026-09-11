@@ -1,4 +1,4 @@
-package org.openjfx.gradefx.view.converter;
+package org.openjfx.gradefx.converter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

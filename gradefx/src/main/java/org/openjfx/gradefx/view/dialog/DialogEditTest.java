@@ -3,10 +3,10 @@ package org.openjfx.gradefx.view.dialog;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import org.openjfx.gradefx.converter.TestGroupConverter;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.TestGroup;
-import org.openjfx.gradefx.view.converter.TestGroupConverter;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.control.ChoiceBoxTreeItem;

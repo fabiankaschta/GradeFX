@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.openjfx.gradefx.converter.PointsConverter;
+import org.openjfx.gradefx.converter.TestGroupSystemConverter;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
-import org.openjfx.gradefx.view.converter.PointsConverter;
-import org.openjfx.gradefx.view.converter.TestGroupSystemConverter;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.alert.AlertDelete;

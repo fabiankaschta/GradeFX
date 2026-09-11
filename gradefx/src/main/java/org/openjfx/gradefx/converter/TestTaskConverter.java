@@ -1,4 +1,4 @@
-package org.openjfx.gradefx.view.converter;
+package org.openjfx.gradefx.converter;
 
 import java.text.DecimalFormat;
 

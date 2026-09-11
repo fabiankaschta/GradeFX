@@ -1,12 +1,12 @@
 package org.openjfx.gradefx.view.dialog;
 
+import org.openjfx.gradefx.converter.GradeSystemConverter;
+import org.openjfx.gradefx.converter.SubjectConverter;
+import org.openjfx.gradefx.converter.TestGroupSystemConverter;
 import org.openjfx.gradefx.model.GradeSystem;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Subject;
 import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
-import org.openjfx.gradefx.view.converter.GradeSystemConverter;
-import org.openjfx.gradefx.view.converter.SubjectConverter;
-import org.openjfx.gradefx.view.converter.TestGroupSystemConverter;
 import org.openjfx.kafx.controller.ConfigController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.control.TextFieldPromptText;

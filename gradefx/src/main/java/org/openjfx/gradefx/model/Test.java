@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.openjfx.gradefx.view.converter.TestTaskConverter;
+import org.openjfx.gradefx.converter.TestTaskConverter;
 import org.openjfx.kafx.controller.ChangeController;
 import org.openjfx.kafx.io.DataObject;
 
