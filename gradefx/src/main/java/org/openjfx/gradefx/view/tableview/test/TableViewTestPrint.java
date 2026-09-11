@@ -20,6 +20,7 @@ import org.openjfx.kafx.view.style.Styles;
 import org.openjfx.kafx.view.tableview.TableViewFullSize;
 
 import javafx.collections.FXCollections;
+import javafx.geometry.Insets;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TreeItem;
 import javafx.scene.text.Text;
@@ -41,6 +42,8 @@ public class TableViewTestPrint extends TableViewFullSize<Student> {
 		// create a new list, so that sorting is not reflected to the "real" list
 		// adding/removing is not supported (no need to)
 		super(25, FXCollections.observableArrayList(group.getStudents()));
+
+		this.setPadding(new Insets(0));
 
 		this.setEditable(false);
 
