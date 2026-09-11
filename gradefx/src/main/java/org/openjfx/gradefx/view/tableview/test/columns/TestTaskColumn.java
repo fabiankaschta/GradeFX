@@ -21,6 +21,7 @@ public class TestTaskColumn extends TableColumn<Student, BigDecimal> {
 
 	private final Label name = new Label();
 	private final Label points = new Label();
+	private final TestTask testTask;
 
 	public TestTaskColumn(TestTask testTask, Function<TestTask, TestTaskColumn> createTestTaskColumn) {
 		this(testTask, createTestTaskColumn, null);
@@ -28,6 +29,7 @@ public class TestTaskColumn extends TableColumn<Student, BigDecimal> {
 
 	public TestTaskColumn(TestTask testTask, Function<TestTask, TestTaskColumn> createTestTaskColumn,
 			Consumer<TableCell<Student, ?>> cellSubscription) {
+		this.testTask = testTask;
 		this.setReorderable(false);
 		BigDecimalConverter bigDecimalConverter = new BigDecimalConverter();
 
@@ -64,6 +66,10 @@ public class TestTaskColumn extends TableColumn<Student, BigDecimal> {
 				getColumns().add(createTestTaskColumn.apply((TestTask) t));
 			}
 		}
+	}
+
+	public TestTask getTestTask() {
+		return testTask;
 	}
 
 	public double getWidthSum(Function<Double, Double> snapSizeX) {

@@ -161,6 +161,8 @@ public class TableViewTest extends TableView2<Student> {
 					} else {
 						cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), true);
 					}
+					row.pseudoClassStateChanged(PseudoClass.getPseudoClass("last-row"),
+							index.intValue() == TableViewTest.this.getItems().size() - 1);
 				});
 			}
 		});

@@ -1,11 +1,16 @@
 package org.openjfx.gradefx.view.pane.print;
 
+import java.util.Arrays;
+
 import org.openjfx.gradefx.model.Group;
+import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.view.pane.statistics.StatisticsGrid;
 import org.openjfx.gradefx.view.tableview.TableViewPointsSystem;
+import org.openjfx.gradefx.view.tableview.footer.TestAvgData;
 import org.openjfx.gradefx.view.tableview.test.TableViewTestPrint;
 import org.openjfx.kafx.controller.TranslationController;
+import org.openjfx.kafx.view.tableview.TableViewFullSizeFooter;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -22,7 +27,8 @@ public class TestPrintPane extends BorderPane {
 	private final Test test;
 
 	private final Pane statisticsPane;
-	private final TableViewTestPrint table;
+	private final TableViewTestPrint testTable;
+	private final TableViewFullSizeFooter<Student> table;
 
 	public TestPrintPane(Group group, Test test) {
 		this.group = group;
@@ -44,7 +50,11 @@ public class TestPrintPane extends BorderPane {
 		Label header = new Label(headerText.toString());
 		header.setStyle("-fx-font-weight: bold;");
 
-		this.table = new TableViewTestPrint(group, test);
+		this.testTable = new TableViewTestPrint(group, test);
+		this.table = new TableViewFullSizeFooter<Student>(this.testTable,
+				Arrays.asList(this.testTable.getFirstNameColumn(), this.testTable.getLastNameColumn(),
+						this.testTable.getSubgroupNameColumn(), this.testTable.getReturnColumn()),
+				TranslationController.translate("tab_test_footer_avg") + ':', new TestAvgData(group, test));
 
 		this.statisticsPane = new VBox(10);
 		this.statisticsPane.setPadding(new Insets(10));
@@ -80,25 +90,25 @@ public class TestPrintPane extends BorderPane {
 		if (this.group.getUseSubgroups()) {
 			CheckBox subgroupNameCheckBox = new CheckBox(TranslationController.translate("print_test_subgroup_name"));
 			subgroupNameCheckBox.setSelected(true);
-			this.table.getSubgroupNameColumn().visibleProperty().unbind();
-			this.table.getSubgroupNameColumn().visibleProperty().bind(subgroupNameCheckBox.selectedProperty());
+			this.testTable.getSubgroupNameColumn().visibleProperty().unbind();
+			this.testTable.getSubgroupNameColumn().visibleProperty().bind(subgroupNameCheckBox.selectedProperty());
 			optionsPane.getChildren().add(subgroupNameCheckBox);
 		}
 
 		CheckBox returnsCheckBox = new CheckBox(TranslationController.translate("print_test_returns"));
 		returnsCheckBox.setSelected(test.getShowReturns());
-		this.table.getReturnColumn().visibleProperty().unbind();
-		this.table.getReturnColumn().visibleProperty().bind(returnsCheckBox.selectedProperty());
+		this.testTable.getReturnColumn().visibleProperty().unbind();
+		this.testTable.getReturnColumn().visibleProperty().bind(returnsCheckBox.selectedProperty());
 		optionsPane.getChildren().add(returnsCheckBox);
 
 		CheckBox annotationsCheckBox = new CheckBox(TranslationController.translate("print_test_annotations"));
 		annotationsCheckBox.setSelected(true);
-		this.table.getAnnotationColumn().visibleProperty().bind(annotationsCheckBox.selectedProperty());
+		this.testTable.getAnnotationColumn().visibleProperty().bind(annotationsCheckBox.selectedProperty());
 		optionsPane.getChildren().add(annotationsCheckBox);
 
 		CheckBox dateCheckBox = new CheckBox(TranslationController.translate("print_test_date"));
 		dateCheckBox.setSelected(true);
-		this.table.getDateColumn().visibleProperty().bind(dateCheckBox.selectedProperty());
+		this.testTable.getDateColumn().visibleProperty().bind(dateCheckBox.selectedProperty());
 		optionsPane.getChildren().add(dateCheckBox);
 
 		this.setPrefSize(USE_COMPUTED_SIZE, USE_COMPUTED_SIZE);
@@ -109,20 +119,20 @@ public class TestPrintPane extends BorderPane {
 	@Override
 	protected double computePrefHeight(double width) {
 		if (this.getRight() != null) {
-			return Math.max(this.table.prefHeight(width), this.statisticsPane.prefHeight(width))
+			return Math.max(this.testTable.prefHeight(width), this.statisticsPane.prefHeight(width))
 					+ this.getTop().prefHeight(width);
 		} else {
-			return this.table.prefHeight(width) + this.getTop().prefHeight(width);
+			return this.testTable.prefHeight(width) + this.getTop().prefHeight(width);
 		}
 	}
 
 	@Override
 	protected double computePrefWidth(double height) {
 		if (this.getRight() != null) {
-			return Math.max(this.table.prefWidth(height) + this.statisticsPane.prefWidth(height),
+			return Math.max(this.testTable.prefWidth(height) + this.statisticsPane.prefWidth(height),
 					this.getTop().prefWidth(height));
 		} else {
-			return Math.max(this.table.prefWidth(height), this.getTop().prefWidth(height));
+			return Math.max(this.testTable.prefWidth(height), this.getTop().prefWidth(height));
 		}
 	}
 
