@@ -34,7 +34,6 @@ import javafx.event.EventHandler;
 import javafx.event.EventTarget;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -81,24 +80,20 @@ public class DialogEditTestGroupSystems extends DialogUserInput<Boolean> {
 		});
 		Button remove = new Button(TranslationController.translate("dialog_edit_testGroups_remove"));
 		remove.setOnAction(_ -> new AlertDelete(TranslationController.translate("testGroups_testGroupSystem") + " "
-				+ comboBox.getSelectionModel().getSelectedItem().getName()).showAndWait().ifPresent(response -> {
-					if (response == ButtonType.OK) {
-						int index = comboBox.getSelectionModel().getSelectedIndex();
-						TestGroupSystem item = comboBox.getSelectionModel().getSelectedItem();
-						comboBox.getItems().remove(item);
-						TestGroupSystem.removeTestGroupSystem(item);
-						if (comboBox.getItems().size() == 0) {
-							comboBox.getSelectionModel().select(null);
-						} else if (index > 0) {
-							comboBox.getSelectionModel().select(index - 1);
-						} else {
-							comboBox.getSelectionModel().select(index);
-						}
-						comboBox.requestFocus();
+				+ comboBox.getSelectionModel().getSelectedItem().getName(), () -> {
+					int index = comboBox.getSelectionModel().getSelectedIndex();
+					TestGroupSystem item = comboBox.getSelectionModel().getSelectedItem();
+					comboBox.getItems().remove(item);
+					TestGroupSystem.removeTestGroupSystem(item);
+					if (comboBox.getItems().size() == 0) {
+						comboBox.getSelectionModel().select(null);
+					} else if (index > 0) {
+						comboBox.getSelectionModel().select(index - 1);
 					} else {
-						// abort delete, do nothing
+						comboBox.getSelectionModel().select(index);
 					}
-				}));
+					comboBox.requestFocus();
+				}).showAndWait());
 		// disable if any group uses selected system
 		remove.disableProperty().bind(Bindings.createBooleanBinding(() -> {
 			if (comboBox.getSelectionModel().getSelectedItem() == null) {

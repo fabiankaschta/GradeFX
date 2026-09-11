@@ -4,59 +4,45 @@ import org.openjfx.gradefx.controller.GradeFXController;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.view.dialog.DialogAddGroup;
 import org.openjfx.gradefx.view.dialog.DialogEditGroup;
-import org.openjfx.gradefx.view.dialog.DialogEditSubjects;
 import org.openjfx.gradefx.view.pane.print.GroupOverviewPrintPane;
 import org.openjfx.kafx.controller.PrintController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.alert.AlertDelete;
 
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
 
 public class GroupMenu extends Menu {
+
+	private final MenuItem menuItemNew, menuItemEdit, menuItemDelete, menuItemPrint;
 
 	public GroupMenu() {
 		super(TranslationController.translate("menu_group_title"));
 
-		MenuItem menuItemNew = new MenuItem(TranslationController.translate("menu_group_new"));
-		menuItemNew.setOnAction(_ -> new DialogAddGroup().showAndWait());
-		this.getItems().add(menuItemNew);
+		this.menuItemNew = new MenuItem(TranslationController.translate("menu_group_new"));
+		this.menuItemNew.setOnAction(_ -> new DialogAddGroup().showAndWait());
+		this.getItems().add(this.menuItemNew);
 
-		MenuItem menuItemEdit = new MenuItem(TranslationController.translate("menu_group_edit"));
-		menuItemEdit.setOnAction(_ -> new DialogEditGroup(GradeFXController.getSelectedGroup()).showAndWait());
-		this.getItems().add(menuItemEdit);
+		this.menuItemEdit = new MenuItem(TranslationController.translate("menu_group_edit"));
+		this.menuItemEdit.setOnAction(_ -> new DialogEditGroup(GradeFXController.getSelectedGroup()).showAndWait());
+		this.getItems().add(this.menuItemEdit);
 
-		MenuItem menuItemDelete = new MenuItem(TranslationController.translate("menu_group_delete"));
-		menuItemDelete.setOnAction(_ -> {
+		this.menuItemDelete = new MenuItem(TranslationController.translate("menu_group_delete"));
+		this.menuItemDelete.setOnAction(_ -> {
 			Group g = GradeFXController.getSelectedGroup();
-			new AlertDelete(TranslationController.translate("group") + " " + g.getName()).showAndWait()
-					.ifPresent(response -> {
-						if (response == ButtonType.OK) {
-							Group.remove(g);
-						} else {
-							// abort delete, do nothing
-						}
-					});
+			new AlertDelete(TranslationController.translate("group") + " " + g.getName(), () -> Group.remove(g))
+					.showAndWait();
 		});
-		this.getItems().add(menuItemDelete);
+		this.getItems().add(this.menuItemDelete);
 
-		MenuItem menuItemPrint = new MenuItem(TranslationController.translate("menu_group_print"));
-		menuItemPrint.setOnAction(_ -> {
-			PrintController.showPrintSinglePreview(new GroupOverviewPrintPane(GradeFXController.getSelectedGroup()),
-					PrintController.A4_LANDSCAPE);
-		});
-		getItems().add(menuItemPrint);
+		this.menuItemPrint = new MenuItem(TranslationController.translate("menu_group_print"));
+		this.menuItemPrint.setOnAction(_ -> PrintController.showPrintSinglePreview(
+				new GroupOverviewPrintPane(GradeFXController.getSelectedGroup()), PrintController.A4_LANDSCAPE));
+		getItems().add(this.menuItemPrint);
 
-		this.getItems().add(new SeparatorMenuItem());
-
-		MenuItem menuItemEditSubjects = new MenuItem(TranslationController.translate("menu_group_editSubjects"));
-		menuItemEditSubjects.setOnAction(_ -> new DialogEditSubjects().showAndWait());
-		this.getItems().add(menuItemEditSubjects);
-
-		menuItemEdit.disableProperty().bind(GradeFXController.selectedGroupProperty().isNull());
-		menuItemDelete.disableProperty().bind(GradeFXController.selectedGroupProperty().isNull());
+		this.menuItemEdit.disableProperty().bind(GradeFXController.selectedGroupProperty().isNull());
+		this.menuItemDelete.disableProperty().bind(GradeFXController.selectedGroupProperty().isNull());
+		this.menuItemPrint.disableProperty().bind(GradeFXController.selectedGroupProperty().isNull());
 	}
 
 }

@@ -5,7 +5,6 @@ import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.view.dialog.DialogAddTest;
 import org.openjfx.gradefx.view.dialog.DialogEditTest;
-import org.openjfx.gradefx.view.dialog.DialogEditTestGroupSystems;
 import org.openjfx.gradefx.view.dialog.DialogEditTestTasks;
 import org.openjfx.gradefx.view.pane.print.TestPrintPane;
 import org.openjfx.kafx.controller.PluginController;
@@ -14,7 +13,6 @@ import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.alert.AlertDelete;
 import org.pf4j.ExtensionPoint;
 
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
@@ -25,7 +23,7 @@ public class TestMenu extends Menu {
 		public void addMenuItem(TestMenu testMenu);
 	}
 
-	private final MenuItem menuItemNew, menuItemEdit, menuItemDelete, menuItemPrint, menuItemTasks, menuItemGroups;
+	private final MenuItem menuItemNew, menuItemEdit, menuItemDelete, menuItemPrint, menuItemTasks;
 
 	public TestMenu() {
 		super(TranslationController.translate("menu_test_title"));
@@ -46,14 +44,8 @@ public class TestMenu extends Menu {
 		this.menuItemDelete.setOnAction(_ -> {
 			Group g = GradeFXController.getSelectedGroup();
 			Test t = GradeFXController.getSelectedTest();
-			new AlertDelete(TranslationController.translate("test") + " " + t.getName()).showAndWait()
-					.ifPresent(response -> {
-						if (response == ButtonType.OK) {
-							g.removeTest(t);
-						} else {
-							// abort delete, do nothing
-						}
-					});
+			new AlertDelete(TranslationController.translate("test") + " " + t.getName(), () -> g.removeTest(t))
+					.showAndWait();
 		});
 		this.getItems().add(this.menuItemDelete);
 
@@ -73,14 +65,6 @@ public class TestMenu extends Menu {
 			new DialogEditTestTasks(GradeFXController.getSelectedTest()).showAndWait();
 		});
 		this.getItems().add(this.menuItemTasks);
-
-		this.getItems().add(new SeparatorMenuItem());
-
-		this.menuItemGroups = new MenuItem(TranslationController.translate("menu_test_groups"));
-		this.menuItemGroups.setOnAction(_ -> {
-			new DialogEditTestGroupSystems().showAndWait();
-		});
-		this.getItems().add(this.menuItemGroups);
 
 		this.menuItemNew.disableProperty().bind(GradeFXController.selectedGroupProperty().isNull());
 		this.menuItemEdit.disableProperty().bind(GradeFXController.selectedTestProperty().isNull());

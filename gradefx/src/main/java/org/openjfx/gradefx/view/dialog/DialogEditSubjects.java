@@ -7,18 +7,19 @@ import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.alert.AlertDelete;
 import org.openjfx.kafx.view.control.TextFieldPromptText;
 import org.openjfx.kafx.view.dialog.DialogUserInput;
-import org.openjfx.kafx.view.dialog.userinput.UserInputChoiceBoxButtons;
+import org.openjfx.kafx.view.dialog.userinput.UserInputComboBoxButtons;
 import org.openjfx.kafx.view.dialog.userinput.UserInputTextInput;
 
+import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 
 public class DialogEditSubjects extends DialogUserInput<Boolean> {
 
-	private final UserInputChoiceBoxButtons<Subject> subject;
+	private final UserInputComboBoxButtons<Subject> subject;
 	private final UserInputTextInput name;
 	private final UserInputTextInput shortName;
 
@@ -26,11 +27,16 @@ public class DialogEditSubjects extends DialogUserInput<Boolean> {
 		super(TranslationController.translate("dialog_edit_subjects_title"));
 
 		this.name = new UserInputTextInput(new TextFieldPromptText(TranslationController.translate("subject_name")));
-		this.shortName = new UserInputTextInput(new TextFieldPromptText(TranslationController.translate("subject_shortName")));
+		this.shortName = new UserInputTextInput(
+				new TextFieldPromptText(TranslationController.translate("subject_shortName")));
 
-		ChoiceBox<Subject> choiceBox = new ChoiceBox<>(Subject.getSubjects());
-		choiceBox.setConverter(new SubjectConverter());
-		choiceBox.getSelectionModel().selectedItemProperty().addListener((_, oldItem, newItem) -> {
+		ObservableList<Subject> baseList = FXCollections.observableArrayList(
+				subject -> new Observable[] { subject.nameProperty(), subject.shortNameProperty() });
+		baseList.addAll(Subject.getSubjects());
+
+		ComboBox<Subject> comboBox = new ComboBox<>(baseList);
+		comboBox.setConverter(new SubjectConverter());
+		comboBox.getSelectionModel().selectedItemProperty().addListener((_, oldItem, newItem) -> {
 			if (oldItem != null) {
 				oldItem.nameProperty().unbind();
 				oldItem.shortNameProperty().unbind();
@@ -44,49 +50,44 @@ public class DialogEditSubjects extends DialogUserInput<Boolean> {
 				name.setValue("");
 				shortName.setValue("");
 			}
-			// TODO editing does not update text of item list in choicebox and labels of groups
 		});
 
 		Button add = new Button(TranslationController.translate("dialog_edit_subjects_add"));
 		add.setOnAction(_ -> {
-			Subject.addSubject("", "");
-			choiceBox.getSelectionModel().selectLast();
+			Subject subject = Subject.addSubject("", "");
+			comboBox.getItems().add(subject);
+			comboBox.getSelectionModel().select(subject);
 		});
 		Button remove = new Button(TranslationController.translate("dialog_edit_subjects_remove"));
-		remove.setOnAction(_ -> new AlertDelete(
-				TranslationController.translate("subject") + " " + choiceBox.getSelectionModel().getSelectedItem().getName())
-				.showAndWait().ifPresent(response -> {
-					if (response == ButtonType.OK) {
-						int index = choiceBox.getSelectionModel().getSelectedIndex();
-						Subject item = choiceBox.getSelectionModel().getSelectedItem();
-						choiceBox.getItems().remove(item);
-						Subject.removeSubject(item);
-						if (choiceBox.getItems().size() == 0) {
-							choiceBox.getSelectionModel().select(null);
-						} else if (index > 0) {
-							choiceBox.getSelectionModel().select(index - 1);
-						} else {
-							choiceBox.getSelectionModel().select(index);
-						}
+		remove.setOnAction(_ -> new AlertDelete(TranslationController.translate("subject") + " "
+				+ comboBox.getSelectionModel().getSelectedItem().getName(), () -> {
+					int index = comboBox.getSelectionModel().getSelectedIndex();
+					Subject item = comboBox.getSelectionModel().getSelectedItem();
+					comboBox.getItems().remove(item);
+					Subject.removeSubject(item);
+					if (comboBox.getItems().size() == 0) {
+						comboBox.getSelectionModel().select(null);
+					} else if (index > 0) {
+						comboBox.getSelectionModel().select(index - 1);
 					} else {
-						// abort delete, do nothing
+						comboBox.getSelectionModel().select(index);
 					}
-				}));
+				}).showAndWait());
 		// disable if any group uses selected subject
 		remove.disableProperty().bind(Bindings.createBooleanBinding(() -> {
-			if (choiceBox.getSelectionModel().getSelectedItem() == null) {
+			if (comboBox.getSelectionModel().getSelectedItem() == null) {
 				return true;
 			}
-			Subject selected = choiceBox.getSelectionModel().getSelectedItem();
+			Subject selected = comboBox.getSelectionModel().getSelectedItem();
 			for (Group group : Group.getGroups()) {
 				if (group.getSubject() == selected) {
 					return true;
 				}
 			}
 			return false;
-		}, choiceBox.getSelectionModel().selectedItemProperty()));
+		}, comboBox.getSelectionModel().selectedItemProperty()));
 
-		this.subject = new UserInputChoiceBoxButtons<>(choiceBox);
+		this.subject = new UserInputComboBoxButtons<>(comboBox);
 		this.subject.addButton(add);
 		this.subject.addButton(remove);
 		super.addInput(this.subject, TranslationController.translate("subject"));
@@ -94,8 +95,7 @@ public class DialogEditSubjects extends DialogUserInput<Boolean> {
 		super.addInput(this.name, TranslationController.translate("subject_name"));
 		super.addInput(this.shortName, TranslationController.translate("subject_shortName"));
 
-		ButtonType doneButtonType = new ButtonType(TranslationController.translate("dialog_button_done"), ButtonData.OK_DONE);
-		this.getDialogPane().getButtonTypes().add(doneButtonType);
+		this.getDialogPane().getButtonTypes().add(DONE);
 
 		this.setResultConverter(_ -> true);
 	}

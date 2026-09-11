@@ -23,15 +23,12 @@ public class GroupTab extends Tab {
 		this.pane = new GroupContentPane(this.group);
 
 		Label label = new Label();
-		label.textProperty().bind(Bindings.createStringBinding(() -> {
-			String name = this.group.getName();
-			String subject = this.group.getSubject().getShortName();
-			if (subject != null && subject.length() > 0) {
-				return name + '\n' + subject;
-			} else {
-				return name;
-			}
-		}, this.group.nameProperty(), this.group.subjectProperty()));
+		this.group.subjectProperty().subscribe(subject -> {
+			label.textProperty().unbind();
+			label.textProperty().bind(Bindings.createStringBinding(() -> {
+				return this.group.getName() + '\n' + subject.getShortName();
+			}, this.group.nameProperty(), subject.nameProperty(), subject.shortNameProperty()));
+		});
 		label.setWrapText(true);
 		label.setTextAlignment(TextAlignment.CENTER);
 		label.setAlignment(Pos.CENTER);
