@@ -188,7 +188,7 @@ public class DialogEditTestGroupSystems extends DialogUserInput<Boolean> {
 		this.treeViewTestGroupSystems.setPrefHeight(300); // default in TreeViewSkin is 400
 
 		this.testGroupTree = new UserInputTreeView<>(this.treeViewTestGroupSystems);
-		this.testGroupTree.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(41));
+		this.testGroupTree.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(45));
 		super.addInput(this.testGroupTree, TranslationController.translate("testGroups_testGroupTree"));
 		this.testGroupTree.visibleProperty().bind(this.testGroupSystem.isSelectedExpression());
 
