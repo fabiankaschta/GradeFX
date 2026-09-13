@@ -1,12 +1,14 @@
 package org.openjfx.gradefx.view.tableview.test;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.controlsfx.control.tableview2.TableView2;
 import org.openjfx.gradefx.controller.GradeFXController;
+import org.openjfx.gradefx.model.Grade;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
@@ -23,33 +25,59 @@ import org.openjfx.gradefx.view.tableview.test.columns.TestSumColumn;
 import org.openjfx.gradefx.view.tableview.test.columns.TestTaskColumn;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
+import org.openjfx.kafx.converter.BigDecimalConverter;
+import org.openjfx.kafx.converter.BigDecimalPercentConverter;
+import org.openjfx.kafx.view.tableview.TableView3;
 
+import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
-import javafx.scene.AccessibleAttribute;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TreeItem;
-import javafx.scene.control.skin.TableHeaderRow;
 import javafx.scene.input.KeyCode;
 import javafx.scene.text.Text;
 
-public class TableViewTest extends TableView2<Student> {
+public class TableViewTest extends TableView3<Student> {
 
+	private final Group group;
+	private final Test test;
+
+	private final StudentReturnColumn returnColumn;
+	private final StudentLastNameColumn lastNameColumn;
+	private final StudentFirstNameColumn firstNameColumn;
+	private final StudentSubgroupNameColumn subgroupNameColumn;
 	private final Map<TestTask, TestTaskColumn> testTaskColumns = new HashMap<>();
 	private final TestSumColumn sumColumn;
 	private final TestRatioColumn ratioColumn;
 	private final TestGradeColumn gradeColumn;
 	private final TestAnnotationColumn annotationColumn;
 	private final TestDateColumn dateColumn;
+
 	private final IntegerProperty selectedRowIndex = new SimpleIntegerProperty(this, "selectedRow", -1);
+
+	private final Map<TestTask, StringProperty> testTaskProperties = new HashMap<>();
+	private final ObjectProperty<BigDecimal> sumProperty;
+	private final ObjectProperty<BigDecimal> ratioProperty;
+	private final ObjectProperty<BigDecimal> gradeProperty;
+	private final BigDecimalConverter avgConverter = new BigDecimalConverter();
+	private final BigDecimalConverter gradeAvgConverter = new BigDecimalConverter();
+	private final BigDecimalPercentConverter percentConverter = new BigDecimalPercentConverter(2);
 
 	@SuppressWarnings("unchecked")
 	public TableViewTest(Group group, Test test) {
 		super(group.getStudents());
+
+		this.group = group;
+		this.test = test;
 
 		this.setEditable(true);
 
@@ -65,22 +93,47 @@ public class TableViewTest extends TableView2<Student> {
 
 		Consumer<TableCell<Student, ?>> rowIndexSubscription = cell -> subscribeRowIndex(cell);
 
-		StudentReturnColumn returnCol = new StudentReturnColumn(test, rowIndexSubscription);
-		StudentLastNameColumn lastNameCol = new StudentLastNameColumn(false, rowIndexSubscription);
-		StudentFirstNameColumn firstNameCol = new StudentFirstNameColumn(false, rowIndexSubscription);
-		StudentSubgroupNameColumn subgroupNameCol = new StudentSubgroupNameColumn(group, false, rowIndexSubscription);
+		this.returnColumn = new StudentReturnColumn(test, rowIndexSubscription);
+		this.lastNameColumn = new StudentLastNameColumn(false, rowIndexSubscription);
+		this.firstNameColumn = new StudentFirstNameColumn(false, rowIndexSubscription);
+		this.subgroupNameColumn = new StudentSubgroupNameColumn(group, false, rowIndexSubscription);
 
-		this.getColumns().add(returnCol);
-		this.getColumns().add(lastNameCol);
-		this.getColumns().add(firstNameCol);
-		this.getColumns().add(subgroupNameCol);
-		this.getFixedColumns().addAll(returnCol, lastNameCol, firstNameCol, subgroupNameCol);
+		this.getColumns().add(this.returnColumn);
+		this.getColumns().add(this.lastNameColumn);
+		this.getColumns().add(this.firstNameColumn);
+		this.getColumns().add(this.subgroupNameColumn);
+		this.getFixedColumns().addAll(this.returnColumn, this.lastNameColumn, this.firstNameColumn,
+				this.subgroupNameColumn);
 
 		this.sumColumn = new TestSumColumn(test, rowIndexSubscription);
 		this.ratioColumn = new TestRatioColumn(test, this.sumColumn, rowIndexSubscription);
 		this.gradeColumn = new TestGradeColumn(group, test, this.sumColumn, rowIndexSubscription);
 		this.annotationColumn = new TestAnnotationColumn(test, rowIndexSubscription);
 		this.dateColumn = new TestDateColumn(test, rowIndexSubscription);
+
+		this.gradeAvgConverter.getDecimalFormat().setMinimumFractionDigits(2);
+		this.gradeAvgConverter.getDecimalFormat().setMaximumFractionDigits(2);
+		this.gradeAvgConverter.getDecimalFormat().setRoundingMode(RoundingMode.DOWN);
+		this.sumProperty = new SimpleObjectProperty<>(this, "sumProperty" + test, null);
+		this.ratioProperty = new SimpleObjectProperty<>(this, "ratioProperty" + test, null);
+		this.gradeProperty = new SimpleObjectProperty<>(this, "gradeProperty" + test, null);
+		this.bindSumProperty();
+		this.bindRatioProperty();
+		this.bindGradeProperty();
+		this.testTaskProperties.keySet().forEach(testTask -> bindTestTaskProperty(testTask));
+		group.getStudents().addListener((ListChangeListener<Student>) _ -> {
+			this.bindSumProperty();
+			this.bindGradeProperty();
+			this.testTaskProperties.keySet().forEach(testTask -> bindTestTaskProperty(testTask));
+		});
+
+		this.setFooterTextFixedColumns(TranslationController.translate("tab_test_footer_avg") + ':');
+		this.footerTextForColumn(this.sumColumn)
+				.bind(this.sumProperty.map(sum -> sum == null ? "-" : avgConverter.toString(sum)));
+		this.footerTextForColumn(this.ratioColumn)
+				.bind(this.ratioProperty.map(ratio -> ratio == null ? "-" : percentConverter.toString(ratio)));
+		this.footerTextForColumn(this.gradeColumn)
+				.bind(this.gradeProperty.map(grade -> grade == null ? "-" : gradeAvgConverter.toString(grade)));
 
 		// DEL / BACKSPACE remove fixed state
 		this.setOnKeyPressed(event -> {
@@ -119,15 +172,20 @@ public class TableViewTest extends TableView2<Student> {
 		}
 	}
 
-	@Override
-	protected double computePrefHeight(double width) {
-		double height = 0;
-		TableHeaderRow header = (TableHeaderRow) this.queryAccessibleAttribute(AccessibleAttribute.HEADER);
-		if (header != null) {
-			height = snapSizeY(header.getHeight()) + header.snappedTopInset() + header.snappedBottomInset();
-		}
-		height += snapSizeY(this.getFixedCellSize()) * this.getItems().size();
-		return height + this.snappedTopInset() + this.snappedBottomInset();
+	public StudentReturnColumn getReturnColumn() {
+		return this.returnColumn;
+	}
+
+	public StudentSubgroupNameColumn getSubgroupNameColumn() {
+		return this.subgroupNameColumn;
+	}
+
+	public TestAnnotationColumn getAnnotationColumn() {
+		return this.annotationColumn;
+	}
+
+	public TestDateColumn getDateColumn() {
+		return this.dateColumn;
 	}
 
 	@Override
@@ -184,7 +242,87 @@ public class TableViewTest extends TableView2<Student> {
 		TestTaskColumn column = new TestTaskColumn(task, t -> createTestTaskColumn(t), cell -> subscribeRowIndex(cell));
 		task.getChildren().addListener(new TasksChangedListener());
 		this.testTaskColumns.put(task, column);
+		this.footerTextForColumn(column).bind(bindTestTaskProperty(task));
 		return column;
+	}
+
+	private ObjectProperty<BigDecimal> bindSumProperty() {
+		this.sumProperty.unbind();
+		this.sumProperty.bind(Bindings.createObjectBinding(() -> {
+			BigDecimal sum = BigDecimal.ZERO;
+			BigDecimal amount = BigDecimal.ZERO;
+			for (Student s : this.group.getStudents()) {
+				BigDecimal points = this.test.getTotalPoints(s);
+				if (points != null) {
+					sum = sum.add(points);
+					amount = amount.add(BigDecimal.ONE);
+				}
+			}
+			if (amount == BigDecimal.ZERO) {
+				return null;
+			} else {
+				return sum.divide(amount, 1, RoundingMode.HALF_UP);
+			}
+		}, this.group.getStudents().stream().map(s -> this.test.totalPointsProperty(s))
+				.toArray(n -> new Observable[n])));
+		return this.sumProperty;
+	}
+
+	private ObjectProperty<BigDecimal> bindRatioProperty() {
+		this.ratioProperty.bind(Bindings.createObjectBinding(() -> {
+			if (this.sumProperty.get() == null) {
+				return null;
+			} else {
+				return this.sumProperty.get().divide(test.getTotalPoints(), 5, RoundingMode.HALF_UP);
+			}
+		}, this.sumProperty, this.test.totalPointsProperty()));
+		return this.ratioProperty;
+	}
+
+	private ObjectProperty<BigDecimal> bindGradeProperty() {
+		this.gradeProperty.bind(Bindings.createObjectBinding(() -> {
+			BigDecimal sum = BigDecimal.ZERO;
+			BigDecimal amount = BigDecimal.ZERO;
+			for (Student s : this.group.getStudents()) {
+				Grade grade = this.test.getGrade(s);
+				if (grade != null) {
+					sum = sum.add(BigDecimal.valueOf(grade.getNumericalValue()));
+					amount = amount.add(BigDecimal.ONE);
+				}
+			}
+			if (amount == BigDecimal.ZERO) {
+				return null;
+			} else {
+				return sum.divide(amount, 2, RoundingMode.DOWN);
+			}
+		}, this.group.getStudents().stream().map(s -> this.test.gradeProperty(s)).toArray(n -> new Observable[n])));
+		return this.gradeProperty;
+	}
+
+	private StringProperty bindTestTaskProperty(TestTask testTask) {
+		StringProperty property = this.testTaskProperties.get(testTask);
+		if (property == null) {
+			property = new SimpleStringProperty(this, "testTaskProperty" + testTask, "");
+			this.testTaskProperties.put(testTask, property);
+		}
+		property.unbind();
+		property.bind(Bindings.createStringBinding(() -> {
+			BigDecimal sum = BigDecimal.ZERO;
+			BigDecimal amount = BigDecimal.ZERO;
+			for (Student s : this.group.getStudents()) {
+				BigDecimal points = testTask.getPoints(s);
+				if (points != null) {
+					sum = sum.add(points);
+					amount = amount.add(BigDecimal.ONE);
+				}
+			}
+			if (amount == BigDecimal.ZERO) {
+				return "-";
+			} else {
+				return (new BigDecimalConverter()).toString(sum.divide(amount, 1, RoundingMode.HALF_UP));
+			}
+		}, this.group.getStudents().stream().map(s -> testTask.pointsProperty(s)).toArray(n -> new Observable[n])));
+		return property;
 	}
 
 	private class TasksChangedListener implements ListChangeListener<TreeItem<TestTask>> {
