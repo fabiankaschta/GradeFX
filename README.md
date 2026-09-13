@@ -31,6 +31,9 @@ Derzeit nicht umsetzbare Features
 ## Download
 Unter [Release](https://github.com/fabiankaschta/GradeFX/releases/latest) finden sich jeweils die aktuellen Versionen für die unterstützten Betriebssysteme. Die *.zip-Datei herunterladen, entpacken und per Doppelklick installieren.
 
+## Kompatibilität
+Dateien, die mit GradeFX Version 1.x.y erstellt wurden, sind mit GradeFX ab Version 2.0.0 nicht mehr kompatibel!
+
 ## Plugins
 Im Installationsverzeichnis einen Ordner "plugins" erstellen, die heruntergeladenen Plugin-Dateien (*.jar) in diesen Ordner kopieren, anschließend das Programm schließen und neu öffnen.
 
