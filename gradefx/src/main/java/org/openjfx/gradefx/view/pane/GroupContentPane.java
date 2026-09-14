@@ -56,6 +56,32 @@ public class GroupContentPane extends AddTabPane {
 
 		Styles.subscribeThemeColor(this, group.colorProperty());
 		this.getStyleClass().addAll("tab-pane-selected-bold");
+		
+		this.getTabs().addListener((ListChangeListener<Tab>) c -> {
+			while (c.next()) {
+				if (c.wasPermutated()) {
+					group.getTests().sort((t1, t2) -> {
+						int index1 = tabIndexOf(t1);
+						int index2 = tabIndexOf(t2);
+						if (index1 == index2) {
+							return 0;
+						} else {
+							return index1 - index2;
+						}
+					});
+				}
+			}
+		});
+	}
+
+	private int tabIndexOf(Test test) {
+		for (int i = 0; i < this.getTabs().size(); i++) {
+			Tab t = this.getTabs().get(i);
+			if ((t instanceof TestTab) && ((TestTab) t).getTest() == test) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	private void removeTestTab(Test test) {

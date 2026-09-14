@@ -102,7 +102,7 @@ public class Group {
 		this.subjectProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.useSubgroupsProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.addStudentsListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
-//		this.addTestsListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
+		this.addTestsListener(ChangeController.LISTLISTENER_PERMUTATE_UNSAVED_CHANGES);
 		this.gradeSystemProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.testGroupSystemProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.testGroupRootProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
