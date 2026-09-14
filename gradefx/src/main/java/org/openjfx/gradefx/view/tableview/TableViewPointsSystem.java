@@ -60,29 +60,23 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 
 		this.setPadding(new Insets(0));
 
-		if (printMode) {
-			this.students = new FilteredList<>(group.getStudents(),
-					student -> !this.filtered.get() || this.test.getDate() == null || this.test.getDate(student) == null
-							|| this.test.getDate(student).equals(this.test.getDate()));
-		} else {
-			ObservableList<Student> baseList = FXCollections.observableArrayList(student -> new Observable[] {
-					this.filtered, this.test.dateProperty(), this.test.dateProperty(student) });
-			baseList.addAll(group.getStudents());
-			this.students = new FilteredList<>(baseList, student -> !this.filtered.get() || this.test.getDate() == null
-					|| this.test.getDate(student) == null || this.test.getDate(student).equals(this.test.getDate()));
-			group.getStudents().addListener((ListChangeListener<Student>) c -> {
-				while (c.next()) {
-					if (c.wasAdded()) {
-						baseList.addAll(c.getAddedSubList());
-					}
-					if (c.wasRemoved()) {
-						baseList.removeAll(c.getRemoved());
-					}
-				}
-			});
-		}
-
 		test.onlyDefaultDateProperty().subscribe(v -> this.filtered.setValue(v));
+
+		ObservableList<Student> baseList = FXCollections.observableArrayList(student -> new Observable[] {
+				this.filtered, this.test.dateProperty(), this.test.dateProperty(student) });
+		baseList.addAll(group.getStudents());
+		this.students = new FilteredList<>(baseList, student -> !this.filtered.get() || this.test.getDate() == null
+				|| this.test.getDate(student) == null || this.test.getDate(student).equals(this.test.getDate()));
+		group.getStudents().addListener((ListChangeListener<Student>) c -> {
+			while (c.next()) {
+				if (c.wasAdded()) {
+					baseList.addAll(c.getAddedSubList());
+				}
+				if (c.wasRemoved()) {
+					baseList.removeAll(c.getRemoved());
+				}
+			}
+		});
 
 		PointsSystem pointsSystem = test.getPointsSystem();
 		// TODO fix 15 vs 15.0 on update
