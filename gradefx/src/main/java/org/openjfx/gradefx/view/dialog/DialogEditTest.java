@@ -120,7 +120,11 @@ public class DialogEditTest extends DialogEdit<Test> {
 		if (!weight.equals(test.getWeight())) {
 			test.setWeight(weight);
 		}
+		boolean switchTasksOn = false;
 		if (useTasks != test.getUseTasks()) {
+			if(useTasks) {
+				switchTasksOn = true;
+			}
 			test.setUseTasks(useTasks);
 		}
 		if (usePoints != test.getUsePoints()) {
@@ -134,6 +138,9 @@ public class DialogEditTest extends DialogEdit<Test> {
 			if (testGroup != this.group.getTestGroup(test)) {
 				this.group.setTestGroup(test, testGroup);
 			}
+		}
+		if(switchTasksOn) {
+			new DialogEditTestTasks(test).showAndWait();
 		}
 		return true;
 	}
