@@ -18,8 +18,10 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.geometry.Pos;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -27,7 +29,7 @@ import javafx.scene.control.TableColumn;
 public class OverviewAvgColumn extends TableColumn<Student, BigDecimal> {
 
 	private final Group group;
-	private final Map<Student, ObjectProperty<BigDecimal>> values = new HashMap<>();
+	private final ObservableMap<Student, ObjectProperty<BigDecimal>> values = FXCollections.observableHashMap();
 	private final ObservableList<TableColumn<Student, ?>> columns;
 	private final Map<Student, ChangeListener<Object>> updateListener = new HashMap<>();
 
@@ -65,6 +67,10 @@ public class OverviewAvgColumn extends TableColumn<Student, BigDecimal> {
 		this.setSortable(true);
 		this.setReorderable(false);
 		this.setEditable(false);
+	}
+	
+	public ObservableMap<Student, ObjectProperty<BigDecimal>> getAvgValuesMap() {
+		return this.values;
 	}
 
 	private void updateValues() {

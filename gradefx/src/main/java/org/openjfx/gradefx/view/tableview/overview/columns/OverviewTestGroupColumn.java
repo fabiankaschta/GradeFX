@@ -46,6 +46,10 @@ public class OverviewTestGroupColumn extends TableColumn<Student, Integer> {
 		this.getColumns().add(new OverviewAvgColumn(group, getColumns(), cellSubscription));
 	}
 
+	public OverviewAvgColumn getAvgColumn() {
+		return (OverviewAvgColumn) this.getColumns().getLast();
+	}
+
 	public ObservableValue<BigDecimal> getAvg(Student student) {
 		for (TableColumn<Student, ?> tc : getColumns()) {
 			if (tc instanceof OverviewAvgColumn) {
