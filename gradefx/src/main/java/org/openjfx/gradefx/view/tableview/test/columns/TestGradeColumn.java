@@ -18,14 +18,18 @@ import javafx.scene.control.TableColumn;
 import javafx.util.Subscription;
 
 public class TestGradeColumn extends TableColumn<Student, Grade> {
+	
+	private final Test test;
 
-	public TestGradeColumn(Group group, Test test, TestSumColumn sumColumn) {
-		this(group, test, sumColumn, null);
+	public TestGradeColumn(Group group, Test test) {
+		this(group, test, null);
 	}
 
-	public TestGradeColumn(Group group, Test test, TestSumColumn sumColumn,
+	public TestGradeColumn(Group group, Test test,
 			Consumer<TableCell<Student, ?>> cellSubscription) {
 		super(TranslationController.translate("test_grade"));
+		this.test = test;
+		
 		this.setCellValueFactory(data -> test.gradeProperty(data.getValue()));
 		GradeSystem gradeSystem = group.getGradeSystem();
 		this.setCellFactory(_ -> new TableCellEditComparator<>(gradeSystem.getGradeComparator(), gradeSystem.getWorst(),
@@ -68,6 +72,10 @@ public class TestGradeColumn extends TableColumn<Student, Grade> {
 				test.setGrade(e.getRowValue(), e.getNewValue());
 			}
 		});
+	}
+
+	public Test getTest() {
+		return this.test;
 	}
 
 }

@@ -17,8 +17,8 @@ import org.openjfx.gradefx.view.tableview.columns.StudentLastNameColumn;
 import org.openjfx.gradefx.view.tableview.columns.StudentSubgroupNameColumn;
 import org.openjfx.gradefx.view.tableview.overview.columns.OverviewAvgColumn;
 import org.openjfx.gradefx.view.tableview.overview.columns.OverviewGradeColumn;
-import org.openjfx.gradefx.view.tableview.overview.columns.OverviewTestColumn;
 import org.openjfx.gradefx.view.tableview.overview.columns.OverviewTestGroupColumn;
+import org.openjfx.gradefx.view.tableview.test.columns.TestGradeColumn;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
 
@@ -37,7 +37,7 @@ public class TableViewOverview extends TableView2<Student> {
 
 	private final Group group;
 	private final Map<TestGroup, OverviewTestGroupColumn> testGroupColumns = new HashMap<>();
-	private final Map<Test, OverviewTestColumn> testColumns = new HashMap<>();
+	private final Map<Test, TestGradeColumn> testColumns = new HashMap<>();
 	private final OverviewAvgColumn avgColumn;
 	private final OverviewGradeColumn gradeColumn;
 	private final IntegerProperty selectedRowIndex = new SimpleIntegerProperty(this, "selectedRow", -1);
@@ -141,8 +141,9 @@ public class TableViewOverview extends TableView2<Student> {
 		this.getColumns().add(this.gradeColumn);
 	}
 
-	public OverviewTestColumn createTestColumn(Test test) {
-		OverviewTestColumn column = new OverviewTestColumn(this.group, test, rowIndexSubscription);
+	public TestGradeColumn createTestColumn(Test test) {
+		TestGradeColumn column = new TestGradeColumn(this.group, test, rowIndexSubscription);
+		column.textProperty().bind(test.shortNameProperty());
 		this.testColumns.put(test, column);
 		return column;
 	}
@@ -166,7 +167,7 @@ public class TableViewOverview extends TableView2<Student> {
 						TestGroup testGroup = TableViewOverview.this.group.getTestGroup(test);
 						OverviewTestGroupColumn testGroupColumn = TableViewOverview.this.testGroupColumns
 								.get(testGroup);
-						OverviewTestColumn testColumn = createTestColumn(test);
+						TestGradeColumn testColumn = createTestColumn(test);
 						if (testGroupColumn == null) { // root
 							// -2 before avg and grade
 							TableViewOverview.this.getColumns().add(TableViewOverview.this.getColumns().size() - 2,
@@ -180,7 +181,7 @@ public class TableViewOverview extends TableView2<Student> {
 				if (change.wasRemoved()) {
 					List<? extends Test> removed = change.getRemoved();
 					for (Test test : removed) {
-						OverviewTestColumn testColumn = TableViewOverview.this.testColumns.get(test);
+						TestGradeColumn testColumn = TableViewOverview.this.testColumns.get(test);
 						if (testColumn.getParentColumn() == null) { // root
 							TableViewOverview.this.getColumns().remove(testColumn);
 						} else {

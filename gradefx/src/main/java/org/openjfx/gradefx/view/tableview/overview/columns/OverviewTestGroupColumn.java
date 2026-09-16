@@ -8,6 +8,7 @@ import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.TestGroup;
+import org.openjfx.gradefx.view.tableview.test.columns.TestGradeColumn;
 
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.TableCell;
@@ -28,7 +29,7 @@ public class OverviewTestGroupColumn extends TableColumn<Student, Integer> {
 
 	public OverviewTestGroupColumn(Group group, TestGroup testGroup,
 			Function<TestGroup, OverviewTestGroupColumn> createTestGroupColumn,
-			Function<Test, OverviewTestColumn> createTestColumn, Consumer<TableCell<Student, ?>> cellSubscription) {
+			Function<Test, TestGradeColumn> createTestColumn, Consumer<TableCell<Student, ?>> cellSubscription) {
 		this.testGroup = testGroup;
 		this.textProperty().bind(testGroup.nameProperty());
 		this.setReorderable(false);
@@ -37,8 +38,10 @@ public class OverviewTestGroupColumn extends TableColumn<Student, Integer> {
 					: createTestGroupColumn.apply((TestGroup) t));
 		}
 		for (Test test : group.getTestsInTestGroup(testGroup)) {
-			getColumns().add(createTestColumn == null ? new OverviewTestColumn(group, test, cellSubscription)
-					: createTestColumn.apply(test));
+			TestGradeColumn column = createTestColumn == null ? new TestGradeColumn(group, test, cellSubscription)
+					: createTestColumn.apply(test);
+			column.textProperty().bind(test.shortNameProperty());
+			getColumns().add(column);
 		}
 		this.getColumns().add(new OverviewAvgColumn(group, getColumns(), cellSubscription));
 	}

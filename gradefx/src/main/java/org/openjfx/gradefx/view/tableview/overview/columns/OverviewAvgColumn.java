@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.openjfx.gradefx.model.Student;
+import org.openjfx.gradefx.view.tableview.test.columns.TestGradeColumn;
 import org.openjfx.gradefx.model.Grade;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.kafx.converter.BigDecimalConverter;
@@ -82,8 +83,8 @@ public class OverviewAvgColumn extends TableColumn<Student, BigDecimal> {
 		List<BigDecimal> values = new ArrayList<>();
 		List<BigDecimal> weights = new ArrayList<>();
 		for (TableColumn<Student, ?> tc : columns) {
-			if (tc instanceof OverviewTestColumn) {
-				OverviewTestColumn testColumn = (OverviewTestColumn) tc;
+			if (tc instanceof TestGradeColumn) {
+				TestGradeColumn testColumn = (TestGradeColumn) tc;
 				ObservableValue<Grade> grade = testColumn.getCellObservableValue(student);
 				ObservableValue<BigDecimal> weight = testColumn.getTest().weightProperty();
 				grade.removeListener(listener);

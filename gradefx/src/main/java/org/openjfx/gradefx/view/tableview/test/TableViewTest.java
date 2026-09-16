@@ -108,7 +108,7 @@ public class TableViewTest extends TableView3<Student> {
 
 		this.sumColumn = new TestSumColumn(test, rowIndexSubscription);
 		this.ratioColumn = new TestRatioColumn(test, this.sumColumn, rowIndexSubscription);
-		this.gradeColumn = new TestGradeColumn(group, test, this.sumColumn, rowIndexSubscription);
+		this.gradeColumn = new TestGradeColumn(group, test, rowIndexSubscription);
 		this.annotationColumn = new TestAnnotationColumn(test, rowIndexSubscription);
 		this.dateColumn = new TestDateColumn(test, rowIndexSubscription);
 
