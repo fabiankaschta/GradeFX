@@ -16,6 +16,7 @@ import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Subject;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.Test.TestTask;
+import org.openjfx.gradefx.model.Test.TestTask.TestTaskPointsDecoration;
 import org.openjfx.gradefx.model.TestGroup;
 import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
 import org.openjfx.gradefx.view.pane.GroupsPane;
@@ -56,6 +57,7 @@ public class GradeFXFileIO extends EncryptedFileIO {
 		list.add(Tendency.class);
 		list.add(GradeSystemBaseType.class);
 		list.add(Level.class);
+		list.add(TestTaskPointsDecoration.class);
 		return list;
 	}
 

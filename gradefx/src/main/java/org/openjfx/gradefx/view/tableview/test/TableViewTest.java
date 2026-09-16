@@ -13,6 +13,7 @@ import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.Test.TestTask;
+import org.openjfx.gradefx.model.Test.TestTask.TestTaskPointsDecoration;
 import org.openjfx.gradefx.view.tableview.columns.StudentFirstNameColumn;
 import org.openjfx.gradefx.view.tableview.columns.StudentLastNameColumn;
 import org.openjfx.gradefx.view.tableview.columns.StudentReturnColumn;
@@ -150,6 +151,32 @@ public class TableViewTest extends TableView3<Student> {
 						Student student = TableViewTest.this.getSelectionModel().getSelectedItem();
 						if (test.isTotalPointsFixed(student)) {
 							test.setTotalPointsFixed(student, false);
+						}
+					}
+				}
+			} else if (event.getCode() == KeyCode.PLUS || event.getCode() == KeyCode.ADD) {
+				if (!TableViewTest.this.getSelectionModel().getSelectedCells().isEmpty()) {
+					TablePosition<?, ?> pos = TableViewTest.this.getSelectionModel().getSelectedCells().getFirst();
+					if (pos.getTableColumn() instanceof TestTaskColumn) {
+						Student student = TableViewTest.this.getSelectionModel().getSelectedItem();
+						TestTask testTask = ((TestTaskColumn) pos.getTableColumn()).getTestTask();
+						if (testTask.getPointsDecoration(student) == TestTaskPointsDecoration.UP) {
+							testTask.setPointsDecoration(student, TestTaskPointsDecoration.NONE);
+						} else {
+							testTask.setPointsDecoration(student, TestTaskPointsDecoration.UP);
+						}
+					}
+				}
+			} else if (event.getCode() == KeyCode.MINUS || event.getCode() == KeyCode.SUBTRACT) {
+				if (!TableViewTest.this.getSelectionModel().getSelectedCells().isEmpty()) {
+					TablePosition<?, ?> pos = TableViewTest.this.getSelectionModel().getSelectedCells().getFirst();
+					if (pos.getTableColumn() instanceof TestTaskColumn) {
+						Student student = TableViewTest.this.getSelectionModel().getSelectedItem();
+						TestTask testTask = ((TestTaskColumn) pos.getTableColumn()).getTestTask();
+						if (testTask.getPointsDecoration(student) == TestTaskPointsDecoration.DOWN) {
+							testTask.setPointsDecoration(student, TestTaskPointsDecoration.NONE);
+						} else {
+							testTask.setPointsDecoration(student, TestTaskPointsDecoration.DOWN);
 						}
 					}
 				}

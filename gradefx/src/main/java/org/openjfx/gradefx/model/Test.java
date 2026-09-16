@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import org.openjfx.gradefx.converter.TestTaskConverter;
 import org.openjfx.kafx.controller.ChangeController;
 import org.openjfx.kafx.io.DataObject;
+import org.openjfx.kafx.view.style.Styles;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -25,10 +26,26 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 import javafx.scene.control.TreeItem;
+import javafx.scene.paint.Color;
 
 public class Test {
 
 	public static class TestTask extends TreeItem<TestTask> {
+		
+		public static enum TestTaskPointsDecoration {
+			NONE(null), UP('\u2191'), DOWN('\u2193');
+			
+			private Character symbol;
+			
+			private TestTaskPointsDecoration(Character c) {
+				symbol = c;
+			}
+
+			@Override
+			public String toString() {
+				return symbol == null ? "" : String.valueOf(symbol);
+			}
+		}
 
 		private final static TestTaskConverter converter = new TestTaskConverter();
 
@@ -44,6 +61,8 @@ public class Test {
 		private final StringProperty name = new SimpleStringProperty(this, "name");
 		private final ReadOnlyObjectWrapper<BigDecimal> maxPoints = new ReadOnlyObjectWrapper<>(this, "maxPoints");
 		private final ObservableMap<Student, ObjectProperty<BigDecimal>> points = FXCollections.observableHashMap();
+		private final ObservableMap<Student, ObjectProperty<TestTaskPointsDecoration>> decorations = FXCollections.observableHashMap();
+		private final ObservableMap<Student, ObjectProperty<Color>> decorationColors = FXCollections.observableHashMap();
 		private final BooleanProperty isRoot = new SimpleBooleanProperty(this, "isRoot");
 
 		private TestTask(Test test, String name, BigDecimal maxPoints, boolean isRoot) {
@@ -97,13 +116,6 @@ public class Test {
 						this.updateMaxPointsParent();
 					}
 				}
-			}
-		}
-
-		@SuppressWarnings("unused") // TODO remove unnecessary method?
-		private void updatePointsParent() {
-			for (Student student : points.keySet()) {
-				this.updatePointsParent(student);
 			}
 		}
 
@@ -202,12 +214,22 @@ public class Test {
 			test.putStudentPropertiesIfNotExists(student);
 			if (!this.points.containsKey(student)) {
 				ObjectProperty<BigDecimal> pointsProperty = new SimpleObjectProperty<>(student,
-						"points in test " + test);
+						"points in test task" + this);
 				pointsProperty.addListener(ChangeController.getConditionalListenerUnsavedChanges(() -> this.isLeaf()));
 				pointsProperty.addListener((_, _, _) -> {
 					this.updatePointsParent(student);
 				});
 				this.points.put(student, pointsProperty);
+
+				ObjectProperty<TestTaskPointsDecoration> pointsDecorationProperty = new SimpleObjectProperty<>(student,
+						"decoration for points in test task" + this, TestTaskPointsDecoration.NONE);
+				pointsDecorationProperty.addListener(ChangeController.getConditionalListenerUnsavedChanges(() -> this.isLeaf()));
+				this.decorations.put(student, pointsDecorationProperty);
+
+				ObjectProperty<Color> decorationColorProperty = new SimpleObjectProperty<>(student,
+						"color for decoration in test task" + this, Color.RED);
+				decorationColorProperty.addListener(ChangeController.getConditionalListenerUnsavedChanges(() -> this.isLeaf()));
+				this.decorationColors.put(student, decorationColorProperty);
 			}
 		}
 
@@ -224,6 +246,36 @@ public class Test {
 		public ObjectProperty<BigDecimal> pointsProperty(Student student) {
 			this.putStudentPropertiesIfNotExists(student);
 			return this.points.get(student);
+		}
+
+		public void setPointsDecoration(Student student, TestTaskPointsDecoration pointsDecoration) {
+			this.putStudentPropertiesIfNotExists(student);
+			this.decorations.get(student).set(pointsDecoration);
+		}
+
+		public TestTaskPointsDecoration getPointsDecoration(Student student) {
+			this.putStudentPropertiesIfNotExists(student);
+			return this.decorations.get(student).getValue();
+		}
+
+		public ObjectProperty<TestTaskPointsDecoration> pointsDecorationProperty(Student student) {
+			this.putStudentPropertiesIfNotExists(student);
+			return this.decorations.get(student);
+		}
+
+		public void setDecorationColor(Student student, Color color) {
+			this.putStudentPropertiesIfNotExists(student);
+			this.decorationColors.get(student).set(color);
+		}
+
+		public Color getDecorationColor(Student student) {
+			this.putStudentPropertiesIfNotExists(student);
+			return this.decorationColors.get(student).getValue();
+		}
+
+		public ObjectProperty<Color> decorationColorProperty(Student student) {
+			this.putStudentPropertiesIfNotExists(student);
+			return this.decorationColors.get(student);
 		}
 
 		public void addSubtask(TestTask task) {
@@ -250,6 +302,8 @@ public class Test {
 			private final BigDecimal maxPoints;
 			private final boolean isRoot;
 			private final Map<DataObject<Student>, BigDecimal> points = new HashMap<>();
+			private final Map<DataObject<Student>, TestTaskPointsDecoration> pointsDecorations = new HashMap<>();
+			private final Map<DataObject<Student>, String> decorationColors = new HashMap<>();
 			private final List<DataObject<TestTask>> children = new ArrayList<>();
 
 			private transient TestTask testTask;
@@ -261,6 +315,14 @@ public class Test {
 				this.isRoot = tt.isRoot();
 				for (Entry<Student, ObjectProperty<BigDecimal>> sg : tt.points.entrySet()) {
 					this.points.put(sg.getKey().serialize(), sg.getValue().getValue());
+				}
+				for (Entry<Student, ObjectProperty<TestTaskPointsDecoration>> st : tt.decorations.entrySet()) {
+					if(st.getValue().getValue() != TestTaskPointsDecoration.NONE) {
+						this.pointsDecorations.put(st.getKey().serialize(), st.getValue().getValue());
+					}
+					if(tt.decorationColors.get(st.getKey()).get() != Color.RED) {
+						this.decorationColors.put(st.getKey().serialize(), Styles.toHexString(tt.decorationColors.get(st.getKey()).get()));
+					}
 				}
 				for (TreeItem<TestTask> t : tt.getChildren()) {
 					this.children.add(((TestTask) t).serialize());
@@ -281,6 +343,20 @@ public class Test {
 						Student student = p.getKey().deserialize();
 						testTask.putStudentPropertiesIfNotExists(student);
 						testTask.points.get(student).set(p.getValue());
+						// FIXME remove compatibility with v2.0.x
+						if(pointsDecorations != null) {
+							TestTaskPointsDecoration tendency = pointsDecorations.get(p.getKey());
+							if(tendency != null) {
+								testTask.decorations.get(student).set(tendency);
+							}
+						}
+						// FIXME remove compatibility with v2.0.x
+						if(decorationColors != null) {
+							String tendencyColor = decorationColors.get(p.getKey());
+							if(tendencyColor != null) {
+								testTask.decorationColors.get(student).set(Color.web(tendencyColor));
+							}
+						}
 					}
 					for (DataObject<TestTask> t : children) {
 						testTask.addSubtask(t.deserialize(params[0]));
