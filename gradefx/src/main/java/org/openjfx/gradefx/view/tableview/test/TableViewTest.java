@@ -121,7 +121,6 @@ public class TableViewTest extends TableView3<Student> {
 		this.bindSumProperty();
 		this.bindRatioProperty();
 		this.bindGradeProperty();
-		this.testTaskProperties.keySet().forEach(testTask -> bindTestTaskProperty(testTask));
 		group.getStudents().addListener((ListChangeListener<Student>) _ -> {
 			this.bindSumProperty();
 			this.bindGradeProperty();
@@ -346,7 +345,7 @@ public class TableViewTest extends TableView3<Student> {
 			if (amount == BigDecimal.ZERO) {
 				return "-";
 			} else {
-				return (new BigDecimalConverter()).toString(sum.divide(amount, 1, RoundingMode.HALF_UP));
+				return this.avgConverter.toString(sum.divide(amount, 1, RoundingMode.HALF_UP));
 			}
 		}, this.group.getStudents().stream().map(s -> testTask.pointsProperty(s)).toArray(n -> new Observable[n])));
 		return property;

@@ -643,6 +643,12 @@ public class Test {
 			annotationProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 			dateProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 			hasReturnedProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+			
+			gradeProperty.addListener((_, _, newValue) -> {
+				if (newValue == null && gradeFixedProperty.get()) {
+					this.setGradeFixed(student, false);
+				}
+			});
 
 			gradeFixedProperty.addListener((_, oldValue, newValue) -> {
 				if (oldValue && !newValue) {

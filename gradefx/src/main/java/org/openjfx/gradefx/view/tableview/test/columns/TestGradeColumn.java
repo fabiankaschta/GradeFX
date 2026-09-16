@@ -18,18 +18,17 @@ import javafx.scene.control.TableColumn;
 import javafx.util.Subscription;
 
 public class TestGradeColumn extends TableColumn<Student, Grade> {
-	
+
 	private final Test test;
 
 	public TestGradeColumn(Group group, Test test) {
 		this(group, test, null);
 	}
 
-	public TestGradeColumn(Group group, Test test,
-			Consumer<TableCell<Student, ?>> cellSubscription) {
+	public TestGradeColumn(Group group, Test test, Consumer<TableCell<Student, ?>> cellSubscription) {
 		super(TranslationController.translate("test_grade"));
 		this.test = test;
-		
+
 		this.setCellValueFactory(data -> test.gradeProperty(data.getValue()));
 		GradeSystem gradeSystem = group.getGradeSystem();
 		this.setCellFactory(_ -> new TableCellEditComparator<>(gradeSystem.getGradeComparator(), gradeSystem.getWorst(),

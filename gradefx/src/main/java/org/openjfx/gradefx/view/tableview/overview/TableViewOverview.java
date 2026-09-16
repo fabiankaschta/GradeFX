@@ -39,7 +39,9 @@ import javafx.collections.MapChangeListener;
 import javafx.css.PseudoClass;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TablePosition;
 import javafx.scene.control.TreeItem;
+import javafx.scene.input.KeyCode;
 import javafx.scene.text.Text;
 
 public class TableViewOverview extends TableView3<Student> {
@@ -113,6 +115,24 @@ public class TableViewOverview extends TableView3<Student> {
 				.bind(this.avgProperty.map(avg -> avg == null ? "-" : gradeAvgConverter.toString(avg)));
 		this.footerTextForColumn(this.gradeColumn)
 				.bind(this.gradeProperty.map(grade -> grade == null ? "-" : gradeAvgConverter.toString(grade)));
+		
+
+		// DEL / BACKSPACE remove fixed state
+		this.setOnKeyPressed(event -> {
+			if (event.getCode() == KeyCode.BACK_SPACE || event.getCode() == KeyCode.DELETE) {
+				// single selection
+				if (!TableViewOverview.this.getSelectionModel().getSelectedCells().isEmpty()) {
+					TablePosition<?, ?> pos = TableViewOverview.this.getSelectionModel().getSelectedCells().getFirst();
+					if (pos.getTableColumn() instanceof TestGradeColumn) {
+						TestGradeColumn column = (TestGradeColumn) pos.getTableColumn();
+						Student student = TableViewOverview.this.getSelectionModel().getSelectedItem();
+						if (column.getTest().isGradeFixed(student)) {
+							column.getTest().setGradeFixed(student, false);
+						}
+					}
+				}
+			}
+		});
 
 		FontSizeController.bindTableColumnWidthToFontSize(this);
 		this.getStyleClass().addAll("table-view-cell-highlight", "table-view-no-focus", "table-view-hide-empty");
