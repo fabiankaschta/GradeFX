@@ -13,7 +13,6 @@ import org.openjfx.gradefx.view.tableview.test.columns.TestGradeColumn;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TreeItem;
 
 public class OverviewTestGroupColumn extends TableColumn<Student, Integer> {
 
@@ -33,17 +32,6 @@ public class OverviewTestGroupColumn extends TableColumn<Student, Integer> {
 		this.testGroup = testGroup;
 		this.textProperty().bind(testGroup.nameProperty());
 		this.setReorderable(false);
-		for (TreeItem<TestGroup> t : testGroup.getChildren()) {
-			getColumns().add(createTestGroupColumn == null ? new OverviewTestGroupColumn(group, (TestGroup) t)
-					: createTestGroupColumn.apply((TestGroup) t));
-		}
-		for (Test test : group.getTestsInTestGroup(testGroup)) {
-			TestGradeColumn column = createTestColumn == null ? new TestGradeColumn(group, test, cellSubscription)
-					: createTestColumn.apply(test);
-			column.textProperty().bind(test.shortNameProperty());
-			getColumns().add(column);
-		}
-		this.getColumns().add(new OverviewAvgColumn(group, getColumns(), cellSubscription));
 	}
 
 	public OverviewAvgColumn getAvgColumn() {

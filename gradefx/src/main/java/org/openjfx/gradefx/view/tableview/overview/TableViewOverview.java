@@ -94,8 +94,6 @@ public class TableViewOverview extends TableView3<Student> {
 		this.getColumns().add(subgroupNameCol);
 		this.getFixedColumns().addAll(lastNameCol, firstNameCol, subgroupNameCol);
 
-		this.group.testGroupRootProperty().subscribe(root -> this.setupTestColumns(root));
-
 		this.gradeAvgConverter.getDecimalFormat().setMinimumFractionDigits(2);
 		this.gradeAvgConverter.getDecimalFormat().setMaximumFractionDigits(2);
 		this.gradeAvgConverter.getDecimalFormat().setRoundingMode(RoundingMode.DOWN);
@@ -106,8 +104,6 @@ public class TableViewOverview extends TableView3<Student> {
 		group.getStudents().addListener((ListChangeListener<Student>) _ -> {
 			this.bindAvgProperty();
 			this.bindGradeProperty();
-			this.testProperties.keySet().forEach(test -> bindTestProperty(test));
-			this.testGroupProperties.keySet().forEach(testGroup -> bindTestGroupProperty(testGroup));
 		});
 
 		this.setFooterTextFixedColumns(TranslationController.translate("tab_overview_footer_avg") + ':');
@@ -115,7 +111,8 @@ public class TableViewOverview extends TableView3<Student> {
 				.bind(this.avgProperty.map(avg -> avg == null ? "-" : gradeAvgConverter.toString(avg)));
 		this.footerTextForColumn(this.gradeColumn)
 				.bind(this.gradeProperty.map(grade -> grade == null ? "-" : gradeAvgConverter.toString(grade)));
-		
+
+		this.group.testGroupRootProperty().subscribe(root -> this.setupTestColumns(root));
 
 		// DEL / BACKSPACE remove fixed state
 		this.setOnKeyPressed(event -> {
@@ -192,8 +189,8 @@ public class TableViewOverview extends TableView3<Student> {
 	public TestGradeColumn createTestColumn(Test test) {
 		TestGradeColumn column = new TestGradeColumn(this.group, test, rowIndexSubscription);
 		column.textProperty().bind(test.shortNameProperty());
-		this.footerTextForColumn(column).bind(bindTestProperty(test));
 		this.testColumns.put(test, column);
+		this.footerTextForColumn(column).bind(bindTestProperty(test));
 		return column;
 	}
 
@@ -201,10 +198,17 @@ public class TableViewOverview extends TableView3<Student> {
 		OverviewTestGroupColumn column = new OverviewTestGroupColumn(this.group, testGroup,
 				tg -> createTestGroupColumn(tg), t -> createTestColumn(t), rowIndexSubscription);
 		this.group.getTestsInTestGroup(testGroup).addListener(new TestsChangedListener());
+		this.testGroupColumns.put(testGroup, column);
+		for (TreeItem<TestGroup> t : testGroup.getChildren()) {
+			column.getColumns().add(createTestGroupColumn((TestGroup) t));
+		}
+		for (Test test : group.getTestsInTestGroup(testGroup)) {
+			column.getColumns().add(createTestColumn(test));
+		}
+		column.getColumns().add(new OverviewAvgColumn(group, column.getColumns(), rowIndexSubscription));
 		this.footerTextForColumn(column).bind(bindTestGroupProperty(testGroup));
 		column.getAvgColumn().getAvgValuesMap().addListener(
 				(MapChangeListener<Student, ObjectProperty<BigDecimal>>) _ -> bindTestGroupProperty(testGroup));
-		this.testGroupColumns.put(testGroup, column);
 		return column;
 	}
 
@@ -287,7 +291,8 @@ public class TableViewOverview extends TableView3<Student> {
 		property.bind(Bindings.createStringBinding(() -> {
 			BigDecimal sum = BigDecimal.ZERO;
 			BigDecimal amount = BigDecimal.ZERO;
-			for (ObjectProperty<BigDecimal> a : this.avgColumn.getAvgValuesMap().values()) {
+			for (ObjectProperty<BigDecimal> a : this.testGroupColumns.get(testGroup).getAvgColumn().getAvgValuesMap()
+					.values()) {
 				BigDecimal avg = a.get();
 				if (avg != null) {
 					sum = sum.add(avg);
