@@ -59,7 +59,7 @@ public class TestPrintPane extends BorderPane {
 		statisticsHeaderBox.setAlignment(Pos.CENTER);
 
 		this.statisticsPane.getChildren().add(statisticsHeaderBox);
-		this.statisticsPane.getChildren().add(new StatisticsGrid(group, pointsSystem));
+		this.statisticsPane.getChildren().add(new StatisticsGrid(group, test, pointsSystem));
 
 		this.setTop(header);
 		this.setCenter(this.table);

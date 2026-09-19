@@ -54,7 +54,6 @@ public class TableViewOverview extends TableView3<Student> {
 	private final IntegerProperty selectedRowIndex = new SimpleIntegerProperty(this, "selectedRow", -1);
 	private final Consumer<TableCell<Student, ?>> rowIndexSubscription = cell -> subscribeRowIndex(cell);
 
-	private final Map<Test, StringProperty> testProperties = new HashMap<>();
 	private final Map<TestGroup, StringProperty> testGroupProperties = new HashMap<>();
 	private final ObjectProperty<BigDecimal> avgProperty;
 	private final ObjectProperty<BigDecimal> gradeProperty;
@@ -190,7 +189,14 @@ public class TableViewOverview extends TableView3<Student> {
 		TestGradeColumn column = new TestGradeColumn(this.group, test, rowIndexSubscription);
 		column.textProperty().bind(test.shortNameProperty());
 		this.testColumns.put(test, column);
-		this.footerTextForColumn(column).bind(bindTestProperty(test));
+		this.footerTextForColumn(column).bind(Bindings.createStringBinding(() -> {
+			BigDecimal avg = test.getAvgGrade();
+			if (avg == null) {
+				return "-";
+			} else {
+				return this.gradeAvgConverter.toString(avg);
+			}
+		}, test.avgGradeProperty()));
 		return column;
 	}
 
@@ -253,32 +259,6 @@ public class TableViewOverview extends TableView3<Student> {
 			}
 		}, this.avgColumn.getAvgValuesMap().values().stream().toArray(n -> new Observable[n])));
 		return this.gradeProperty;
-	}
-
-	private StringProperty bindTestProperty(Test test) {
-		StringProperty property = this.testProperties.get(test);
-		if (property == null) {
-			property = new SimpleStringProperty(this, "testProperty" + test, "");
-			this.testProperties.put(test, property);
-		}
-		property.unbind();
-		property.bind(Bindings.createStringBinding(() -> {
-			BigDecimal sum = BigDecimal.ZERO;
-			BigDecimal amount = BigDecimal.ZERO;
-			for (Student s : this.group.getStudents()) {
-				Grade grade = test.getGrade(s);
-				if (grade != null) {
-					sum = sum.add(BigDecimal.valueOf(grade.getNumericalValue()));
-					amount = amount.add(BigDecimal.ONE);
-				}
-			}
-			if (amount == BigDecimal.ZERO) {
-				return "-";
-			} else {
-				return this.gradeAvgConverter.toString(sum.divide(amount, 2, RoundingMode.DOWN));
-			}
-		}, this.group.getStudents().stream().map(s -> test.gradeProperty(s)).toArray(n -> new Observable[n])));
-		return property;
 	}
 
 	private StringProperty bindTestGroupProperty(TestGroup testGroup) {

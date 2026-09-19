@@ -47,7 +47,6 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 	private final ObservableList<Student> students;
 	private final BooleanProperty filtered = new SimpleBooleanProperty(this, "filtered", false);
 	private final AmountColumn amountColumn;
-	private final ReadOnlyObjectWrapper<BigDecimal> gradeAVG = new ReadOnlyObjectWrapper<>(this, "gradeAVG");
 	private final ReadOnlyObjectWrapper<BigDecimal> criticalGradesRatio = new ReadOnlyObjectWrapper<>(this,
 			"criticalGradesRatio");
 	private final ReadOnlyIntegerWrapper graded = new ReadOnlyIntegerWrapper(this, "graded");
@@ -214,14 +213,6 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 		return this.students;
 	}
 
-	public ReadOnlyObjectProperty<BigDecimal> gradeAVGProperty() {
-		return this.gradeAVG.getReadOnlyProperty();
-	}
-
-	public BigDecimal getGradeAVG() {
-		return this.gradeAVG.get();
-	}
-
 	public ReadOnlyObjectProperty<BigDecimal> criticalGradesRatioProperty() {
 		return this.criticalGradesRatio.getReadOnlyProperty();
 	}
@@ -292,7 +283,6 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 			for (int i = 0; i < this.amounts.length; i++) {
 				Grade grade = TableViewPointsSystem.this.grades[i];
 				this.amounts[i] = new SimpleIntegerProperty(this, "amount for grade " + grade, 0);
-				this.amounts[i].subscribe(_ -> updateAVG());
 			}
 			calculateAmounts();
 
@@ -317,23 +307,6 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 				if (TableViewPointsSystem.this.students.contains(e.getKey())) {
 					e.getValue().addListener(this.updateAmountsListenerGrade);
 				}
-			}
-		}
-
-		private void updateAVG() {
-			int sum = 0;
-			int count = 0;
-			for (int i = 0; i < this.amounts.length; i++) {
-				if (this.amounts[i] != null) {
-					sum += this.amounts[i].get() * TableViewPointsSystem.this.grades[i].getNumericalValue();
-					count += this.amounts[i].get();
-				}
-			}
-			if (count != 0) {
-				TableViewPointsSystem.this.gradeAVG
-						.set(BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(count), 7, RoundingMode.DOWN));
-			} else {
-				TableViewPointsSystem.this.gradeAVG.set(null);
 			}
 		}
 

@@ -83,7 +83,7 @@ public class TestStatisticsSidePane extends ScrollPane {
 		headerBox.setAlignment(Pos.CENTER);
 		content.getChildren().add(headerBox);
 
-		content.getChildren().add(new StatisticsGrid(this.group, this.tableViewPointsSystem));
+		content.getChildren().add(new StatisticsGrid(this.group, this.test, this.tableViewPointsSystem));
 		content.getChildren().add(new SettingsPane());
 		content.getChildren().add(new SliderPane());
 

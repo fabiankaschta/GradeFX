@@ -1,6 +1,7 @@
 package org.openjfx.gradefx.model;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,6 +14,8 @@ import org.openjfx.kafx.controller.ChangeController;
 import org.openjfx.kafx.io.DataObject;
 import org.openjfx.kafx.view.style.Styles;
 
+import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -24,6 +27,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
 import javafx.scene.control.TreeItem;
 import javafx.scene.paint.Color;
@@ -31,12 +35,12 @@ import javafx.scene.paint.Color;
 public class Test {
 
 	public static class TestTask extends TreeItem<TestTask> {
-		
+
 		public static enum TestTaskPointsDecoration {
 			NONE(null), UP('\u2191'), DOWN('\u2193');
-			
+
 			private Character symbol;
-			
+
 			private TestTaskPointsDecoration(Character c) {
 				symbol = c;
 			}
@@ -61,9 +65,15 @@ public class Test {
 		private final StringProperty name = new SimpleStringProperty(this, "name");
 		private final ReadOnlyObjectWrapper<BigDecimal> maxPoints = new ReadOnlyObjectWrapper<>(this, "maxPoints");
 		private final ObservableMap<Student, ObjectProperty<BigDecimal>> points = FXCollections.observableHashMap();
-		private final ObservableMap<Student, ObjectProperty<TestTaskPointsDecoration>> decorations = FXCollections.observableHashMap();
-		private final ObservableMap<Student, ObjectProperty<Color>> decorationColors = FXCollections.observableHashMap();
+		private final ObservableMap<Student, ObjectProperty<TestTaskPointsDecoration>> decorations = FXCollections
+				.observableHashMap();
+		private final ObservableMap<Student, ObjectProperty<Color>> decorationColors = FXCollections
+				.observableHashMap();
 		private final BooleanProperty isRoot = new SimpleBooleanProperty(this, "isRoot");
+
+		// this is never stored in file, always calculated
+		private final ReadOnlyObjectWrapper<BigDecimal> avgPoints = new ReadOnlyObjectWrapper<BigDecimal>(this,
+				"avgPoints", null);
 
 		private TestTask(Test test, String name, BigDecimal maxPoints, boolean isRoot) {
 			this.test = test;
@@ -75,6 +85,29 @@ public class Test {
 			this.getChildren().addListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
 			super.setValue(this);
 			this.setExpanded(true);
+
+			// listen to map changes (students added or removed)
+			MapChangeListener<Student, ObjectProperty<BigDecimal>> avgPointsListener = _ -> {
+				this.avgPoints.unbind();
+				this.avgPoints.bind(Bindings.createObjectBinding(() -> {
+					BigDecimal sum = BigDecimal.ZERO;
+					int amount = 0;
+					for (ObjectProperty<BigDecimal> p : this.points.values()) {
+						BigDecimal pointsValue = p.get();
+						if (pointsValue != null) {
+							sum = sum.add(pointsValue);
+							amount++;
+						}
+					}
+					if (amount == 0) {
+						return null;
+					} else {
+						return sum.divide(BigDecimal.valueOf(amount), 7, RoundingMode.HALF_UP);
+					}
+				}, this.points.values().toArray(n -> new Observable[n])));
+			};
+			this.points.addListener(avgPointsListener);
+			avgPointsListener.onChanged(null); // call once to set initial value
 		}
 
 		private TestTask getParentTask() {
@@ -167,11 +200,11 @@ public class Test {
 		}
 
 		public String getName() {
-			return name.get();
+			return this.name.get();
 		}
 
 		public StringProperty nameProperty() {
-			return name;
+			return this.name;
 		}
 
 		public void setName(String name) {
@@ -179,7 +212,7 @@ public class Test {
 		}
 
 		public boolean isRoot() {
-			return isRoot.get();
+			return this.isRoot.get();
 		}
 
 		private void setIsRoot(boolean isRoot) {
@@ -187,11 +220,11 @@ public class Test {
 		}
 
 		public BigDecimal getMaxPoints() {
-			return maxPoints.get();
+			return this.maxPoints.get();
 		}
 
 		public ReadOnlyObjectProperty<BigDecimal> maxPointsProperty() {
-			return maxPoints.getReadOnlyProperty();
+			return this.maxPoints.getReadOnlyProperty();
 		}
 
 		public void setMaxPoints(BigDecimal maxPoints) {
@@ -211,10 +244,10 @@ public class Test {
 		}
 
 		private void putStudentPropertiesIfNotExists(Student student) {
-			test.putStudentPropertiesIfNotExists(student);
+			this.test.putStudentPropertiesIfNotExists(student);
 			if (!this.points.containsKey(student)) {
 				ObjectProperty<BigDecimal> pointsProperty = new SimpleObjectProperty<>(student,
-						"points in test task" + this);
+						"points in test task " + this);
 				pointsProperty.addListener(ChangeController.getConditionalListenerUnsavedChanges(() -> this.isLeaf()));
 				pointsProperty.addListener((_, _, _) -> {
 					this.updatePointsParent(student);
@@ -222,13 +255,15 @@ public class Test {
 				this.points.put(student, pointsProperty);
 
 				ObjectProperty<TestTaskPointsDecoration> pointsDecorationProperty = new SimpleObjectProperty<>(student,
-						"decoration for points in test task" + this, TestTaskPointsDecoration.NONE);
-				pointsDecorationProperty.addListener(ChangeController.getConditionalListenerUnsavedChanges(() -> this.isLeaf()));
+						"decoration for points in test task " + this, TestTaskPointsDecoration.NONE);
+				pointsDecorationProperty
+						.addListener(ChangeController.getConditionalListenerUnsavedChanges(() -> this.isLeaf()));
 				this.decorations.put(student, pointsDecorationProperty);
 
 				ObjectProperty<Color> decorationColorProperty = new SimpleObjectProperty<>(student,
-						"color for decoration in test task" + this, Color.RED);
-				decorationColorProperty.addListener(ChangeController.getConditionalListenerUnsavedChanges(() -> this.isLeaf()));
+						"color for decoration in test task " + this, Color.RED);
+				decorationColorProperty
+						.addListener(ChangeController.getConditionalListenerUnsavedChanges(() -> this.isLeaf()));
 				this.decorationColors.put(student, decorationColorProperty);
 			}
 		}
@@ -289,6 +324,14 @@ public class Test {
 			this.updatePoints();
 		}
 
+		public BigDecimal getAvgPoints() {
+			return this.avgPoints.get();
+		}
+
+		public ReadOnlyObjectProperty<BigDecimal> avgPointsProperty() {
+			return this.avgPoints.getReadOnlyProperty();
+		}
+
 		@Override
 		public String toString() {
 			return converter.toString(this);
@@ -317,11 +360,12 @@ public class Test {
 					this.points.put(sg.getKey().serialize(), sg.getValue().getValue());
 				}
 				for (Entry<Student, ObjectProperty<TestTaskPointsDecoration>> st : tt.decorations.entrySet()) {
-					if(st.getValue().getValue() != TestTaskPointsDecoration.NONE) {
+					if (st.getValue().getValue() != TestTaskPointsDecoration.NONE) {
 						this.pointsDecorations.put(st.getKey().serialize(), st.getValue().getValue());
 					}
-					if(tt.decorationColors.get(st.getKey()).get() != Color.RED) {
-						this.decorationColors.put(st.getKey().serialize(), Styles.toHexString(tt.decorationColors.get(st.getKey()).get()));
+					if (tt.decorationColors.get(st.getKey()).get() != Color.RED) {
+						this.decorationColors.put(st.getKey().serialize(),
+								Styles.toHexString(tt.decorationColors.get(st.getKey()).get()));
 					}
 				}
 				for (TreeItem<TestTask> t : tt.getChildren()) {
@@ -344,16 +388,16 @@ public class Test {
 						testTask.putStudentPropertiesIfNotExists(student);
 						testTask.points.get(student).set(p.getValue());
 						// FIXME remove compatibility with v2.0.x
-						if(pointsDecorations != null) {
+						if (pointsDecorations != null) {
 							TestTaskPointsDecoration tendency = pointsDecorations.get(p.getKey());
-							if(tendency != null) {
+							if (tendency != null) {
 								testTask.decorations.get(student).set(tendency);
 							}
 						}
 						// FIXME remove compatibility with v2.0.x
-						if(decorationColors != null) {
+						if (decorationColors != null) {
 							String tendencyColor = decorationColors.get(p.getKey());
-							if(tendencyColor != null) {
+							if (tendencyColor != null) {
 								testTask.decorationColors.get(student).set(Color.web(tendencyColor));
 							}
 						}
@@ -395,6 +439,16 @@ public class Test {
 	private final ObservableMap<Student, StringProperty> annotations = FXCollections.observableHashMap();
 	private final ObservableMap<Student, ObjectProperty<LocalDate>> dates = FXCollections.observableHashMap();
 	private final ObservableMap<Student, ReadOnlyBooleanWrapper> hasReturned = FXCollections.observableHashMap();
+
+	// these are never stored in file, always calculated
+	private final ReadOnlyObjectWrapper<BigDecimal> avgPoints = new ReadOnlyObjectWrapper<BigDecimal>(this, "avgPoints",
+			null);
+	private final ReadOnlyObjectWrapper<BigDecimal> avgPointsRatio = new ReadOnlyObjectWrapper<BigDecimal>(this,
+			"avgPointsRatio", null);
+	private final ReadOnlyObjectWrapper<BigDecimal> avgGrade = new ReadOnlyObjectWrapper<BigDecimal>(this, "avgGrade",
+			null);
+	private final ReadOnlyObjectWrapper<BigDecimal> avgGradeRespectingDate = new ReadOnlyObjectWrapper<BigDecimal>(this,
+			"avgGradeRespectingDate", null);
 
 	public Test(Group group, String name, String shortName, LocalDate date, BigDecimal weight, BigDecimal maxPoints,
 			boolean onlyDefaultDate, boolean useTasks, boolean usePoints, boolean showReturns) {
@@ -459,6 +513,99 @@ public class Test {
 				}
 			}
 		});
+
+		// setup for calculated properties
+
+		Runnable recalculateAvgPoints = () -> {
+			this.avgPoints.unbind();
+			this.avgPoints.bind(Bindings.createObjectBinding(() -> {
+				BigDecimal sum = BigDecimal.ZERO;
+				int amount = 0;
+				for (ObjectProperty<BigDecimal> p : this.totalPoints.values()) {
+					BigDecimal pointsValue = p.get();
+					if (pointsValue != null) {
+						sum = sum.add(pointsValue);
+						amount++;
+					}
+				}
+				if (amount == 0) {
+					return null;
+				} else {
+					return sum.divide(BigDecimal.valueOf(amount), 7, RoundingMode.HALF_UP);
+				}
+			}, this.totalPoints.values().toArray(n -> new Observable[n])));
+		};
+		this.totalPoints
+				.addListener((MapChangeListener<Student, ObjectProperty<BigDecimal>>) _ -> recalculateAvgPoints.run());
+		recalculateAvgPoints.run(); // call once to set initial value
+
+		this.avgPointsRatio.bind(Bindings.createObjectBinding(() -> {
+			BigDecimal avg = this.getAvgPoints();
+			BigDecimal total = this.getTotalPoints();
+			if (avg == null || total == null) {
+				return null;
+			} else {
+				return avg.divide(total, 7, RoundingMode.HALF_UP);
+			}
+		}, this.avgPoints, this.totalPoints));
+
+		Runnable recalculateAvgGrade = () -> {
+			List<Observable> observables = new ArrayList<>();
+			observables.addAll(this.grades.values());
+
+			this.avgGrade.unbind();
+			this.avgGrade.bind(Bindings.createObjectBinding(() -> {
+				int sum = 0;
+				int amount = 0;
+				for (ObjectProperty<Grade> p : this.grades.values()) {
+					Grade grade = p.get();
+					if (grade != null) {
+						sum += grade.getNumericalValue();
+						amount++;
+					}
+				}
+				if (amount == 0) {
+					return null;
+				} else {
+					return BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(amount), 7, RoundingMode.HALF_UP);
+				}
+			}, observables.toArray(n -> new Observable[n])));
+
+			observables.addAll(this.dates.values());
+			observables.add(this.date);
+			observables.add(this.onlyDefaultDateProperty());
+
+			this.avgGradeRespectingDate.unbind();
+			this.avgGradeRespectingDate.bind(Bindings.createObjectBinding(() -> {
+				LocalDate testDate = this.getDate();
+				boolean defaultDateOnly = this.isOnlyDefaultDate();
+				int sum = 0;
+				int amount = 0;
+				for (Entry<Student, ObjectProperty<Grade>> e : this.grades.entrySet()) {
+					Student student = e.getKey();
+					// a student date property might not be added to the map here, since grade
+					// properties are added first
+					LocalDate studentDate = this.dates.containsKey(student) ? this.getDate(student) : null;
+					if (!defaultDateOnly || testDate == null || studentDate == null || studentDate.equals(testDate)) {
+						Grade grade = e.getValue().get();
+						if (grade != null) {
+							sum += grade.getNumericalValue();
+							amount++;
+						}
+					}
+				}
+				if (amount == 0) {
+					return null;
+				} else {
+					return BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(amount), 7, RoundingMode.HALF_UP);
+				}
+			}, observables.toArray(n -> new Observable[n])));
+		};
+		// listen to map changes (students added or removed)
+		this.grades.addListener((MapChangeListener<Student, ObjectProperty<Grade>>) _ -> recalculateAvgGrade.run());
+		this.dates.addListener((MapChangeListener<Student, ObjectProperty<LocalDate>>) _ -> recalculateAvgGrade.run());
+		recalculateAvgGrade.run(); // call once to set initial value
+
 		this.nameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.shortNameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.dateProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
@@ -517,7 +664,7 @@ public class Test {
 		this.weight.set(weight);
 	}
 
-	public boolean getOnlyDefaultDate() {
+	public boolean isOnlyDefaultDate() {
 		return onlyDefaultDate.get();
 	}
 
@@ -643,7 +790,7 @@ public class Test {
 			annotationProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 			dateProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 			hasReturnedProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
-			
+
 			gradeProperty.addListener((_, _, newValue) -> {
 				if (newValue == null && gradeFixedProperty.get()) {
 					this.setGradeFixed(student, false);
@@ -825,6 +972,38 @@ public class Test {
 		return this.hasReturned;
 	}
 
+	public BigDecimal getAvgPoints() {
+		return this.avgPoints.get();
+	}
+
+	public ReadOnlyObjectProperty<BigDecimal> avgPointsProperty() {
+		return this.avgPoints.getReadOnlyProperty();
+	}
+
+	public BigDecimal getAvgPointsRatio() {
+		return this.avgPointsRatio.get();
+	}
+
+	public ReadOnlyObjectProperty<BigDecimal> avgPointsRatioProperty() {
+		return this.avgPointsRatio.getReadOnlyProperty();
+	}
+
+	public BigDecimal getAvgGrade() {
+		return this.avgGrade.get();
+	}
+
+	public ReadOnlyObjectProperty<BigDecimal> avgGradeProperty() {
+		return this.avgGrade.getReadOnlyProperty();
+	}
+
+	public BigDecimal getAvgGradeRespectingDate() {
+		return this.avgGradeRespectingDate.get();
+	}
+
+	public ReadOnlyObjectProperty<BigDecimal> avgGradeRespectingDateProperty() {
+		return this.avgGradeRespectingDate.getReadOnlyProperty();
+	}
+
 	@Override
 	public String toString() {
 		return this.getName();
@@ -860,7 +1039,7 @@ public class Test {
 			shortName = t.getShortName();
 			date = t.getDate();
 			weight = t.getWeight();
-			onlyDefaultDate = t.getOnlyDefaultDate();
+			onlyDefaultDate = t.isOnlyDefaultDate();
 			showReturns = t.getShowReturns();
 			useTasks = t.getUseTasks();
 			usePoints = t.getUsePoints();

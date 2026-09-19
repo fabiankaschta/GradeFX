@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import org.openjfx.gradefx.model.BoundType;
 import org.openjfx.gradefx.model.GradeSystem.GradeSystemBaseType;
 import org.openjfx.gradefx.model.Group;
+import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.view.tableview.TableViewPointsSystem;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
@@ -29,7 +30,7 @@ public class StatisticsGrid extends GridPane {
 	private final static String emojiOkay = "1F610";
 	private final static String emojiBad = "1F641";
 
-	public StatisticsGrid(Group group, TableViewPointsSystem tableViewPointsSystem) {
+	public StatisticsGrid(Group group, Test test, TableViewPointsSystem tableViewPointsSystem) {
 		super(10, 0);
 		this.setStyle("-fx-font-weight: bold;");
 		BigDecimalConverter avgConverter = new BigDecimalConverter();
@@ -42,26 +43,26 @@ public class StatisticsGrid extends GridPane {
 		Label avgValue = new Label();
 		avgValue.setContentDisplay(ContentDisplay.RIGHT);
 		avgValue.textProperty().bind(Bindings.createStringBinding(() -> {
-			BigDecimal avg = tableViewPointsSystem.getGradeAVG();
+			BigDecimal avg = test.getAvgGradeRespectingDate();
 			if (avg == null) {
-				return "-"; // '\u2014'; // long dash
+				return "\u2014"; // '\u2014'; // long dash
 			} else {
 				return avgConverter.toString(avg);
 			}
-		}, tableViewPointsSystem.gradeAVGProperty()));
+		}, test.avgGradeRespectingDateProperty()));
 
 		Label avgLabelOneToSix = new Label(TranslationController.translate("test_avg_one_to_six") + ": ");
 		Label avgValueOneToSix = new Label();
 		avgValueOneToSix.setContentDisplay(ContentDisplay.RIGHT);
 		avgValueOneToSix.textProperty().bind(Bindings.createStringBinding(() -> {
-			BigDecimal avg = tableViewPointsSystem.getGradeAVG();
+			BigDecimal avg = test.getAvgGradeRespectingDate();
 			if (avg == null) {
-				return "-"; // '\u2014'; // long dash
+				return "\u2014"; // '\u2014'; // long dash
 			} else {
 				return avgConverter.toString(group.getGradeSystem().mapAvgToOther(avg, GradeSystemBaseType.ONE_TO_SIX));
 			}
-		}, tableViewPointsSystem.gradeAVGProperty()));
-		tableViewPointsSystem.gradeAVGProperty().subscribe(avg -> {
+		}, test.avgGradeRespectingDateProperty()));
+		test.avgGradeRespectingDateProperty().subscribe(avg -> {
 			if (avg != null) {
 				switch (group.getGradeSystem().getLevel(avg)) {
 				case AMAZING:
@@ -112,7 +113,7 @@ public class StatisticsGrid extends GridPane {
 		criticalGradesValue.textProperty().bind(Bindings.createStringBinding(() -> {
 			BigDecimal ratio = tableViewPointsSystem.getCriticalGradesRatio();
 			if (ratio == null) {
-				return "-"; // '\u2014'; // long dash
+				return "\u2014"; // '\u2014'; // long dash
 			} else {
 				return percentConverter.toString(ratio);
 			}
