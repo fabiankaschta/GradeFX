@@ -17,20 +17,20 @@ import javafx.scene.control.TableColumn;
 
 public class TestRatioColumn extends TableColumn<Student, BigDecimal> {
 
-	public TestRatioColumn(Test test, TestSumColumn sumColumn) {
-		this(test, sumColumn, null);
+	public TestRatioColumn(Test test) {
+		this(test, null);
 	}
 
-	public TestRatioColumn(Test test, TestSumColumn sumColumn, Consumer<TableCell<Student, ?>> cellSubscription) {
+	public TestRatioColumn(Test test, Consumer<TableCell<Student, ?>> cellSubscription) {
 		super("%");
 		this.setCellValueFactory(data -> Bindings.createObjectBinding(() -> {
-			BigDecimal sum = sumColumn.getCellData(data.getValue());
-			if (sum == null || test.getTotalPoints().compareTo(BigDecimal.ZERO) == 0) {
+			BigDecimal sum = test.getTotalPoints(data.getValue());
+			if (sum == null || test.getMaxPoints().compareTo(BigDecimal.ZERO) == 0) {
 				return null;
 			} else {
-				return sum.divide(test.getTotalPoints(), 5, RoundingMode.FLOOR);
+				return sum.divide(test.getMaxPoints(), 5, RoundingMode.FLOOR);
 			}
-		}, test.totalPointsProperty(), sumColumn.getCellObservableValue(data.getValue())));
+		}, test.maxPointsProperty(), test.totalPointsProperty(data.getValue())));
 		this.setCellFactory(_ -> new TableCellCustom<>(new BigDecimalPercentConverter(2), Pos.CENTER) {
 			{
 				if (cellSubscription != null) {

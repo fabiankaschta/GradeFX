@@ -67,7 +67,7 @@ public class DialogEditTest extends DialogEdit<Test> {
 		totalPointsConverter.getDecimalFormat().setMaximumFractionDigits(0);
 		this.totalPoints = new UserInputComparableInput<>(
 				new ComparableField<>(BigDecimal.ONE, null, totalPointsConverter),
-				test.getUsePoints() ? test.getTotalPoints() : BigDecimal.ONE, false);
+				test.getUsePoints() ? test.getMaxPoints() : BigDecimal.ONE, false);
 		super.addInput(this.totalPoints, TranslationController.translate("test_totalPoints"));
 
 		this.totalPoints.visibleProperty()

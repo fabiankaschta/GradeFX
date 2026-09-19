@@ -1,5 +1,7 @@
 package org.openjfx.gradefx.model;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,8 +11,12 @@ import org.openjfx.kafx.controller.ChangeController;
 import org.openjfx.kafx.io.DataObject;
 import org.openjfx.kafx.view.style.Styles;
 
+import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -80,9 +86,13 @@ public class Group {
 	private final ObjectProperty<TestGroup> testGroupRoot = new SimpleObjectProperty<>(this, "testGroupRoot");
 	private final ObjectProperty<Color> color = new SimpleObjectProperty<>(this, "color");
 
+	// these are never stored in file, always calculated
+	private final ReadOnlyObjectWrapper<BigDecimal> avgGrade = new ReadOnlyObjectWrapper<BigDecimal>(this, "avgGrade",
+			null);
+
 	{
 		testGroupSystem.addListener(_ -> {
-			testGroupRoot.set(testGroupSystem.get().getNewTestGroupRoot());
+			testGroupRoot.set(testGroupSystem.get().getNewTestGroupRoot(this));
 			for (Test test : tests) {
 				testGroupRoot.get().addTest(test);
 			}
@@ -98,6 +108,42 @@ public class Group {
 		this.setTestGroupSystem(testGroupSystem);
 		this.setColor(color);
 		groups.add(this);
+
+		Runnable recalculateAvgGrade = () -> {
+			List<Observable> observables = new ArrayList<>();
+			observables.add(this.gradeSystem);
+			this.students.forEach(student -> observables.add(this.getTestGroupRoot().avgGrade(student)));
+			this.avgGrade.bind(Bindings.createObjectBinding(() -> {
+				int sum = 0;
+				int amount = 0;
+				for (Student student : this.students) {
+					BigDecimal avg = this.testGroupRoot.get().getAvgGrade(student);
+					if (avg != null) {
+						Grade grade = this.gradeSystem.get().calculateGrade(avg);
+						sum += grade.getNumericalValue();
+						amount++;
+					}
+				}
+				if (amount == 0) {
+					return null;
+				} else {
+					return BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(amount), 7, RoundingMode.DOWN);
+				}
+			}, observables.toArray(Observable[]::new)));
+		};
+
+		this.testGroupRoot.subscribe(() -> recalculateAvgGrade.run());
+		this.students.addListener((ListChangeListener<Student>) c -> {
+			while (c.next()) {
+				if (c.wasRemoved()) {
+					for (Student student : c.getRemoved()) {
+						this.tests.forEach(test -> test.removeStudent(student));
+					}
+				}
+			}
+			recalculateAvgGrade.run();
+		});
+
 		this.nameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.subjectProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.useSubgroupsProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
@@ -107,15 +153,6 @@ public class Group {
 		this.testGroupSystemProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.testGroupRootProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.colorProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
-		this.students.addListener((ListChangeListener<Student>) c -> {
-			while (c.next()) {
-				if (c.wasRemoved()) {
-					for (Student student : c.getRemoved()) {
-						this.tests.forEach(test -> test.removeStudent(student));
-					}
-				}
-			}
-		});
 	}
 
 	public String getName() {
@@ -259,6 +296,22 @@ public class Group {
 		return testGroupRoot;
 	}
 
+	public BigDecimal getAvgGradeAvg() {
+		return testGroupRoot.get().getAvgGrade();
+	}
+
+	public ReadOnlyObjectProperty<BigDecimal> avgGradeAvgProperty() {
+		return testGroupRoot.get().avgGrade();
+	}
+
+	public BigDecimal getAvgGrade() {
+		return this.avgGrade.get();
+	}
+
+	public ReadOnlyObjectProperty<BigDecimal> avgGradeProperty() {
+		return this.avgGrade.getReadOnlyProperty();
+	}
+
 	public Color getColor() {
 		return color.get();
 	}
@@ -315,7 +368,7 @@ public class Group {
 				group = new Group(name, subject.deserialize(), useSubgroups, gradeSystem.deserialize(),
 						testGroupSystem == null ? TestGroupSystem.NONE : testGroupSystem.deserialize(),
 						Color.web(color));
-				group.testGroupRoot.set(testGroupRoot.deserialize());
+				group.testGroupRoot.set(testGroupRoot.deserialize(group));
 				for (DataObject<Student> s : students) {
 					group.students.add(s.deserialize());
 				}

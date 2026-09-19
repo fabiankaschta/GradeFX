@@ -141,7 +141,7 @@ public class DialogEditTestTasks extends DialogCustom<Boolean> {
 		this.setResultConverter(_ -> {
 			if (test.getTasksRoot().isLeaf()) {
 				test.setUseTasks(false);
-				if (test.getTotalPoints() == null || test.getTotalPoints().compareTo(BigDecimal.ZERO) <= 0) {
+				if (test.getMaxPoints() == null || test.getMaxPoints().compareTo(BigDecimal.ZERO) <= 0) {
 					test.setUsePoints(false);
 				}
 			}

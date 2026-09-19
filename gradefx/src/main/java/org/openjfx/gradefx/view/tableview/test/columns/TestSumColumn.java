@@ -59,7 +59,7 @@ public class TestSumColumn extends TableColumn<Student, BigDecimal> {
 				});
 		this.name.setText("\u2211");
 		this.name.setStyle("-fx-text-fill: -fx-text-base-color;");
-		this.points.textProperty().bind(test.totalPointsProperty().map(
+		this.points.textProperty().bind(test.maxPointsProperty().map(
 				v -> bigDecimalConverter.toString(v) + " " + TranslationController.translate("test_points_short")));
 		this.points.setStyle("-fx-text-fill: -fx-text-base-color; -fx-font-style: italic; -fx-font-weight: normal;");
 		BorderPane graphic = new BorderPane();

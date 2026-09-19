@@ -1,23 +1,31 @@
 package org.openjfx.gradefx.model;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.openjfx.gradefx.converter.TestGroupConverter;
 import org.openjfx.kafx.controller.ChangeController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.io.DataObject;
 
+import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.scene.control.TreeItem;
 
 public class TestGroup extends TreeItem<TestGroup> {
@@ -95,10 +103,10 @@ public class TestGroup extends TreeItem<TestGroup> {
 			super.setExpanded(true);
 		}
 
-		public TestGroup getNewTestGroupRoot() {
-			TestGroup root = new TestGroup(getName(), getWeight(), isRoot());
+		public TestGroup getNewTestGroupRoot(Group group) {
+			TestGroup root = new TestGroup(group, getName(), getWeight(), isRoot());
 			for (TreeItem<TestGroupSystem> t : getChildren()) {
-				root.addSubgroup(((TestGroupSystem) t).getNewTestGroupRoot());
+				root.addSubgroup(((TestGroupSystem) t).getNewTestGroupRoot(group));
 			}
 			return root;
 		}
@@ -211,7 +219,12 @@ public class TestGroup extends TreeItem<TestGroup> {
 	private final BooleanProperty isRoot = new SimpleBooleanProperty(this, "isRoot");
 	private final ObservableList<Test> tests = FXCollections.observableArrayList();
 
-	private TestGroup(String name, BigDecimal weight, boolean isRoot) {
+	// these are never stored in file, always calculated
+	private final ObservableMap<Student, ReadOnlyObjectWrapper<BigDecimal>> avgGrades = FXCollections
+			.observableHashMap();
+	private final ReadOnlyObjectWrapper<BigDecimal> avgGrade = new ReadOnlyObjectWrapper<>(this, "avgGrade");
+
+	private TestGroup(Group group, String name, BigDecimal weight, boolean isRoot) {
 		this.setName(name);
 		this.setWeight(weight);
 		this.setIsRoot(isRoot);
@@ -220,6 +233,92 @@ public class TestGroup extends TreeItem<TestGroup> {
 		this.addTestsListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
 		this.getChildren().addListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
 		super.setValue(this);
+
+		Consumer<Student> recalculateGradeAvgStudent = student -> {
+			putStudentPropertiesIfNotExists(student);
+
+			List<Observable> observables = new ArrayList<>();
+			observables.add(group.gradeSystemProperty());
+			this.tests.forEach(test -> observables.add(test.gradeProperty(student)));
+			this.tests.forEach(test -> observables.add(test.weightProperty()));
+			this.getChildren().forEach(testGroup -> observables.add(((TestGroup) testGroup).avgGrade(student)));
+			this.getChildren().forEach(testGroup -> observables.add(((TestGroup) testGroup).weightProperty()));
+
+			ReadOnlyObjectWrapper<BigDecimal> avgProperty = this.avgGrades.get(student);
+			avgProperty.unbind();
+			avgProperty.bind(Bindings.createObjectBinding(() -> {
+				List<BigDecimal> avgs = new ArrayList<>();
+				List<BigDecimal> weights = new ArrayList<>();
+				for (Test test : this.tests) {
+					Grade grade = test.getGrade(student);
+					if (grade != null) {
+						avgs.add(BigDecimal.valueOf(grade.getNumericalValue()));
+						weights.add(test.getWeight());
+					}
+				}
+				for (TreeItem<TestGroup> child : this.getChildren()) {
+					TestGroup testGroup = (TestGroup) child;
+					BigDecimal avg = testGroup.getAvgGrade(student);
+					if (avg != null) {
+						avgs.add(testGroup.getAvgGrade(student));
+						weights.add(testGroup.getWeight());
+					}
+				}
+				return group.getGradeSystem().calculateAverage(avgs.toArray(n -> new BigDecimal[n]),
+						weights.toArray(n -> new BigDecimal[n]));
+			}, observables.toArray(n -> new Observable[n])));
+		};
+		this.tests.addListener((ListChangeListener<Test>) _ -> this.avgGrades.keySet()
+				.forEach(student -> recalculateGradeAvgStudent.accept(student)));
+		this.getChildren().subscribe(() -> this.avgGrades.keySet()
+				.forEach(student -> recalculateGradeAvgStudent.accept(student)));
+		for (Student student : group.getStudents()) {
+			recalculateGradeAvgStudent.accept(student);
+		}
+		group.getStudents().addListener((ListChangeListener<Student>) c -> {
+			while (c.next()) {
+				if (c.wasRemoved()) {
+					for (Student student : c.getRemoved()) {
+						this.avgGrades.remove(student);
+					}
+				}
+				if (c.wasAdded()) {
+					for (Student student : c.getAddedSubList()) {
+						recalculateGradeAvgStudent.accept(student);
+					}
+				}
+			}
+		});
+
+		Runnable recalculateAvgGrade = () -> {
+			this.avgGrade.unbind();
+			this.avgGrade.bind(Bindings.createObjectBinding(() -> {
+				BigDecimal sum = BigDecimal.ZERO;
+				int amount = 0;
+				for (ReadOnlyObjectWrapper<BigDecimal> a : this.avgGrades.values()) {
+					BigDecimal avg = a.get();
+					if (avg != null) {
+						sum = sum.add(avg);
+						amount++;
+					}
+				}
+				if (amount == 0) {
+					return null;
+				} else {
+					return sum.divide(BigDecimal.valueOf(amount), 7, RoundingMode.DOWN);
+				}
+			}, this.avgGrades.values().toArray(n -> new Observable[n])));
+		};
+		// listen to map changes (students added or removed)
+		this.avgGrades
+				.addListener((MapChangeListener<Student, ObjectProperty<BigDecimal>>) _ -> recalculateAvgGrade.run());
+		recalculateAvgGrade.run(); // call once to set initial value
+	}
+
+	private void putStudentPropertiesIfNotExists(Student student) {
+		if (!this.avgGrades.containsKey(student)) {
+			this.avgGrades.put(student, new ReadOnlyObjectWrapper<>(this, "avgGrade for student " + student));
+		}
 	}
 
 	public String getName() {
@@ -274,6 +373,24 @@ public class TestGroup extends TreeItem<TestGroup> {
 		this.getChildren().add(group);
 	}
 
+	public BigDecimal getAvgGrade(Student student) {
+		putStudentPropertiesIfNotExists(student);
+		return this.avgGrades.get(student).get();
+	}
+
+	public ReadOnlyObjectProperty<BigDecimal> avgGrade(Student student) {
+		putStudentPropertiesIfNotExists(student);
+		return this.avgGrades.get(student).getReadOnlyProperty();
+	}
+
+	public BigDecimal getAvgGrade() {
+		return this.avgGrade.get();
+	}
+
+	public ReadOnlyObjectProperty<BigDecimal> avgGrade() {
+		return this.avgGrade.getReadOnlyProperty();
+	}
+
 	@Override
 	public String toString() {
 		return converter.toString(this);
@@ -307,9 +424,10 @@ public class TestGroup extends TreeItem<TestGroup> {
 
 		public TestGroup deserialize(Object... params) {
 			if (testGroup == null) {
-				testGroup = new TestGroup(name, weight, isRoot);
+				Group group = (Group) params[0];
+				testGroup = new TestGroup(group, name, weight, isRoot);
 				for (DataObject<TestGroup> t : subgroups) {
-					testGroup.addSubgroup(t.deserialize());
+					testGroup.addSubgroup(t.deserialize(group));
 				}
 				for (DataObject<Test> t : tests) {
 					testGroup.addTest(t.deserialize());

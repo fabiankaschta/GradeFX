@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.openjfx.gradefx.controller.GradeFXController;
-import org.openjfx.gradefx.model.Grade;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
@@ -26,16 +25,10 @@ import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.tableview.TableView3;
 
-import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
-import javafx.collections.MapChangeListener;
 import javafx.css.PseudoClass;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -49,18 +42,13 @@ public class TableViewOverview extends TableView3<Student> {
 	private final Group group;
 	private final Map<TestGroup, OverviewTestGroupColumn> testGroupColumns = new HashMap<>();
 	private final Map<Test, TestGradeColumn> testColumns = new HashMap<>();
-	private final OverviewAvgColumn avgColumn;
-	private final OverviewGradeColumn gradeColumn;
 	private final IntegerProperty selectedRowIndex = new SimpleIntegerProperty(this, "selectedRow", -1);
 	private final Consumer<TableCell<Student, ?>> rowIndexSubscription = cell -> subscribeRowIndex(cell);
-
-	private final Map<TestGroup, StringProperty> testGroupProperties = new HashMap<>();
-	private final ObjectProperty<BigDecimal> avgProperty;
-	private final ObjectProperty<BigDecimal> gradeProperty;
 	private final BigDecimalConverter gradeAvgConverter = new BigDecimalConverter();
 
 	public TableViewOverview(Group group) {
 		super(group.getStudents());
+		this.group = group;
 
 		this.setEditable(true);
 
@@ -75,19 +63,9 @@ public class TableViewOverview extends TableView3<Student> {
 
 		this.fixedCellSizeProperty().bind(FontSizeController.fontSizeProperty().multiply(2).add(1));
 
-		this.group = group;
-		this.avgColumn = new OverviewAvgColumn(group, this.getColumns(), rowIndexSubscription);
-		this.avgColumn.getAvgValuesMap().addListener((MapChangeListener<Student, ObjectProperty<BigDecimal>>) _ -> {
-			bindAvgProperty();
-			bindGradeProperty();
-		});
-		this.gradeColumn = new OverviewGradeColumn(group, this.avgColumn, rowIndexSubscription);
-		// not added here, this is done in setupTestColumns() after the test columns
-
 		StudentLastNameColumn lastNameCol = new StudentLastNameColumn(true, rowIndexSubscription);
 		StudentFirstNameColumn firstNameCol = new StudentFirstNameColumn(true, rowIndexSubscription);
 		StudentSubgroupNameColumn subgroupNameCol = new StudentSubgroupNameColumn(group, true, rowIndexSubscription);
-
 		this.getColumns().add(lastNameCol);
 		this.getColumns().add(firstNameCol);
 		this.getColumns().add(subgroupNameCol);
@@ -96,22 +74,41 @@ public class TableViewOverview extends TableView3<Student> {
 		this.gradeAvgConverter.getDecimalFormat().setMinimumFractionDigits(2);
 		this.gradeAvgConverter.getDecimalFormat().setMaximumFractionDigits(2);
 		this.gradeAvgConverter.getDecimalFormat().setRoundingMode(RoundingMode.DOWN);
-		this.avgProperty = new SimpleObjectProperty<>(this, "avgProperty" + group, null);
-		this.gradeProperty = new SimpleObjectProperty<>(this, "gradeProperty" + group, null);
-		this.bindAvgProperty();
-		this.bindGradeProperty();
-		group.getStudents().addListener((ListChangeListener<Student>) _ -> {
-			this.bindAvgProperty();
-			this.bindGradeProperty();
-		});
 
 		this.setFooterTextFixedColumns(TranslationController.translate("tab_overview_footer_avg") + ':');
-		this.footerTextForColumn(this.avgColumn)
-				.bind(this.avgProperty.map(avg -> avg == null ? "-" : gradeAvgConverter.toString(avg)));
-		this.footerTextForColumn(this.gradeColumn)
-				.bind(this.gradeProperty.map(grade -> grade == null ? "-" : gradeAvgConverter.toString(grade)));
 
-		this.group.testGroupRootProperty().subscribe(root -> this.setupTestColumns(root));
+		this.group.testGroupRootProperty().subscribe(root -> {
+			this.getColumns().removeIf(c -> !this.getFixedColumns().contains(c));
+			this.testGroupColumns.clear();
+			this.testColumns.clear();
+			this.group.getTestsInTestGroup(root).addListener(new TestsChangedListener());
+			for (TreeItem<TestGroup> t : this.group.getTestGroupRoot().getChildren()) {
+				this.getColumns().add(createTestGroupColumn((TestGroup) t));
+			}
+			for (Test test : this.group.getTestsInTestGroup(root)) {
+				this.getColumns().add(createTestColumn(test));
+			}
+			OverviewAvgColumn avgColumn = new OverviewAvgColumn(group, root, rowIndexSubscription);
+			OverviewGradeColumn gradeColumn = new OverviewGradeColumn(group, rowIndexSubscription);
+			this.footerTextForColumn(avgColumn).bind(Bindings.createStringBinding(() -> {
+				BigDecimal avg = group.getAvgGradeAvg();
+				if (avg == null) {
+					return "-";
+				} else {
+					return this.gradeAvgConverter.toString(avg);
+				}
+			}, group.avgGradeAvgProperty()));
+			this.footerTextForColumn(gradeColumn).bind(Bindings.createStringBinding(() -> {
+				BigDecimal avg = group.getAvgGrade();
+				if (avg == null) {
+					return "-";
+				} else {
+					return this.gradeAvgConverter.toString(avg);
+				}
+			}, group.avgGradeProperty()));
+			this.getColumns().add(avgColumn);
+			this.getColumns().add(gradeColumn);
+		});
 
 		// DEL / BACKSPACE remove fixed state
 		this.setOnKeyPressed(event -> {
@@ -170,21 +167,6 @@ public class TableViewOverview extends TableView3<Student> {
 		});
 	}
 
-	private void setupTestColumns(TestGroup root) {
-		this.getColumns().removeIf(c -> !this.getFixedColumns().contains(c));
-		this.testGroupColumns.clear();
-		this.testColumns.clear();
-		this.group.getTestsInTestGroup(root).addListener(new TestsChangedListener());
-		for (TreeItem<TestGroup> t : this.group.getTestGroupRoot().getChildren()) {
-			this.getColumns().add(createTestGroupColumn((TestGroup) t));
-		}
-		for (Test test : this.group.getTestsInTestGroup(root)) {
-			this.getColumns().add(createTestColumn(test));
-		}
-		this.getColumns().add(this.avgColumn);
-		this.getColumns().add(this.gradeColumn);
-	}
-
 	public TestGradeColumn createTestColumn(Test test) {
 		TestGradeColumn column = new TestGradeColumn(this.group, test, rowIndexSubscription);
 		column.textProperty().bind(test.shortNameProperty());
@@ -211,82 +193,16 @@ public class TableViewOverview extends TableView3<Student> {
 		for (Test test : group.getTestsInTestGroup(testGroup)) {
 			column.getColumns().add(createTestColumn(test));
 		}
-		column.getColumns().add(new OverviewAvgColumn(group, column.getColumns(), rowIndexSubscription));
-		this.footerTextForColumn(column).bind(bindTestGroupProperty(testGroup));
-		column.getAvgColumn().getAvgValuesMap().addListener(
-				(MapChangeListener<Student, ObjectProperty<BigDecimal>>) _ -> bindTestGroupProperty(testGroup));
-		return column;
-	}
-
-	private ObjectProperty<BigDecimal> bindAvgProperty() {
-		this.avgProperty.unbind();
-		this.avgProperty.bind(Bindings.createObjectBinding(() -> {
-			BigDecimal sum = BigDecimal.ZERO;
-			BigDecimal amount = BigDecimal.ZERO;
-			for (ObjectProperty<BigDecimal> a : this.avgColumn.getAvgValuesMap().values()) {
-				BigDecimal avg = a.get();
-				if (avg != null) {
-					sum = sum.add(avg);
-					amount = amount.add(BigDecimal.ONE);
-				}
-			}
-			if (amount == BigDecimal.ZERO) {
-				return null;
-			} else {
-				return sum.divide(amount, 2, RoundingMode.DOWN);
-			}
-		}, this.avgColumn.getAvgValuesMap().values().stream().toArray(n -> new Observable[n])));
-		return this.avgProperty;
-	}
-
-	private ObjectProperty<BigDecimal> bindGradeProperty() {
-		this.gradeProperty.unbind();
-		this.gradeProperty.bind(Bindings.createObjectBinding(() -> {
-			BigDecimal sum = BigDecimal.ZERO;
-			BigDecimal amount = BigDecimal.ZERO;
-			for (ObjectProperty<BigDecimal> a : this.avgColumn.getAvgValuesMap().values()) {
-				BigDecimal avg = a.get();
-				if (avg != null) {
-					Grade grade = this.group.getGradeSystem().calculateGrade(avg);
-					sum = sum.add(BigDecimal.valueOf(grade.getNumericalValue()));
-					amount = amount.add(BigDecimal.ONE);
-				}
-			}
-			if (amount == BigDecimal.ZERO) {
-				return null;
-			} else {
-				return sum.divide(amount, 2, RoundingMode.DOWN);
-			}
-		}, this.avgColumn.getAvgValuesMap().values().stream().toArray(n -> new Observable[n])));
-		return this.gradeProperty;
-	}
-
-	private StringProperty bindTestGroupProperty(TestGroup testGroup) {
-		StringProperty property = this.testGroupProperties.get(testGroup);
-		if (property == null) {
-			property = new SimpleStringProperty(this, "testGroupProperty" + testGroup, "");
-			this.testGroupProperties.put(testGroup, property);
-		}
-		property.unbind();
-		property.bind(Bindings.createStringBinding(() -> {
-			BigDecimal sum = BigDecimal.ZERO;
-			BigDecimal amount = BigDecimal.ZERO;
-			for (ObjectProperty<BigDecimal> a : this.testGroupColumns.get(testGroup).getAvgColumn().getAvgValuesMap()
-					.values()) {
-				BigDecimal avg = a.get();
-				if (avg != null) {
-					sum = sum.add(avg);
-					amount = amount.add(BigDecimal.ONE);
-				}
-			}
-			if (amount == BigDecimal.ZERO) {
+		column.getColumns().add(new OverviewAvgColumn(group, testGroup, rowIndexSubscription));
+		this.footerTextForColumn(column).bind(Bindings.createStringBinding(() -> {
+			BigDecimal avg = testGroup.getAvgGrade();
+			if (avg == null) {
 				return "-";
 			} else {
-				return this.gradeAvgConverter.toString(sum.divide(amount, 2, RoundingMode.DOWN));
+				return this.gradeAvgConverter.toString(avg);
 			}
-		}, this.testGroupColumns.get(testGroup).getAvgColumn().getAvgValuesMap().values()
-				.toArray(n -> new Observable[n])));
-		return property;
+		}, testGroup.avgGrade()));
+		return column;
 	}
 
 	private class TestsChangedListener implements ListChangeListener<Test> {

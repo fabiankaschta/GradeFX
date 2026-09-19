@@ -70,7 +70,7 @@ public class TestHeaderPane extends GridPane {
 		totalPointsConverter.getDecimalFormat().setMaximumFractionDigits(2);
 		ComparableField<BigDecimal> totalPointsField = new ComparableField<>(BigDecimal.ZERO, null,
 				totalPointsConverter);
-		this.totalPoints = new UserInputComparableInput<>(totalPointsField, test.getTotalPoints(), false);
+		this.totalPoints = new UserInputComparableInput<>(totalPointsField, test.getMaxPoints(), false);
 		this.totalPoints.setMinWidth(USE_PREF_SIZE);
 		this.totalPoints.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(3));
 		totalPointsField.disableProperty().bind(test.useTasksProperty());
@@ -80,7 +80,7 @@ public class TestHeaderPane extends GridPane {
 			}
 		});
 		this.totalPoints.visibleProperty().bind(test.usePointsProperty());
-		test.totalPointsProperty().subscribe(v -> this.totalPoints.setValue(v));
+		test.maxPointsProperty().subscribe(v -> this.totalPoints.setValue(v));
 		Label totalPointsLabel = new Label(TranslationController.translate("test_totalPoints"));
 		totalPointsLabel.setMinWidth(USE_PREF_SIZE);
 		totalPointsLabel.visibleProperty().bind(test.usePointsProperty());

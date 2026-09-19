@@ -361,13 +361,13 @@ public class TestStatisticsSidePane extends ScrollPane {
 					case LESS_THAN:
 						this.slider.setValue(
 								test.getPointsSystem().getUpperBoundForGrade(this.gradeList.getLast()).doubleValue()
-										/ test.getTotalPoints().doubleValue());
+										/ test.getMaxPoints().doubleValue());
 						break;
 					case MOREOREQUAL_THAN:
 					case MORE_THAN:
 						this.slider.setValue(
 								test.getPointsSystem().getLowerBoundForGrade(this.gradeList.getLast()).doubleValue()
-										/ test.getTotalPoints().doubleValue());
+										/ test.getMaxPoints().doubleValue());
 						break;
 					}
 				} else {

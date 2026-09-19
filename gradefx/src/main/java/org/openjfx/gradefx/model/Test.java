@@ -403,7 +403,7 @@ public class Test {
 						}
 					}
 					for (DataObject<TestTask> t : children) {
-						testTask.addSubtask(t.deserialize(params[0]));
+						testTask.addSubtask(t.deserialize(test));
 					}
 				}
 				return testTask;
@@ -441,6 +441,8 @@ public class Test {
 	private final ObservableMap<Student, ReadOnlyBooleanWrapper> hasReturned = FXCollections.observableHashMap();
 
 	// these are never stored in file, always calculated
+	private final ReadOnlyObjectWrapper<BigDecimal> maxPoints = new ReadOnlyObjectWrapper<BigDecimal>(this,
+			"maxPoints", null);
 	private final ReadOnlyObjectWrapper<BigDecimal> avgPoints = new ReadOnlyObjectWrapper<BigDecimal>(this, "avgPoints",
 			null);
 	private final ReadOnlyObjectWrapper<BigDecimal> avgPointsRatio = new ReadOnlyObjectWrapper<BigDecimal>(this,
@@ -454,7 +456,7 @@ public class Test {
 			boolean onlyDefaultDate, boolean useTasks, boolean usePoints, boolean showReturns) {
 		this(name, shortName, date, weight, onlyDefaultDate, useTasks, usePoints, showReturns);
 		this.setTasksRoot(TestTask.createRoot(this, maxPoints));
-		this.setPointsSystem(group.getGradeSystem().getDefaultPointsSystem(this.totalPointsProperty()));
+		this.setPointsSystem(group.getGradeSystem().getDefaultPointsSystem(this.maxPointsProperty()));
 	}
 
 	private Test(String name, String shortName, LocalDate date, BigDecimal weight, boolean onlyDefaultDate,
@@ -541,13 +543,13 @@ public class Test {
 
 		this.avgPointsRatio.bind(Bindings.createObjectBinding(() -> {
 			BigDecimal avg = this.getAvgPoints();
-			BigDecimal total = this.getTotalPoints();
+			BigDecimal total = this.getMaxPoints();
 			if (avg == null || total == null) {
 				return null;
 			} else {
 				return avg.divide(total, 7, RoundingMode.HALF_UP);
 			}
-		}, this.avgPoints, this.totalPoints));
+		}, this.avgPoints, this.maxPoints));
 
 		Runnable recalculateAvgGrade = () -> {
 			List<Observable> observables = new ArrayList<>();
@@ -605,6 +607,15 @@ public class Test {
 		this.grades.addListener((MapChangeListener<Student, ObjectProperty<Grade>>) _ -> recalculateAvgGrade.run());
 		this.dates.addListener((MapChangeListener<Student, ObjectProperty<LocalDate>>) _ -> recalculateAvgGrade.run());
 		recalculateAvgGrade.run(); // call once to set initial value
+		
+		this.tasksRoot.subscribe(tasksRoot -> {
+			this.maxPoints.unbind();
+			if(tasksRoot == null) {
+				this.maxPoints.set(null);
+			} else {
+				this.maxPoints.bind(tasksRoot.maxPoints);
+			}
+		});
 
 		this.nameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.shortNameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
@@ -739,12 +750,12 @@ public class Test {
 		return tasksRoot.get();
 	}
 
-	public BigDecimal getTotalPoints() {
-		return totalPointsProperty().getValue();
+	public BigDecimal getMaxPoints() {
+		return this.maxPoints.get();
 	}
 
-	public ReadOnlyObjectProperty<BigDecimal> totalPointsProperty() {
-		return this.tasksRoot.getValue().maxPointsProperty();
+	public ReadOnlyObjectProperty<BigDecimal> maxPointsProperty() {
+		return this.maxPoints.getReadOnlyProperty();
 	}
 
 	public void setTotalPoints(BigDecimal totalPoints) {

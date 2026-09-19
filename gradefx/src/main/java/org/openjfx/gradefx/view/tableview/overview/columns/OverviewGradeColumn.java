@@ -16,16 +16,15 @@ import javafx.scene.control.TableColumn;
 
 public class OverviewGradeColumn extends TableColumn<Student, Grade> {
 
-	public OverviewGradeColumn(Group group, OverviewAvgColumn avgColumn) {
-		this(group, avgColumn, null);
+	public OverviewGradeColumn(Group group) {
+		this(group, null);
 	}
 
-	public OverviewGradeColumn(Group group, OverviewAvgColumn avgColumn,
-			Consumer<TableCell<Student, ?>> cellSubscription) {
+	public OverviewGradeColumn(Group group, Consumer<TableCell<Student, ?>> cellSubscription) {
 		super(TranslationController.translate("tab_overview_grade"));
 		this.setCellValueFactory(data -> Bindings.createObjectBinding(() -> {
-			return group.getGradeSystem().calculateGrade(avgColumn.getCellData(data.getValue()));
-		}, avgColumn.getCellObservableValue(data.getValue()), group.gradeSystemProperty()));
+			return group.getGradeSystem().calculateGrade(group.getTestGroupRoot().getAvgGrade(data.getValue()));
+		}, group.getTestGroupRoot().avgGrade(data.getValue()), group.gradeSystemProperty()));
 		this.setCellFactory(_ -> new TableCellCustom<>(group.getGradeSystem().getGradeConverter(), Pos.CENTER) {
 			{
 				if (cellSubscription != null) {
