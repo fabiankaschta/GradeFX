@@ -83,18 +83,36 @@ public class TableViewTest extends TableView3<Student> {
 		this.firstNameColumn = new StudentFirstNameColumn(false, rowIndexSubscription);
 		this.subgroupNameColumn = new StudentSubgroupNameColumn(group, false, rowIndexSubscription);
 
+		this.sumColumn = new TestSumColumn(test, rowIndexSubscription);
+		this.ratioColumn = new TestRatioColumn(test, rowIndexSubscription);
+		this.gradeColumn = new TestGradeColumn(group, test, rowIndexSubscription);
+		this.annotationColumn = new TestAnnotationColumn(test, rowIndexSubscription);
+		this.dateColumn = new TestDateColumn(test, rowIndexSubscription);
+
+		this.setColumnResizePolicy(rf -> {
+			boolean result = UNCONSTRAINED_RESIZE_POLICY.call(rf);
+			if (rf.getColumn() != this.annotationColumn) {
+				double remaining = this.getWidth();
+				for (TableColumn<Student, ?> col : this.getColumns()) {
+					if (col.isVisible()) {
+						remaining -= col.getWidth();
+					}
+				}
+				if (remaining > 0) {
+					this.resizeColumn(this.annotationColumn, remaining);
+				} else if (this.annotationColumn.getWidth() > this.annotationColumn.getMinWidth()) {
+					this.resizeColumn(this.annotationColumn, remaining);
+				}
+			}
+			return result;
+		});
+
 		this.getColumns().add(this.returnColumn);
 		this.getColumns().add(this.lastNameColumn);
 		this.getColumns().add(this.firstNameColumn);
 		this.getColumns().add(this.subgroupNameColumn);
 		this.getFixedColumns().addAll(this.returnColumn, this.lastNameColumn, this.firstNameColumn,
 				this.subgroupNameColumn);
-
-		this.sumColumn = new TestSumColumn(test, rowIndexSubscription);
-		this.ratioColumn = new TestRatioColumn(test, rowIndexSubscription);
-		this.gradeColumn = new TestGradeColumn(group, test, rowIndexSubscription);
-		this.annotationColumn = new TestAnnotationColumn(test, rowIndexSubscription);
-		this.dateColumn = new TestDateColumn(test, rowIndexSubscription);
 
 		this.avgConverter.getDecimalFormat().setMinimumFractionDigits(1);
 		this.avgConverter.getDecimalFormat().setMaximumFractionDigits(1);

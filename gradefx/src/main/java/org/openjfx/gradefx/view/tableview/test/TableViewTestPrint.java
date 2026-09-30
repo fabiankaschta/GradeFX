@@ -24,6 +24,8 @@ public class TableViewTestPrint extends TableViewTest {
 					.queryAccessibleAttribute(AccessibleAttribute.HORIZONTAL_SCROLLBAR);
 			scrollBarHorizontal.setPrefSize(0, 0);
 			scrollBarHorizontal.setVisible(false);
+			// this allows resizing columns after inital setup
+			this.setColumnResizePolicy(UNCONSTRAINED_RESIZE_POLICY);
 		});
 
 		this.setColumnResizePolicy(_ -> true);

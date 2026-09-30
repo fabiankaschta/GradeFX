@@ -13,6 +13,7 @@ import org.openjfx.kafx.view.control.ComparableField;
 import org.openjfx.kafx.view.style.Styles;
 import org.openjfx.kafx.view.tableview.TableCellEditComparable;
 
+import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ContextMenu;
@@ -55,7 +56,21 @@ public class TestTaskColumn extends TableColumn<Student, BigDecimal> {
 		this.setCellFactory(
 				_ -> new TableCellEditComparable<>(BigDecimal.ZERO, null, bigDecimalConverter, Pos.CENTER, true) {
 					{
-						// TODO if points > max ...
+						this.itemProperty().subscribe(v -> {
+							if (v != null && v.compareTo(testTask.getMaxPoints()) > 0) {
+								pseudoClassStateChanged(PseudoClass.getPseudoClass("fixed-value"), true);
+							} else {
+								pseudoClassStateChanged(PseudoClass.getPseudoClass("fixed-value"), false);
+							}
+						});
+						testTask.maxPointsProperty().addListener((_, _, p) -> {
+							BigDecimal v = this.getItem();
+							if (v != null && v.compareTo(p) > 0) {
+								pseudoClassStateChanged(PseudoClass.getPseudoClass("fixed-value"), true);
+							} else {
+								pseudoClassStateChanged(PseudoClass.getPseudoClass("fixed-value"), false);
+							}
+						});
 
 						if (cellSubscription != null) {
 							cellSubscription.accept(this);
@@ -71,7 +86,8 @@ public class TestTaskColumn extends TableColumn<Student, BigDecimal> {
 								row.itemProperty().subscribe(student -> {
 									if (student != null) {
 										label.textProperty().unbind();
-										label.textProperty().bind(testTask.pointsDecorationProperty(student).asString());
+										label.textProperty()
+												.bind(testTask.pointsDecorationProperty(student).asString());
 										contextMenuColorPicker.setValue(testTask.getDecorationColor(student));
 										contextMenuColorPicker.valueProperty().subscribe(color -> testTask
 												.setDecorationColor(this.getTableRow().getItem(), color));

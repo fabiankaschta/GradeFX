@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
+import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.tableview.TableCellCustom;
 import org.openjfx.kafx.view.tableview.TableCellEditConverter;
@@ -37,5 +38,6 @@ public class StudentSubgroupNameColumn extends TableColumn<Student, String> {
 		this.setReorderable(false);
 		this.setEditable(editable);
 		this.visibleProperty().bind(group.useSubgroupsProperty());
+		this.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(8));
 	}
 }

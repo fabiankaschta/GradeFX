@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
+import org.openjfx.kafx.controller.FontSizeController;
 
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -32,5 +33,6 @@ public class StudentReturnColumn extends TableColumn<Student, Boolean> {
 		this.setSortable(true);
 		this.setReorderable(false);
 		this.setEditable(true);
+		this.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(2).add(1));
 	}
 }
