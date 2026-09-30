@@ -39,6 +39,8 @@ Im Installationsverzeichnis einen Ordner "plugins" erstellen, die heruntergelade
 
 Beispiel-Plugin: [BSG-Plugin](https://github.com/fabiankaschta/GradeFX-Plugin-BSG) für das Bernhard-Strigel-Gymnasium Memmingen.
 
+Nach einem Versions-Update der Hauptsoftware muss der "plugins"-Ordner neu erstellt werden und die Plugins erneut in den Ordner kopiert werden.
+
 Achtung: Plugins können auf alle Daten im Programm zugreifen, also auch auf sensible Informationen. Verwenden Sie nur Plugins aus vertrauenswürdigen Quellen!
 
 ## Credits
