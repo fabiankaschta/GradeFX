@@ -5,9 +5,9 @@ import java.math.RoundingMode;
 
 import org.openjfx.gradefx.model.BoundType;
 import org.openjfx.gradefx.model.GradeSystem.GradeSystemBaseType;
+import org.openjfx.gradefx.view.tableview.pointssystem.TableViewPointsSystem;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Test;
-import org.openjfx.gradefx.view.tableview.TableViewPointsSystem;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.converter.BigDecimalConverter;
@@ -102,24 +102,24 @@ public class StatisticsGrid extends GridPane {
 		Label gradedLabel = new Label(TranslationController.translate("test_graded") + ": ");
 		Label gradedValue = new Label();
 		gradedValue.textProperty().bind(Bindings.createStringBinding(() -> {
-			int graded = tableViewPointsSystem.gradedProperty().get();
+			int graded = test.getGradedAmountRespectingDate();
 			int size = tableViewPointsSystem.getFilteredStudents().size();
 			return graded + " " + TranslationController.translate("test_graded_outOf") + " " + size;
-		}, tableViewPointsSystem.gradedProperty(), tableViewPointsSystem.getFilteredStudents()));
+		}, test.gradedAmountRespectingDateProperty(), tableViewPointsSystem.getFilteredStudents()));
 
 		Label criticalGradesLabel = new Label(TranslationController.translate("test_critical_grades") + ": ");
 		Label criticalGradesValue = new Label();
 		criticalGradesValue.setContentDisplay(ContentDisplay.RIGHT);
 		criticalGradesValue.textProperty().bind(Bindings.createStringBinding(() -> {
-			BigDecimal ratio = tableViewPointsSystem.getCriticalGradesRatio();
+			BigDecimal ratio = test.getCriticalGradesRatio();
 			if (ratio == null) {
 				return "\u2014"; // '\u2014'; // long dash
 			} else {
 				return percentConverter.toString(ratio);
 			}
-		}, tableViewPointsSystem.criticalGradesRatioProperty()));
+		}, test.criticalGradesRatioProperty()));
 
-		tableViewPointsSystem.criticalGradesRatioProperty().subscribe(ratio -> {
+		test.criticalGradesRatioProperty().subscribe(ratio -> {
 			BoundType mode = group.getGradeSystem().getCriticalGradesMode();
 			BigDecimal criticalRatio = group.getGradeSystem().getCriticalGradesRatio();
 			if (ratio != null) {

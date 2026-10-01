@@ -3,7 +3,7 @@ package org.openjfx.gradefx.view.pane.print;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.view.pane.statistics.StatisticsGrid;
-import org.openjfx.gradefx.view.tableview.TableViewPointsSystem;
+import org.openjfx.gradefx.view.tableview.pointssystem.TableViewPointsSystem;
 import org.openjfx.gradefx.view.tableview.test.TableViewTestPrint;
 import org.openjfx.kafx.controller.TranslationController;
 

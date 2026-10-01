@@ -7,7 +7,7 @@ import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.converter.BoundTypeConverter;
 import org.openjfx.gradefx.model.BoundType;
 import org.openjfx.gradefx.model.Test;
-import org.openjfx.gradefx.view.tableview.TableViewPointsSystem;
+import org.openjfx.gradefx.view.tableview.pointssystem.TableViewPointsSystem;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.converter.BigDecimalConverter;

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.openjfx.gradefx.converter.TestTaskConverter;
+import org.openjfx.gradefx.model.Grade.Tendency;
 import org.openjfx.kafx.controller.ChangeController;
 import org.openjfx.kafx.io.DataObject;
 import org.openjfx.kafx.view.style.Styles;
@@ -20,6 +21,8 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -441,8 +444,8 @@ public class Test {
 	private final ObservableMap<Student, ReadOnlyBooleanWrapper> hasReturned = FXCollections.observableHashMap();
 
 	// these are never stored in file, always calculated
-	private final ReadOnlyObjectWrapper<BigDecimal> maxPoints = new ReadOnlyObjectWrapper<BigDecimal>(this,
-			"maxPoints", null);
+	private final ReadOnlyObjectWrapper<BigDecimal> maxPoints = new ReadOnlyObjectWrapper<BigDecimal>(this, "maxPoints",
+			null);
 	private final ReadOnlyObjectWrapper<BigDecimal> avgPoints = new ReadOnlyObjectWrapper<BigDecimal>(this, "avgPoints",
 			null);
 	private final ReadOnlyObjectWrapper<BigDecimal> avgPointsRatio = new ReadOnlyObjectWrapper<BigDecimal>(this,
@@ -451,15 +454,25 @@ public class Test {
 			null);
 	private final ReadOnlyObjectWrapper<BigDecimal> avgGradeRespectingDate = new ReadOnlyObjectWrapper<BigDecimal>(this,
 			"avgGradeRespectingDate", null);
+	private final ObservableMap<Grade, ReadOnlyIntegerWrapper> gradeAmounts = FXCollections.observableHashMap();
+	private final ObservableMap<Grade, ReadOnlyIntegerWrapper> gradeAmountsRespectingDate = FXCollections
+			.observableHashMap();
+	private final ReadOnlyIntegerWrapper gradedAmount = new ReadOnlyIntegerWrapper(this, "gradedAmount", 0);
+	private final ReadOnlyIntegerWrapper gradedAmountRespectingDate = new ReadOnlyIntegerWrapper(this,
+			"gradedAmountRespectingDate", 0);
+	private final ReadOnlyObjectWrapper<BigDecimal> criticalGradesRatio = new ReadOnlyObjectWrapper<BigDecimal>(this,
+			"criticalGradesRatio", null);
+	private final ReadOnlyObjectWrapper<BigDecimal> criticalGradesRatioRespectingDate = new ReadOnlyObjectWrapper<BigDecimal>(
+			this, "criticalGradesRatioRespectingDate", null);
 
 	public Test(Group group, String name, String shortName, LocalDate date, BigDecimal weight, BigDecimal maxPoints,
 			boolean onlyDefaultDate, boolean useTasks, boolean usePoints, boolean showReturns) {
-		this(name, shortName, date, weight, onlyDefaultDate, useTasks, usePoints, showReturns);
+		this(group, name, shortName, date, weight, onlyDefaultDate, useTasks, usePoints, showReturns);
 		this.setTasksRoot(TestTask.createRoot(this, maxPoints));
 		this.setPointsSystem(group.getGradeSystem().getDefaultPointsSystem(this.maxPointsProperty()));
 	}
 
-	private Test(String name, String shortName, LocalDate date, BigDecimal weight, boolean onlyDefaultDate,
+	private Test(Group group, String name, String shortName, LocalDate date, BigDecimal weight, boolean onlyDefaultDate,
 			boolean useTasks, boolean usePoints, boolean showReturns) {
 		this.setName(name);
 		this.setShortName(shortName);
@@ -518,6 +531,67 @@ public class Test {
 
 		// setup for calculated properties
 
+		Runnable recalculateGradeAmounts = () -> {
+			List<Observable> observables = new ArrayList<>();
+			observables.addAll(this.grades.values());
+
+			for (Entry<Grade, ReadOnlyIntegerWrapper> gradeAmount : this.gradeAmounts.entrySet()) {
+				gradeAmount.getValue().unbind();
+				gradeAmount.getValue().bind(Bindings.createIntegerBinding(() -> {
+					int amount = 0;
+					for (ObjectProperty<Grade> p : this.grades.values()) {
+						Grade grade = p.get();
+						if (grade != null && grade.getNumericalValue() == gradeAmount.getKey().getNumericalValue()) {
+							amount++;
+						}
+					}
+					return amount;
+				}, observables.toArray(Observable[]::new)));
+			}
+
+			observables.addAll(this.dates.values());
+			observables.add(this.date);
+			observables.add(this.onlyDefaultDateProperty());
+
+			for (Entry<Grade, ReadOnlyIntegerWrapper> gradeAmount : this.gradeAmountsRespectingDate.entrySet()) {
+				gradeAmount.getValue().unbind();
+				gradeAmount.getValue().bind(Bindings.createIntegerBinding(() -> {
+					LocalDate testDate = this.getDate();
+					boolean defaultDateOnly = this.isOnlyDefaultDate();
+					int amount = 0;
+					for (Entry<Student, ObjectProperty<Grade>> e : this.grades.entrySet()) {
+						Student student = e.getKey();
+						// a student date property might not be added to the map here, since grade
+						// properties are added first
+						LocalDate studentDate = this.dates.containsKey(student) ? this.getDate(student) : null;
+						if (!defaultDateOnly || testDate == null || studentDate == null
+								|| studentDate.equals(testDate)) {
+							Grade grade = e.getValue().get();
+							if (grade != null
+									&& grade.getNumericalValue() == gradeAmount.getKey().getNumericalValue()) {
+								amount++;
+							}
+						}
+					}
+					return amount;
+				}, observables.toArray(Observable[]::new)));
+			}
+		};
+		// listen to map changes (students added or removed)
+		this.grades.addListener((MapChangeListener<Student, ObjectProperty<Grade>>) _ -> recalculateGradeAmounts.run());
+		this.dates.addListener(
+				(MapChangeListener<Student, ObjectProperty<LocalDate>>) _ -> recalculateGradeAmounts.run());
+
+		group.gradeSystemProperty().subscribe(gradeSystem -> {
+			this.gradeAmounts.clear();
+			for (Grade grade : gradeSystem.getPossibleGradesDESC()) {
+				this.gradeAmounts.put(grade, new ReadOnlyIntegerWrapper(this, "grade amount for grade " + grade, 0));
+				this.gradeAmountsRespectingDate.put(grade,
+						new ReadOnlyIntegerWrapper(this, "grade amount for grade " + grade, 0));
+			}
+			recalculateGradeAmounts.run(); // call once to set initial value
+		});
+
 		Runnable recalculateAvgPoints = () -> {
 			this.avgPoints.unbind();
 			this.avgPoints.bind(Bindings.createObjectBinding(() -> {
@@ -551,66 +625,83 @@ public class Test {
 			}
 		}, this.avgPoints, this.maxPoints));
 
-		Runnable recalculateAvgGrade = () -> {
-			List<Observable> observables = new ArrayList<>();
-			observables.addAll(this.grades.values());
+		this.avgGrade.bind(Bindings.createObjectBinding(() -> {
+			int sum = 0;
+			int amount = 0;
+			for (Entry<Grade, ReadOnlyIntegerWrapper> e : this.gradeAmounts.entrySet()) {
+				amount += e.getValue().get();
+				sum += e.getValue().get() * e.getKey().getNumericalValue();
+			}
+			if (amount == 0) {
+				return null;
+			} else {
+				return BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(amount), 7, RoundingMode.HALF_UP);
+			}
+		}, this.gradeAmounts.values().toArray(Observable[]::new)));
 
-			this.avgGrade.unbind();
-			this.avgGrade.bind(Bindings.createObjectBinding(() -> {
-				int sum = 0;
+		this.avgGradeRespectingDate.bind(Bindings.createObjectBinding(() -> {
+			int sum = 0;
+			int amount = 0;
+			for (Entry<Grade, ReadOnlyIntegerWrapper> e : this.gradeAmountsRespectingDate.entrySet()) {
+				amount += e.getValue().get();
+				sum += e.getValue().get() * e.getKey().getNumericalValue();
+			}
+			if (amount == 0) {
+				return null;
+			} else {
+				return BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(amount), 7, RoundingMode.HALF_UP);
+			}
+		}, this.gradeAmountsRespectingDate.values().toArray(Observable[]::new)));
+
+		this.gradedAmount.bind(Bindings.createObjectBinding(() -> {
+			int amount = 0;
+			for (ReadOnlyIntegerWrapper a : this.gradeAmounts.values()) {
+				amount += a.get();
+			}
+			return amount;
+		}, this.gradeAmounts.values().toArray(Observable[]::new)));
+
+		this.gradedAmountRespectingDate.bind(Bindings.createObjectBinding(() -> {
+			int amount = 0;
+			for (ReadOnlyIntegerWrapper a : this.gradeAmountsRespectingDate.values()) {
+				amount += a.get();
+			}
+			return amount;
+		}, this.gradeAmountsRespectingDate.values().toArray(Observable[]::new)));
+
+		this.criticalGradesRatio.bind(Bindings.createObjectBinding(() -> {
+			int total = this.getGradedAmount();
+			if (total == 0) {
+				return null;
+			} else {
 				int amount = 0;
-				for (ObjectProperty<Grade> p : this.grades.values()) {
-					Grade grade = p.get();
-					if (grade != null) {
-						sum += grade.getNumericalValue();
-						amount++;
+				for (Grade criticalGrade : group.getGradeSystem().getCriticalGrades()) {
+					if (criticalGrade.getTendency() == Tendency.NEUTRAL) {
+						amount += this.getGradeAmount(criticalGrade);
 					}
 				}
-				if (amount == 0) {
-					return null;
-				} else {
-					return BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(amount), 7, RoundingMode.HALF_UP);
-				}
-			}, observables.toArray(n -> new Observable[n])));
+				return BigDecimal.valueOf(amount).divide(BigDecimal.valueOf(total), 5, RoundingMode.FLOOR);
+			}
+		}, this.gradeAmounts.values().toArray(Observable[]::new)));
 
-			observables.addAll(this.dates.values());
-			observables.add(this.date);
-			observables.add(this.onlyDefaultDateProperty());
-
-			this.avgGradeRespectingDate.unbind();
-			this.avgGradeRespectingDate.bind(Bindings.createObjectBinding(() -> {
-				LocalDate testDate = this.getDate();
-				boolean defaultDateOnly = this.isOnlyDefaultDate();
-				int sum = 0;
+		this.criticalGradesRatioRespectingDate.bind(Bindings.createObjectBinding(() -> {
+			int total = this.getGradedAmount();
+			if (total == 0) {
+				return null;
+			} else {
 				int amount = 0;
-				for (Entry<Student, ObjectProperty<Grade>> e : this.grades.entrySet()) {
-					Student student = e.getKey();
-					// a student date property might not be added to the map here, since grade
-					// properties are added first
-					LocalDate studentDate = this.dates.containsKey(student) ? this.getDate(student) : null;
-					if (!defaultDateOnly || testDate == null || studentDate == null || studentDate.equals(testDate)) {
-						Grade grade = e.getValue().get();
-						if (grade != null) {
-							sum += grade.getNumericalValue();
-							amount++;
-						}
+				for (Grade criticalGrade : group.getGradeSystem().getCriticalGrades()) {
+					if (criticalGrade.getTendency() == Tendency.NEUTRAL) {
+						amount += this.getGradeAmountRespectingDate(criticalGrade);
 					}
 				}
-				if (amount == 0) {
-					return null;
-				} else {
-					return BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(amount), 7, RoundingMode.HALF_UP);
-				}
-			}, observables.toArray(n -> new Observable[n])));
-		};
-		// listen to map changes (students added or removed)
-		this.grades.addListener((MapChangeListener<Student, ObjectProperty<Grade>>) _ -> recalculateAvgGrade.run());
-		this.dates.addListener((MapChangeListener<Student, ObjectProperty<LocalDate>>) _ -> recalculateAvgGrade.run());
-		recalculateAvgGrade.run(); // call once to set initial value
-		
+				return BigDecimal.valueOf(amount).divide(BigDecimal.valueOf(total), 5, RoundingMode.FLOOR);
+			}
+		}, this.gradeAmountsRespectingDate.values().toArray(Observable[]::new)));
+
 		this.tasksRoot.subscribe(tasksRoot -> {
 			this.maxPoints.unbind();
-			if(tasksRoot == null) {
+			if (tasksRoot == null) {
 				this.maxPoints.set(null);
 			} else {
 				this.maxPoints.bind(tasksRoot.maxPoints);
@@ -1015,6 +1106,54 @@ public class Test {
 		return this.avgGradeRespectingDate.getReadOnlyProperty();
 	}
 
+	public int getGradeAmount(Grade grade) {
+		return this.gradeAmounts.get(grade).get();
+	}
+
+	public ReadOnlyIntegerProperty gradeAmountProperty(Grade grade) {
+		return this.gradeAmounts.get(grade).getReadOnlyProperty();
+	}
+
+	public int getGradeAmountRespectingDate(Grade grade) {
+		return this.gradeAmountsRespectingDate.get(grade).get();
+	}
+
+	public ReadOnlyIntegerProperty gradeAmountRespectingDateProperty(Grade grade) {
+		return this.gradeAmountsRespectingDate.get(grade).getReadOnlyProperty();
+	}
+
+	public int getGradedAmount() {
+		return this.gradedAmount.get();
+	}
+
+	public ReadOnlyIntegerProperty gradedAmountProperty() {
+		return this.gradedAmount.getReadOnlyProperty();
+	}
+
+	public int getGradedAmountRespectingDate() {
+		return this.gradedAmountRespectingDate.get();
+	}
+
+	public ReadOnlyIntegerProperty gradedAmountRespectingDateProperty() {
+		return this.gradedAmountRespectingDate.getReadOnlyProperty();
+	}
+
+	public BigDecimal getCriticalGradesRatio() {
+		return this.criticalGradesRatio.get();
+	}
+
+	public ReadOnlyObjectProperty<BigDecimal> criticalGradesRatioProperty() {
+		return this.criticalGradesRatio.getReadOnlyProperty();
+	}
+
+	public BigDecimal getCriticalGradesRatioRespectingDate() {
+		return this.criticalGradesRatioRespectingDate.get();
+	}
+
+	public ReadOnlyObjectProperty<BigDecimal> criticalGradesRatioRespectingDateProperty() {
+		return this.criticalGradesRatioRespectingDate.getReadOnlyProperty();
+	}
+
 	@Override
 	public String toString() {
 		return this.getName();
@@ -1088,7 +1227,8 @@ public class Test {
 
 		public Test deserialize(Object... params) {
 			if (test == null) {
-				test = new Test(name, shortName, date, weight, onlyDefaultDate, useTasks, usePoints, showReturns);
+				test = new Test((Group) params[0], name, shortName, date, weight, onlyDefaultDate, useTasks, usePoints,
+						showReturns);
 				tasksRoot.deserialize(test);
 				test.setPointsSystem(pointsSystem.deserialize());
 				test.calculateTotalPoints();

@@ -373,7 +373,7 @@ public class Group {
 					group.students.add(s.deserialize());
 				}
 				for (DataObject<Test> t : tests) {
-					group.tests.add(t.deserialize());
+					group.tests.add(t.deserialize(group));
 				}
 			}
 			return group;

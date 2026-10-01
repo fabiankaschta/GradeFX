@@ -430,7 +430,7 @@ public class TestGroup extends TreeItem<TestGroup> {
 					testGroup.addSubgroup(t.deserialize(group));
 				}
 				for (DataObject<Test> t : tests) {
-					testGroup.addTest(t.deserialize());
+					testGroup.addTest(t.deserialize(group));
 				}
 			}
 			return testGroup;
