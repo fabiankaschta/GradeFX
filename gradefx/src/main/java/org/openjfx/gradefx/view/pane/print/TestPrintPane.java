@@ -2,6 +2,7 @@ package org.openjfx.gradefx.view.pane.print;
 
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Test;
+import org.openjfx.gradefx.view.chart.StatisticsChart;
 import org.openjfx.gradefx.view.pane.statistics.StatisticsGrid;
 import org.openjfx.gradefx.view.tableview.pointssystem.TableViewPointsSystem;
 import org.openjfx.gradefx.view.tableview.test.TableViewTestPrint;
@@ -60,6 +61,7 @@ public class TestPrintPane extends BorderPane {
 
 		this.statisticsPane.getChildren().add(statisticsHeaderBox);
 		this.statisticsPane.getChildren().add(new StatisticsGrid(group, test, pointsSystem));
+		this.statisticsPane.getChildren().add(new StatisticsChart(group, test));
 
 		this.setTop(header);
 		this.setCenter(this.table);

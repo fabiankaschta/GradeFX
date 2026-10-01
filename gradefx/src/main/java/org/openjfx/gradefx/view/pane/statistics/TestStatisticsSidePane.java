@@ -7,6 +7,7 @@ import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.converter.BoundTypeConverter;
 import org.openjfx.gradefx.model.BoundType;
 import org.openjfx.gradefx.model.Test;
+import org.openjfx.gradefx.view.chart.StatisticsChart;
 import org.openjfx.gradefx.view.tableview.pointssystem.TableViewPointsSystem;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
@@ -86,6 +87,7 @@ public class TestStatisticsSidePane extends ScrollPane {
 		content.getChildren().add(new StatisticsGrid(this.group, this.test, this.tableViewPointsSystem));
 		content.getChildren().add(new SettingsPane());
 		content.getChildren().add(new SliderPane());
+		content.getChildren().add(new StatisticsChart(this.group, this.test));
 
 		this.skinProperty().addListener((_, _, _) -> {
 			ScrollBar scrollBarVertical = (ScrollBar) this
