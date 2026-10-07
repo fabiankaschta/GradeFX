@@ -22,6 +22,8 @@ Folgende Features sind bereits enthalten:
 
 Geplante Features
 * Filter, insbesondere in der Übersicht (z.B. Stand zu bestimmtem Datum, Noten einzelnder SchülerInnen)
+* Halbjahresweise Notenberechnung (für Oberstufenkurse)
+* mehrteilige Leistungsnachweise (insb. Latein-Schulaufgaben)
 
 Derzeit nicht umsetzbare Features
 * ASV-Export
