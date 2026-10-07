@@ -2,8 +2,6 @@
 
 Software zur Notenverwaltung für Lehrkräfte.
 
-Achtung: Diese Software befindet sich in einer frühen Entwicklungsphase! Daher können Ausfälle, Abstürze und unverhergesehenes Verhalten auftreten und möglicherweise zu Datenverlust führen. Bitte regelmäßig Sicherheitskopien anlegen bzw. Daten exportieren.
-
 ## Features
 Folgende Features sind bereits enthalten:
 * Verwaltung mehrerer Klassen in einer Datei (Eine Datei pro Schuljahr genügt)
