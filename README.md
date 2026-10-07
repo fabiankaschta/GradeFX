@@ -38,7 +38,8 @@ Dateien, die mit GradeFX Version 1.x.y erstellt wurden, sind mit GradeFX ab Vers
 Die heruntergeladenen Plugin-Dateien (*.jar) in den "plugins"-Ordner im Homeverzeichnis des Benutzers kopieren:
 * Windows: C:\Users\\\<Benutzername\>\\.gradefx\plugins
 * Linux/MacOS: ~/.gradefx/plugins
-Die Ornder ggfs. erstellen, falls sie nicht vorhanden sind. Anschließend GradeFX schließen und neu öffnen.
+
+Die Ordner ggfs. erstellen, falls sie nicht vorhanden sind. Anschließend GradeFX schließen und neu öffnen.
 
 Beispiel-Plugin: [BSG-Plugin](https://github.com/fabiankaschta/GradeFX-Plugin-BSG) für das Bernhard-Strigel-Gymnasium Memmingen.
 
