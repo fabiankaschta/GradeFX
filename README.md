@@ -35,11 +35,12 @@ Unter [Release](https://github.com/fabiankaschta/GradeFX/releases/latest) finden
 Dateien, die mit GradeFX Version 1.x.y erstellt wurden, sind mit GradeFX ab Version 2.0.0 nicht mehr kompatibel!
 
 ## Plugins
-Im Installationsverzeichnis einen Ordner "plugins" erstellen, die heruntergeladenen Plugin-Dateien (*.jar) in diesen Ordner kopieren, anschließend das Programm schließen und neu öffnen.
+Die heruntergeladenen Plugin-Dateien (*.jar) in den "plugins"-Ordner im Homeverzeichnis des Benutzers kopieren:
+* Windows: C:\Users\\\<Benutzername\>\\.gradefx\plugins
+* Linux/MacOS: ~/.gradefx/plugins
+Die Ornder ggfs. erstellen, falls sie nicht vorhanden sind. Anschließend GradeFX schließen und neu öffnen.
 
 Beispiel-Plugin: [BSG-Plugin](https://github.com/fabiankaschta/GradeFX-Plugin-BSG) für das Bernhard-Strigel-Gymnasium Memmingen.
-
-Nach einem Versions-Update der Hauptsoftware muss der "plugins"-Ordner neu erstellt werden und die Plugins erneut in den Ordner kopiert werden.
 
 Achtung: Plugins können auf alle Daten im Programm zugreifen, also auch auf sensible Informationen. Verwenden Sie nur Plugins aus vertrauenswürdigen Quellen!
 
