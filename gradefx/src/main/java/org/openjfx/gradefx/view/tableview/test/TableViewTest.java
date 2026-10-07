@@ -32,6 +32,7 @@ import org.openjfx.kafx.view.tableview.TableView3;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.scene.control.TableCell;
@@ -59,8 +60,16 @@ public class TableViewTest extends TableView3<Student> {
 	private final BigDecimalConverter avgConverter = new BigDecimalConverter();
 	private final BigDecimalConverter gradeAvgConverter = new BigDecimalConverter();
 	private final BigDecimalPercentConverter percentConverter = new BigDecimalPercentConverter(2);
-
+	
 	@SuppressWarnings("unchecked")
+	// this fixes cell selection (visibly) changing when showing/hiding columns
+	private final ChangeListener<Boolean> selectionFix = (_, _, _) -> {
+		if (!this.getSelectionModel().getSelectedCells().isEmpty()) {
+			TablePosition<?, ?> pos = this.getSelectionModel().getSelectedCells().getFirst();
+			this.getSelectionModel().select(pos.getRow(), (TableColumn<Student, ?>) pos.getTableColumn());
+		}
+	};
+
 	public TableViewTest(Group group, Test test) {
 		super(group.getStudents());
 
@@ -201,12 +210,7 @@ public class TableViewTest extends TableView3<Student> {
 
 		// this fixes cell selection (visibly) changing when showing/hiding columns
 		for (TableColumn<Student, ?> column : this.getColumns()) {
-			column.visibleProperty().addListener((_, _, _) -> {
-				if (!this.getSelectionModel().getSelectedCells().isEmpty()) {
-					TablePosition<?, ?> pos = this.getSelectionModel().getSelectedCells().getFirst();
-					this.getSelectionModel().select(pos.getRow(), (TableColumn<Student, ?>) pos.getTableColumn());
-				}
-			});
+			column.visibleProperty().addListener(this.selectionFix);
 		}
 	}
 

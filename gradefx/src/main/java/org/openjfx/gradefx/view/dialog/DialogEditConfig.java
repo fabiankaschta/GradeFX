@@ -10,15 +10,18 @@ import org.openjfx.kafx.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.control.ComparableField;
 import org.openjfx.kafx.view.dialog.DialogUserInput;
 import org.openjfx.kafx.view.dialog.userinput.UserInputCheckBox;
+import org.openjfx.kafx.view.dialog.userinput.UserInputChoiceBox;
 import org.openjfx.kafx.view.dialog.userinput.UserInputColorPicker;
 import org.openjfx.kafx.view.dialog.userinput.UserInputComparableInput;
 import org.openjfx.kafx.view.dialog.userinput.UserInputSpinner;
 import org.openjfx.kafx.view.dialog.userinput.UserInputTextInput;
 import org.openjfx.kafx.view.style.Styles;
+import org.openjfx.kafx.view.tableview.TableCellEditControl.EnterMode;
 
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TextField;
@@ -32,6 +35,7 @@ public class DialogEditConfig extends DialogUserInput<Boolean> {
 	private final UserInputTextInput teacherName;
 	private final UserInputCheckBox useAutoSave;
 	private final UserInputSpinner<Integer> autoSaveInterval;
+	private final UserInputChoiceBox<EnterMode> tableEnterMode;
 	private final UserInputComparableInput<BigDecimal> tendencyBound;
 	private final UserInputColorPicker groupColor;
 
@@ -58,6 +62,14 @@ public class DialogEditConfig extends DialogUserInput<Boolean> {
 				.subscribe(autoSaveInterval -> AutoSaveController.setInterval(Duration.minutes(autoSaveInterval)));
 		this.autoSaveInterval.visibleProperty().bind(this.useAutoSave.valueProperty());
 		super.addInput(this.autoSaveInterval, TranslationController.translate("configOption_autoSaveInterval"));
+
+		ChoiceBox<EnterMode> tableEnterModeChoiceBox = new ChoiceBox<>();
+		tableEnterModeChoiceBox.getItems().addAll(EnterMode.values());
+		this.tableEnterMode = new UserInputChoiceBox<>(tableEnterModeChoiceBox,
+				EnterMode.valueOf(ConfigController.get("TABLECELL_ENTER_MODE")));
+		this.tableEnterMode.valueProperty()
+				.subscribe(mode -> ConfigController.set("TABLECELL_ENTER_MODE", mode.name()));
+		super.addInput(this.tableEnterMode, TranslationController.translate("configOption_tableEnterMode"));
 
 		this.useHalfPoints = new UserInputCheckBox(new CheckBox(),
 				Boolean.valueOf(ConfigController.get("USE_HALF_POINTS")));

@@ -22,6 +22,7 @@ import org.openjfx.kafx.controller.PrintController;
 import org.openjfx.kafx.controller.PropertiesController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.controller.UpdateController;
+import org.openjfx.kafx.view.tableview.TableCellEditControl.EnterMode;
 import org.pf4j.JarPluginManager;
 
 import javafx.beans.property.ObjectProperty;
@@ -54,6 +55,7 @@ public class GradeFXController extends Controller {
 		ConfigController.putIfNotExists("USE_HALF_POINTS", String.valueOf(true));
 		ConfigController.putIfNotExists("TENDENCY_BOUND", String.valueOf(0.0));
 		ConfigController.putIfNotExists("DEFAULT_GROUP_COLOR", "#e6e6e6");
+		ConfigController.putIfNotExists("TABLECELL_ENTER_MODE", EnterMode.CONFIRM.name());
 	}
 
 	private final static ObjectProperty<Group> selectedGroup = new SimpleObjectProperty<>(null, "selectedGroup", null);
