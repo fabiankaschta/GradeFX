@@ -27,6 +27,7 @@ import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.converter.BigDecimalConverter;
 import org.openjfx.kafx.converter.BigDecimalPercentConverter;
+import org.openjfx.kafx.view.tableview.TableCellEditControl;
 import org.openjfx.kafx.view.tableview.TableView3;
 
 import javafx.beans.binding.Bindings;
@@ -212,6 +213,18 @@ public class TableViewTest extends TableView3<Student> {
 		for (TableColumn<Student, ?> column : this.getColumns()) {
 			column.visibleProperty().addListener(this.selectionFix);
 		}
+		
+		// both necessary to clear selection correctly
+		this.focusedProperty().addListener((_, _, isFocused) -> {
+			if (!isFocused && this.getEditingCell() == null) {
+				this.getSelectionModel().clearSelection();
+			}
+		});
+		this.addEventHandler(TableCellEditControl.FOCUS_LOST, _ -> {
+			if (!this.isFocused()) {
+				this.getSelectionModel().clearSelection();
+			}
+		});
 	}
 
 	public StudentReturnColumn getReturnColumn() {

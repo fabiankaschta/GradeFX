@@ -16,5 +16,6 @@ public class PointsSystemGradeColumn extends TableColumn<Grade, Grade> {
 		this.setCellFactory(_ -> new TableCellCustom<>(Pos.CENTER));
 		this.setSortable(false);
 		this.setReorderable(false);
+		this.setEditable(false);
 	}
 }

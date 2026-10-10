@@ -77,7 +77,9 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 				}
 			});
 			this.addEventHandler(TableCellEditControl.FOCUS_LOST, _ -> {
-				this.getSelectionModel().clearSelection();
+				if (!this.isFocused()) {
+					this.getSelectionModel().clearSelection();
+				}
 			});
 		}
 	}

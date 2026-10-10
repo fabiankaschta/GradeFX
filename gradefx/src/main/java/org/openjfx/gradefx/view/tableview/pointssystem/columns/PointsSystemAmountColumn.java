@@ -12,10 +12,11 @@ public class PointsSystemAmountColumn extends TableColumn<Grade, Integer> {
 
 	public PointsSystemAmountColumn(Test test) {
 		super(TranslationController.translate("pointsSystem_amount"));
+		this.setCellValueFactory(data -> test.gradeAmountRespectingDateProperty(data.getValue()).asObject());
 		this.setCellFactory(_ -> new TableCellCustom<>(Pos.CENTER));
 		this.setSortable(false);
 		this.setReorderable(false);
-		this.setCellValueFactory(data -> test.gradeAmountRespectingDateProperty(data.getValue()).asObject());
+		this.setEditable(false);
 	}
 
 }
