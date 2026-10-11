@@ -33,6 +33,7 @@ public class StudentReturnColumn extends TableColumn<Student, Boolean> {
 		this.setSortable(true);
 		this.setReorderable(false);
 		this.setEditable(true);
+		this.setResizable(false);
 		this.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(2).add(1));
 	}
 }

@@ -1,5 +1,7 @@
 package org.openjfx.gradefx.view.tableview.overview.columns;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -8,11 +10,16 @@ import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.TestGroup;
 import org.openjfx.gradefx.view.tableview.test.columns.TestGradeColumn;
+import org.openjfx.kafx.converter.BigDecimalConverter;
+import org.openjfx.kafx.view.tableview.TableColumnFooter;
 
+import javafx.beans.binding.Bindings;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 
-public class OverviewTestGroupColumn extends TableColumn<Student, Integer> {
+public class OverviewTestGroupColumn extends TableColumnFooter<Student, Integer> {
+
+	private final BigDecimalConverter gradeAvgConverter = new BigDecimalConverter();
 
 	private final TestGroup testGroup;
 
@@ -29,6 +36,19 @@ public class OverviewTestGroupColumn extends TableColumn<Student, Integer> {
 			Function<Test, TestGradeColumn> createTestColumn, Consumer<TableCell<Student, ?>> cellSubscription) {
 		this.testGroup = testGroup;
 		this.textProperty().bind(testGroup.nameProperty());
+
+		this.gradeAvgConverter.getDecimalFormat().setMinimumFractionDigits(2);
+		this.gradeAvgConverter.getDecimalFormat().setMaximumFractionDigits(2);
+		this.gradeAvgConverter.getDecimalFormat().setRoundingMode(RoundingMode.DOWN);
+		this.footerText().bind(Bindings.createStringBinding(() -> {
+			BigDecimal avg = testGroup.getAvgGrade();
+			if (avg == null) {
+				return "-";
+			} else {
+				return this.gradeAvgConverter.toString(avg);
+			}
+		}, testGroup.avgGrade()));
+
 		this.setReorderable(false);
 	}
 

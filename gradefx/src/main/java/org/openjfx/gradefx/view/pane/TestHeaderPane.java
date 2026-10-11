@@ -3,7 +3,6 @@ package org.openjfx.gradefx.view.pane;
 import java.math.BigDecimal;
 import java.util.Map.Entry;
 
-import org.controlsfx.control.ToggleSwitch;
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
@@ -12,6 +11,7 @@ import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.control.ComparableField;
 import org.openjfx.kafx.view.control.TextFieldPromptText;
+import org.openjfx.kafx.view.control.ToggleSwitch;
 import org.openjfx.kafx.view.dialog.userinput.UserInputComparableInput;
 import org.openjfx.kafx.view.dialog.userinput.UserInputDatePicker;
 import org.openjfx.kafx.view.dialog.userinput.UserInputTextInput;
@@ -99,10 +99,10 @@ public class TestHeaderPane extends GridPane {
 		this.add(weightPointsLabel, 2, 1);
 		this.add(this.weight, 3, 1);
 
-		this.showReturns = new UserInputToggleSwitch(new ToggleSwitch(), test.getShowReturns());
+		ToggleSwitch showReturnsSwitch = new ToggleSwitch();
+		this.showReturns = new UserInputToggleSwitch(showReturnsSwitch, test.getShowReturns());
 		test.showReturnsProperty().bindBidirectional(this.showReturns.valueProperty());
-		this.showReturns.setMinWidth(USE_PREF_SIZE);
-		this.showReturns.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(3));
+		this.showReturns.setAlignment(Pos.CENTER);
 		Label showReturnsLabel = new Label(TranslationController.translate("test_showReturns"));
 		showReturnsLabel.setMinWidth(USE_PREF_SIZE);
 		this.add(showReturnsLabel, 5, 0);
@@ -126,7 +126,7 @@ public class TestHeaderPane extends GridPane {
 		}, this.returnsMissingAmount));
 		Label returnsMissing = new Label();
 		returnsMissing.setMinWidth(USE_PREF_SIZE);
-		returnsMissing.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(3));
+		returnsMissing.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(2));
 		returnsMissing.setAlignment(Pos.CENTER);
 		returnsMissing.setTextAlignment(TextAlignment.CENTER);
 		EmojiImageView emoji = new EmojiImageView("1F60E", FontSizeController.fontSizeProperty().multiply(2));

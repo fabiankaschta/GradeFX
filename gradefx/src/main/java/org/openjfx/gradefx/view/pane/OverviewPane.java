@@ -5,16 +5,18 @@ import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.view.tableview.overview.TableViewOverview;
 import org.openjfx.kafx.view.style.Styles;
 
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Background;
-import javafx.scene.layout.BorderPane;
 
-public class OverviewPane extends BorderPane {
+public class OverviewPane extends ScrollPane {
 
 	private final TableViewOverview overviewTableView;
 
 	public OverviewPane(Group group) {
 		this.overviewTableView = new TableViewOverview(group);
-		this.setLeft(overviewTableView);
+		this.setFitToWidth(true);
+		this.setFitToHeight(true);
+		this.setContent(overviewTableView);
 		group.colorProperty().subscribe(color -> this.setBackground(Background.fill(Styles.deriveBrightHeavy(color))));
 	}
 

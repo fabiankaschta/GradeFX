@@ -1,6 +1,7 @@
 package org.openjfx.gradefx.view.tableview.test.columns;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -12,7 +13,9 @@ import org.openjfx.kafx.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.control.ComparableField;
 import org.openjfx.kafx.view.style.Styles;
 import org.openjfx.kafx.view.tableview.TableCellEditComparable;
+import org.openjfx.kafx.view.tableview.TableColumnFooter;
 
+import javafx.beans.binding.Bindings;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.scene.control.ColorPicker;
@@ -26,7 +29,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 
-public class TestTaskColumn extends TableColumn<Student, BigDecimal> {
+public class TestTaskColumn extends TableColumnFooter<Student, BigDecimal> {
 
 	private final Label name = new Label();
 	private final Label points = new Label();
@@ -116,7 +119,13 @@ public class TestTaskColumn extends TableColumn<Student, BigDecimal> {
 							contextMenuColorPicker.setTranslateX(-10);
 							contextMenuColorPicker.show();
 						});
-						this.setContextMenu(contextMenu);
+						this.tableRowProperty().subscribe(row -> {
+							if (row != null && !row.isEmpty()) {
+								this.setContextMenu(contextMenu);
+							} else {
+								this.setContextMenu(null);
+							}
+						});
 					}
 
 					@Override
@@ -161,6 +170,18 @@ public class TestTaskColumn extends TableColumn<Student, BigDecimal> {
 				getColumns().add(createTestTaskColumn.apply((TestTask) t));
 			}
 		}
+		// footer
+		BigDecimalConverter avgConverter = new BigDecimalConverter();
+		avgConverter.getDecimalFormat().setMinimumFractionDigits(1);
+		avgConverter.getDecimalFormat().setMaximumFractionDigits(1);
+		this.footerText().bind(Bindings.createStringBinding(() -> {
+			BigDecimal avg = testTask.getAvgPoints();
+			if (avg == null) {
+				return "-";
+			} else {
+				return avgConverter.toString(avg.setScale(1, RoundingMode.HALF_UP));
+			}
+		}, testTask.avgPointsProperty()));
 	}
 
 	public double getWidthSum(Function<Double, Double> snapSizeX) {

@@ -9,13 +9,15 @@ import org.openjfx.gradefx.model.Test;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.converter.BigDecimalPercentConverter;
 import org.openjfx.kafx.view.tableview.TableCellCustom;
+import org.openjfx.kafx.view.tableview.TableColumnFooter;
 
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
 import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
 
-public class TestRatioColumn extends TableColumn<Student, BigDecimal> {
+public class TestRatioColumn extends TableColumnFooter<Student, BigDecimal> {
+
+	private final BigDecimalPercentConverter percentConverter = new BigDecimalPercentConverter(2);
 
 	public TestRatioColumn(Test test) {
 		this(test, null);
@@ -38,6 +40,16 @@ public class TestRatioColumn extends TableColumn<Student, BigDecimal> {
 				}
 			}
 		});
+
+		this.footerText().bind(Bindings.createStringBinding(() -> {
+			BigDecimal avg = test.getAvgPointsRatio();
+			if (avg == null) {
+				return "-";
+			} else {
+				return this.percentConverter.toString(avg);
+			}
+		}, test.avgPointsRatioProperty()));
+
 		this.setSortable(true);
 		this.setReorderable(false);
 		this.editableProperty().bind(test.useTasksProperty().not());

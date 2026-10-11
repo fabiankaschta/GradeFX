@@ -34,6 +34,7 @@ public class TableViewTestPrint extends TableViewTest {
 //			c.setResizable(false);
 //		}
 		
+		this.setSelectionModel(null);
 		this.setMinWidth(USE_PREF_SIZE);
 		this.setMaxWidth(USE_PREF_SIZE);
 		this.setMinHeight(USE_PREF_SIZE);

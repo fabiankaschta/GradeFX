@@ -5,21 +5,26 @@ import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.Grade;
 import org.openjfx.gradefx.model.GradeSystem;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.function.Consumer;
 
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.kafx.controller.TranslationController;
+import org.openjfx.kafx.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.tableview.TableCellEditComparator;
+import org.openjfx.kafx.view.tableview.TableColumnFooter;
 
+import javafx.beans.binding.Bindings;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
 import javafx.util.Subscription;
 
-public class TestGradeColumn extends TableColumn<Student, Grade> {
+public class TestGradeColumn extends TableColumnFooter<Student, Grade> {
 
 	private final Test test;
+	private final BigDecimalConverter gradeAvgConverter = new BigDecimalConverter();
 
 	public TestGradeColumn(Group group, Test test) {
 		this(group, test, null);
@@ -59,6 +64,20 @@ public class TestGradeColumn extends TableColumn<Student, Grade> {
 			}
 		});
 		this.setComparator(gradeSystem.getGradeComparator());
+
+		this.gradeAvgConverter.getDecimalFormat().setRoundingMode(RoundingMode.HALF_UP);
+		this.gradeAvgConverter.getDecimalFormat().setMinimumFractionDigits(2);
+		this.gradeAvgConverter.getDecimalFormat().setMaximumFractionDigits(2);
+		this.gradeAvgConverter.getDecimalFormat().setRoundingMode(RoundingMode.DOWN);
+		this.footerText().bind(Bindings.createStringBinding(() -> {
+			BigDecimal avg = test.getAvgGrade();
+			if (avg == null) {
+				return "-";
+			} else {
+				return this.gradeAvgConverter.toString(avg);
+			}
+		}, test.avgGradeProperty()));
+
 		this.setSortable(true);
 		this.setReorderable(false);
 		this.setOnEditCommit(e -> {

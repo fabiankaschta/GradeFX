@@ -8,19 +8,21 @@ import org.openjfx.gradefx.model.Test;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.tableview.TableCellEditComparable;
+import org.openjfx.kafx.view.tableview.TableColumnFooter;
 
+import javafx.beans.binding.Bindings;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
 import javafx.scene.layout.BorderPane;
 import javafx.util.Subscription;
 
-public class TestSumColumn extends TableColumn<Student, BigDecimal> {
+public class TestSumColumn extends TableColumnFooter<Student, BigDecimal> {
 
 	private final Label name = new Label();
 	private final Label points = new Label();
+	private final BigDecimalConverter avgConverter = new BigDecimalConverter();
 
 	public TestSumColumn(Test test) {
 		this(test, null);
@@ -68,6 +70,18 @@ public class TestSumColumn extends TableColumn<Student, BigDecimal> {
 		graphic.setCenter(this.name);
 		graphic.setBottom(this.points);
 		this.setGraphic(graphic);
+
+		this.avgConverter.getDecimalFormat().setMinimumFractionDigits(1);
+		this.avgConverter.getDecimalFormat().setMaximumFractionDigits(1);
+		this.footerText().bind(Bindings.createStringBinding(() -> {
+			BigDecimal avg = test.getAvgPoints();
+			if (avg == null) {
+				return "-";
+			} else {
+				return this.avgConverter.toString(avg);
+			}
+		}, test.avgPointsProperty()));
+
 		this.setSortable(true);
 		this.setReorderable(false);
 		this.setEditable(true);

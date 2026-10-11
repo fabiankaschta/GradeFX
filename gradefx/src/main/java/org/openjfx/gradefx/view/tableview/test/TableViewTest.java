@@ -1,7 +1,5 @@
 package org.openjfx.gradefx.view.tableview.test;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,15 +23,11 @@ import org.openjfx.gradefx.view.tableview.test.columns.TestSumColumn;
 import org.openjfx.gradefx.view.tableview.test.columns.TestTaskColumn;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
-import org.openjfx.kafx.converter.BigDecimalConverter;
-import org.openjfx.kafx.converter.BigDecimalPercentConverter;
 import org.openjfx.kafx.view.tableview.TableCellEditControl;
-import org.openjfx.kafx.view.tableview.TableView3;
+import org.openjfx.kafx.view.tableview.TableViewKafx;
 
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.scene.control.TableCell;
@@ -43,7 +37,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.text.Text;
 
-public class TableViewTest extends TableView3<Student> {
+public class TableViewTest extends TableViewKafx<Student> {
 
 	private final StudentReturnColumn returnColumn;
 	private final StudentLastNameColumn lastNameColumn;
@@ -58,23 +52,11 @@ public class TableViewTest extends TableView3<Student> {
 
 	private final IntegerProperty selectedRowIndex = new SimpleIntegerProperty(this, "selectedRow", -1);
 
-	private final BigDecimalConverter avgConverter = new BigDecimalConverter();
-	private final BigDecimalConverter gradeAvgConverter = new BigDecimalConverter();
-	private final BigDecimalPercentConverter percentConverter = new BigDecimalPercentConverter(2);
-	
-	@SuppressWarnings("unchecked")
-	// this fixes cell selection (visibly) changing when showing/hiding columns
-	private final ChangeListener<Boolean> selectionFix = (_, _, _) -> {
-		if (!this.getSelectionModel().getSelectedCells().isEmpty()) {
-			TablePosition<?, ?> pos = this.getSelectionModel().getSelectedCells().getFirst();
-			this.getSelectionModel().select(pos.getRow(), (TableColumn<Student, ?>) pos.getTableColumn());
-		}
-	};
-
 	public TableViewTest(Group group, Test test) {
 		super(group.getStudents());
 
 		this.setEditable(true);
+		this.setFooterVisible(true);
 
 		this.getSelectionModel().setCellSelectionEnabled(true);
 		this.getSelectionModel().selectedItemProperty()
@@ -121,41 +103,8 @@ public class TableViewTest extends TableView3<Student> {
 		this.getColumns().add(this.lastNameColumn);
 		this.getColumns().add(this.firstNameColumn);
 		this.getColumns().add(this.subgroupNameColumn);
-		this.getFixedColumns().addAll(this.returnColumn, this.lastNameColumn, this.firstNameColumn,
-				this.subgroupNameColumn);
-
-		this.avgConverter.getDecimalFormat().setMinimumFractionDigits(1);
-		this.avgConverter.getDecimalFormat().setMaximumFractionDigits(1);
-		this.gradeAvgConverter.getDecimalFormat().setRoundingMode(RoundingMode.HALF_UP);
-		this.gradeAvgConverter.getDecimalFormat().setMinimumFractionDigits(2);
-		this.gradeAvgConverter.getDecimalFormat().setMaximumFractionDigits(2);
-		this.gradeAvgConverter.getDecimalFormat().setRoundingMode(RoundingMode.DOWN);
-
-		this.setFooterTextFixedColumns(TranslationController.translate("tab_test_footer_avg") + ':');
-		this.footerTextForColumn(this.sumColumn).bind(Bindings.createStringBinding(() -> {
-			BigDecimal avg = test.getAvgPoints();
-			if (avg == null) {
-				return "-";
-			} else {
-				return this.avgConverter.toString(avg);
-			}
-		}, test.avgPointsProperty()));
-		this.footerTextForColumn(this.ratioColumn).bind(Bindings.createStringBinding(() -> {
-			BigDecimal avg = test.getAvgPointsRatio();
-			if (avg == null) {
-				return "-";
-			} else {
-				return this.percentConverter.toString(avg);
-			}
-		}, test.avgPointsRatioProperty()));
-		this.footerTextForColumn(this.gradeColumn).bind(Bindings.createStringBinding(() -> {
-			BigDecimal avg = test.getAvgGrade();
-			if (avg == null) {
-				return "-";
-			} else {
-				return this.gradeAvgConverter.toString(avg);
-			}
-		}, test.avgGradeProperty()));
+		this.setFixedColumnsIndex(3);
+		this.setFixedColumnsFooterText(TranslationController.translate("tab_test_footer_avg") + ':');
 
 		// DEL / BACKSPACE remove fixed state
 		this.setOnKeyPressed(event -> {
@@ -209,20 +158,19 @@ public class TableViewTest extends TableView3<Student> {
 		FontSizeController.bindTableColumnWidthToFontSize(this);
 		this.getStyleClass().addAll("table-view-cell-highlight", "table-view-no-focus", "table-view-hide-empty");
 
-		// this fixes cell selection (visibly) changing when showing/hiding columns
-		for (TableColumn<Student, ?> column : this.getColumns()) {
-			column.visibleProperty().addListener(this.selectionFix);
-		}
-		
 		// both necessary to clear selection correctly
 		this.focusedProperty().addListener((_, _, isFocused) -> {
 			if (!isFocused && this.getEditingCell() == null) {
-				this.getSelectionModel().clearSelection();
+				if (this.getSelectionModel() != null) {
+					this.getSelectionModel().clearSelection();
+				}
 			}
 		});
 		this.addEventHandler(TableCellEditControl.FOCUS_LOST, _ -> {
 			if (!this.isFocused()) {
-				this.getSelectionModel().clearSelection();
+				if (this.getSelectionModel() != null) {
+					this.getSelectionModel().clearSelection();
+				}
 			}
 		});
 	}
@@ -297,14 +245,6 @@ public class TableViewTest extends TableView3<Student> {
 		TestTaskColumn column = new TestTaskColumn(task, t -> createTestTaskColumn(t), cell -> subscribeRowIndex(cell));
 		task.getChildren().addListener(new TasksChangedListener());
 		this.testTaskColumns.put(task, column);
-		this.footerTextForColumn(column).bind(Bindings.createStringBinding(() -> {
-			BigDecimal avg = task.getAvgPoints();
-			if (avg == null) {
-				return "-";
-			} else {
-				return this.avgConverter.toString(avg.setScale(1, RoundingMode.HALF_UP));
-			}
-		}, task.avgPointsProperty()));
 		return column;
 	}
 
