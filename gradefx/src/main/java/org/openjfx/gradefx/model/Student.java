@@ -63,7 +63,8 @@ public class Student {
 
 	@Override
 	public String toString() {
-		return this.getLastName() + ", " + this.getFirstName();
+//		return this.getLastName() + ", " + this.getFirstName();
+		return String.valueOf(this.hashCode());
 	}
 
 	private static class StudentS implements DataObject<Student> {

@@ -2,6 +2,7 @@ package org.openjfx.gradefx.controller;
 
 import java.nio.file.Path;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 
 import org.openjfx.gradefx.model.Group;
 import org.openjfx.gradefx.model.Student;
@@ -37,6 +38,14 @@ public class GradeFXController extends Controller {
 		PropertiesController.init();
 		ChangeController.init();
 		ConfigController.init();
+		ConfigController.putIfNotExists("USE_HALF_POINTS", String.valueOf(true));
+		ConfigController.putIfNotExists("TENDENCY_BOUND", String.valueOf(0.0));
+		ConfigController.putIfNotExists("DEFAULT_GROUP_COLOR", "#e6e6e6");
+		ConfigController.putIfNotExists("TABLECELL_ENTER_MODE", EnterMode.CONFIRM.name());
+		ConfigController.putIfNotExists("DEBUG_MODE", String.valueOf(false));
+		if (!Boolean.valueOf(ConfigController.get("DEBUG_MODE"))) {
+			LogController.setLevel(Level.WARNING);
+		}
 		CloseController.init();
 		FontSizeController.init();
 		TranslationController.init();
@@ -52,10 +61,6 @@ public class GradeFXController extends Controller {
 		UpdateController.init();
 		UpdateController.register("GradeFX", () -> PropertiesController.getProperty("gradefx.version"),
 				PropertiesController.getProperty("gradefx.url"));
-		ConfigController.putIfNotExists("USE_HALF_POINTS", String.valueOf(true));
-		ConfigController.putIfNotExists("TENDENCY_BOUND", String.valueOf(0.0));
-		ConfigController.putIfNotExists("DEFAULT_GROUP_COLOR", "#e6e6e6");
-		ConfigController.putIfNotExists("TABLECELL_ENTER_MODE", EnterMode.CONFIRM.name());
 	}
 
 	private final static ObjectProperty<Group> selectedGroup = new SimpleObjectProperty<>(null, "selectedGroup", null);
