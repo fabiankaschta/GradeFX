@@ -2,7 +2,6 @@ package org.openjfx.gradefx.view.tableview.test.columns;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.function.Consumer;
 
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
@@ -13,17 +12,12 @@ import org.openjfx.kafx.view.tableview.TableColumnFooter;
 
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
-import javafx.scene.control.TableCell;
 
 public class TestRatioColumn extends TableColumnFooter<Student, BigDecimal> {
 
 	private final BigDecimalPercentConverter percentConverter = new BigDecimalPercentConverter(2);
 
 	public TestRatioColumn(Test test) {
-		this(test, null);
-	}
-
-	public TestRatioColumn(Test test, Consumer<TableCell<Student, ?>> cellSubscription) {
 		super("%");
 		this.setCellValueFactory(data -> Bindings.createObjectBinding(() -> {
 			BigDecimal sum = test.getTotalPoints(data.getValue());
@@ -33,13 +27,7 @@ public class TestRatioColumn extends TableColumnFooter<Student, BigDecimal> {
 				return sum.divide(test.getMaxPoints(), 5, RoundingMode.FLOOR);
 			}
 		}, test.maxPointsProperty(), test.totalPointsProperty(data.getValue())));
-		this.setCellFactory(_ -> new TableCellCustom<>(new BigDecimalPercentConverter(2), Pos.CENTER) {
-			{
-				if (cellSubscription != null) {
-					cellSubscription.accept(this);
-				}
-			}
-		});
+		this.setCellFactory(_ -> new TableCellCustom<>(new BigDecimalPercentConverter(2), Pos.CENTER));
 
 		this.footerText().bind(Bindings.createStringBinding(() -> {
 			BigDecimal avg = test.getAvgPointsRatio();

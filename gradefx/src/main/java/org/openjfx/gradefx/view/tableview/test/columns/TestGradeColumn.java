@@ -1,15 +1,13 @@
 package org.openjfx.gradefx.view.tableview.test.columns;
 
-import org.openjfx.gradefx.model.Student;
-import org.openjfx.gradefx.model.Test;
-import org.openjfx.gradefx.model.Grade;
-import org.openjfx.gradefx.model.GradeSystem;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.function.Consumer;
 
+import org.openjfx.gradefx.model.Grade;
+import org.openjfx.gradefx.model.GradeSystem;
 import org.openjfx.gradefx.model.Group;
+import org.openjfx.gradefx.model.Student;
+import org.openjfx.gradefx.model.Test;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.converter.BigDecimalConverter;
 import org.openjfx.kafx.view.tableview.TableCellEditComparator;
@@ -18,7 +16,6 @@ import org.openjfx.kafx.view.tableview.TableColumnFooter;
 import javafx.beans.binding.Bindings;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
-import javafx.scene.control.TableCell;
 import javafx.util.Subscription;
 
 public class TestGradeColumn extends TableColumnFooter<Student, Grade> {
@@ -27,10 +24,6 @@ public class TestGradeColumn extends TableColumnFooter<Student, Grade> {
 	private final BigDecimalConverter gradeAvgConverter = new BigDecimalConverter();
 
 	public TestGradeColumn(Group group, Test test) {
-		this(group, test, null);
-	}
-
-	public TestGradeColumn(Group group, Test test, Consumer<TableCell<Student, ?>> cellSubscription) {
 		super(TranslationController.translate("test_grade"));
 		this.test = test;
 
@@ -58,9 +51,6 @@ public class TestGradeColumn extends TableColumnFooter<Student, Grade> {
 						});
 					}
 				});
-				if (cellSubscription != null) {
-					cellSubscription.accept(this);
-				}
 			}
 		});
 		this.setComparator(gradeSystem.getGradeComparator());

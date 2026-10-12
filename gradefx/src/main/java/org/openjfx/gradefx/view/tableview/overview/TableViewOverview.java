@@ -3,7 +3,6 @@ package org.openjfx.gradefx.view.tableview.overview;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import org.openjfx.gradefx.controller.GradeFXController;
 import org.openjfx.gradefx.model.Group;
@@ -22,11 +21,7 @@ import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.tableview.TableViewKafx;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.ListChangeListener;
-import javafx.css.PseudoClass;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TreeItem;
@@ -38,8 +33,6 @@ public class TableViewOverview extends TableViewKafx<Student> {
 	private final Group group;
 	private final Map<TestGroup, OverviewTestGroupColumn> testGroupColumns = new HashMap<>();
 	private final Map<Test, TestGradeColumn> testColumns = new HashMap<>();
-	private final IntegerProperty selectedRowIndex = new SimpleIntegerProperty(this, "selectedRow", -1);
-	private final Consumer<TableCell<Student, ?>> rowIndexSubscription = cell -> subscribeRowIndex(cell);
 
 	public TableViewOverview(Group group) {
 		super(group.getStudents());
@@ -50,8 +43,6 @@ public class TableViewOverview extends TableViewKafx<Student> {
 
 		this.getSelectionModel().selectedItemProperty()
 				.subscribe(selected -> GradeFXController.setSelectedStudent(selected));
-		this.getSelectionModel().selectedItemProperty()
-				.subscribe(item -> this.selectedRowIndex.setValue(item == null ? -1 : this.getItems().indexOf(item)));
 		this.getSelectionModel().setCellSelectionEnabled(true);
 
 		this.setPlaceholder(new Text(TranslationController.translate("tab_overview_no_students")));
@@ -59,9 +50,9 @@ public class TableViewOverview extends TableViewKafx<Student> {
 
 		this.fixedCellSizeProperty().bind(FontSizeController.fontSizeProperty().multiply(2).add(1));
 
-		StudentLastNameColumn lastNameCol = new StudentLastNameColumn(true, rowIndexSubscription);
-		StudentFirstNameColumn firstNameCol = new StudentFirstNameColumn(true, rowIndexSubscription);
-		StudentSubgroupNameColumn subgroupNameCol = new StudentSubgroupNameColumn(group, true, rowIndexSubscription);
+		StudentLastNameColumn lastNameCol = new StudentLastNameColumn(true);
+		StudentFirstNameColumn firstNameCol = new StudentFirstNameColumn(true);
+		StudentSubgroupNameColumn subgroupNameCol = new StudentSubgroupNameColumn(group, true);
 		this.getColumns().add(lastNameCol);
 		this.getColumns().add(firstNameCol);
 		this.getColumns().add(subgroupNameCol);
@@ -79,8 +70,8 @@ public class TableViewOverview extends TableViewKafx<Student> {
 			for (Test test : this.group.getTestsInTestGroup(root)) {
 				this.getColumns().add(createTestColumn(test));
 			}
-			OverviewAvgColumn avgColumn = new OverviewAvgColumn(group, root, rowIndexSubscription);
-			OverviewGradeColumn gradeColumn = new OverviewGradeColumn(group, rowIndexSubscription);
+			OverviewAvgColumn avgColumn = new OverviewAvgColumn(group, root);
+			OverviewGradeColumn gradeColumn = new OverviewGradeColumn(group);
 			this.getColumns().add(avgColumn);
 			this.getColumns().add(gradeColumn);
 		});
@@ -121,37 +112,15 @@ public class TableViewOverview extends TableViewKafx<Student> {
 		return width + this.snappedLeftInset() + this.snappedRightInset();
 	}
 
-	private void subscribeRowIndex(TableCell<Student, ?> cell) {
-		this.selectedRowIndex.subscribe(index -> {
-			if (cell.getTableRow() != null && index.intValue() == cell.getTableRow().getIndex()) {
-				cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), true);
-			} else {
-				cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), false);
-			}
-		});
-		cell.tableRowProperty().subscribe(row -> {
-			if (row != null) {
-				row.indexProperty().subscribe(index -> {
-					if (this.selectedRowIndex.intValue() != index.intValue()) {
-						cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), false);
-					} else {
-						cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), true);
-					}
-				});
-			}
-		});
-	}
-
 	public TestGradeColumn createTestColumn(Test test) {
-		TestGradeColumn column = new TestGradeColumn(this.group, test, rowIndexSubscription);
+		TestGradeColumn column = new TestGradeColumn(this.group, test);
 		column.textProperty().bind(test.shortNameProperty());
 		this.testColumns.put(test, column);
 		return column;
 	}
 
 	public OverviewTestGroupColumn createTestGroupColumn(TestGroup testGroup) {
-		OverviewTestGroupColumn column = new OverviewTestGroupColumn(this.group, testGroup,
-				tg -> createTestGroupColumn(tg), t -> createTestColumn(t), rowIndexSubscription);
+		OverviewTestGroupColumn column = new OverviewTestGroupColumn(this.group, testGroup);
 		this.group.getTestsInTestGroup(testGroup).addListener(new TestsChangedListener());
 		this.testGroupColumns.put(testGroup, column);
 		for (TreeItem<TestGroup> t : testGroup.getChildren()) {
@@ -160,7 +129,7 @@ public class TableViewOverview extends TableViewKafx<Student> {
 		for (Test test : group.getTestsInTestGroup(testGroup)) {
 			column.getColumns().add(createTestColumn(test));
 		}
-		column.getColumns().add(new OverviewAvgColumn(group, testGroup, rowIndexSubscription));
+		column.getColumns().add(new OverviewAvgColumn(group, testGroup));
 		return column;
 	}
 

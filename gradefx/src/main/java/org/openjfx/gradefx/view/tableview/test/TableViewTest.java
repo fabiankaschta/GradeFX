@@ -3,7 +3,6 @@ package org.openjfx.gradefx.view.tableview.test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import org.openjfx.gradefx.controller.GradeFXController;
 import org.openjfx.gradefx.model.Group;
@@ -26,11 +25,7 @@ import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.tableview.TableCellEditControl;
 import org.openjfx.kafx.view.tableview.TableViewKafx;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.ListChangeListener;
-import javafx.css.PseudoClass;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TreeItem;
@@ -50,8 +45,6 @@ public class TableViewTest extends TableViewKafx<Student> {
 	private final TestAnnotationColumn annotationColumn;
 	private final TestDateColumn dateColumn;
 
-	private final IntegerProperty selectedRowIndex = new SimpleIntegerProperty(this, "selectedRow", -1);
-
 	public TableViewTest(Group group, Test test) {
 		super(group.getStudents());
 
@@ -60,26 +53,22 @@ public class TableViewTest extends TableViewKafx<Student> {
 
 		this.getSelectionModel().setCellSelectionEnabled(true);
 		this.getSelectionModel().selectedItemProperty()
-				.subscribe(item -> this.selectedRowIndex.setValue(item == null ? -1 : this.getItems().indexOf(item)));
-		this.getSelectionModel().selectedItemProperty()
 				.subscribe(selected -> GradeFXController.setSelectedStudent(selected));
 
 		this.setPlaceholder(new Text(TranslationController.translate("tab_overview_no_students")));
 
 		this.fixedCellSizeProperty().bind(FontSizeController.fontSizeProperty().multiply(2).add(1));
 
-		Consumer<TableCell<Student, ?>> rowIndexSubscription = cell -> subscribeRowIndex(cell);
+		this.returnColumn = new StudentReturnColumn(test);
+		this.lastNameColumn = new StudentLastNameColumn(false);
+		this.firstNameColumn = new StudentFirstNameColumn(false);
+		this.subgroupNameColumn = new StudentSubgroupNameColumn(group, false);
 
-		this.returnColumn = new StudentReturnColumn(test, rowIndexSubscription);
-		this.lastNameColumn = new StudentLastNameColumn(false, rowIndexSubscription);
-		this.firstNameColumn = new StudentFirstNameColumn(false, rowIndexSubscription);
-		this.subgroupNameColumn = new StudentSubgroupNameColumn(group, false, rowIndexSubscription);
-
-		this.sumColumn = new TestSumColumn(test, rowIndexSubscription);
-		this.ratioColumn = new TestRatioColumn(test, rowIndexSubscription);
-		this.gradeColumn = new TestGradeColumn(group, test, rowIndexSubscription);
-		this.annotationColumn = new TestAnnotationColumn(test, rowIndexSubscription);
-		this.dateColumn = new TestDateColumn(test, rowIndexSubscription);
+		this.sumColumn = new TestSumColumn(test);
+		this.ratioColumn = new TestRatioColumn(test);
+		this.gradeColumn = new TestGradeColumn(group, test);
+		this.annotationColumn = new TestAnnotationColumn(test);
+		this.dateColumn = new TestDateColumn(test);
 
 		this.setColumnResizePolicy(rf -> {
 			boolean result = UNCONSTRAINED_RESIZE_POLICY.call(rf);
@@ -206,27 +195,6 @@ public class TableViewTest extends TableViewKafx<Student> {
 		return width + this.snappedLeftInset() + this.snappedRightInset();
 	}
 
-	private void subscribeRowIndex(TableCell<Student, ?> cell) {
-		this.selectedRowIndex.subscribe(index -> {
-			if (cell.getTableRow() != null && index.intValue() == cell.getTableRow().getIndex()) {
-				cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), true);
-			} else {
-				cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), false);
-			}
-		});
-		cell.tableRowProperty().subscribe(row -> {
-			if (row != null) {
-				row.indexProperty().subscribe(index -> {
-					if (this.selectedRowIndex.intValue() != index.intValue()) {
-						cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), false);
-					} else {
-						cell.pseudoClassStateChanged(PseudoClass.getPseudoClass("faint-selection"), true);
-					}
-				});
-			}
-		});
-	}
-
 	private void setupTaskColumns(TestTask root) {
 		root.getChildren().addListener(new TasksChangedListener());
 		if (!root.isLeaf()) {
@@ -242,7 +210,7 @@ public class TableViewTest extends TableViewKafx<Student> {
 	}
 
 	private TestTaskColumn createTestTaskColumn(TestTask task) {
-		TestTaskColumn column = new TestTaskColumn(task, t -> createTestTaskColumn(t), cell -> subscribeRowIndex(cell));
+		TestTaskColumn column = new TestTaskColumn(task, t -> createTestTaskColumn(t));
 		task.getChildren().addListener(new TasksChangedListener());
 		this.testTaskColumns.put(task, column);
 		return column;

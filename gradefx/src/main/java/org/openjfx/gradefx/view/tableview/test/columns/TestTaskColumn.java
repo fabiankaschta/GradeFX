@@ -2,7 +2,6 @@ package org.openjfx.gradefx.view.tableview.test.columns;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.openjfx.gradefx.model.Student;
@@ -22,7 +21,6 @@ import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TreeItem;
 import javafx.scene.input.KeyCode;
@@ -36,11 +34,6 @@ public class TestTaskColumn extends TableColumnFooter<Student, BigDecimal> {
 	private final TestTask testTask;
 
 	public TestTaskColumn(TestTask testTask, Function<TestTask, TestTaskColumn> createTestTaskColumn) {
-		this(testTask, createTestTaskColumn, null);
-	}
-
-	public TestTaskColumn(TestTask testTask, Function<TestTask, TestTaskColumn> createTestTaskColumn,
-			Consumer<TableCell<Student, ?>> cellSubscription) {
 		this.testTask = testTask;
 		this.setReorderable(false);
 		BigDecimalConverter bigDecimalConverter = new BigDecimalConverter();
@@ -74,10 +67,6 @@ public class TestTaskColumn extends TableColumnFooter<Student, BigDecimal> {
 								pseudoClassStateChanged(PseudoClass.getPseudoClass("fixed-value"), false);
 							}
 						});
-
-						if (cellSubscription != null) {
-							cellSubscription.accept(this);
-						}
 
 						Label label = new Label();
 						label.setStyle("-fx-text-fill: red;");

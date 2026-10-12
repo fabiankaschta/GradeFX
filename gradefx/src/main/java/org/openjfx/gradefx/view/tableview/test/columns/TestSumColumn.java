@@ -1,7 +1,6 @@
 package org.openjfx.gradefx.view.tableview.test.columns;
 
 import java.math.BigDecimal;
-import java.util.function.Consumer;
 
 import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
@@ -14,7 +13,6 @@ import javafx.beans.binding.Bindings;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
 import javafx.scene.layout.BorderPane;
 import javafx.util.Subscription;
 
@@ -25,10 +23,6 @@ public class TestSumColumn extends TableColumnFooter<Student, BigDecimal> {
 	private final BigDecimalConverter avgConverter = new BigDecimalConverter();
 
 	public TestSumColumn(Test test) {
-		this(test, null);
-	}
-
-	public TestSumColumn(Test test, Consumer<TableCell<Student, ?>> cellSubscription) {
 		this.setCellValueFactory(data -> test.totalPointsProperty(data.getValue()));
 		BigDecimalConverter bigDecimalConverter = new BigDecimalConverter();
 		this.setCellFactory(
@@ -54,9 +48,6 @@ public class TestSumColumn extends TableColumnFooter<Student, BigDecimal> {
 								});
 							}
 						});
-						if (cellSubscription != null) {
-							cellSubscription.accept(this);
-						}
 					}
 				});
 		this.name.setText("\u2211");
