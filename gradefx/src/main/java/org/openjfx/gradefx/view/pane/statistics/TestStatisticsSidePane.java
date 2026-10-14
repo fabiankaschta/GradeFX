@@ -127,7 +127,9 @@ public class TestStatisticsSidePane extends ScrollPane {
 			tendencyBoundField.setPrefColumnCount(2);
 			tendencyBoundField.disableProperty().bind(tendenciesCheckBox.selectedProperty().not());
 			Label tendencyBoundLabel = new Label(TranslationController.translate("pointsSytem_tendencyBound"));
-			tendenciesCheckBox.setSelected(test.getPointsSystem().getTendencyBound() != null);
+			tendenciesCheckBox.setSelected(
+					group.getGradeSystem().useTendencies() && test.getPointsSystem().getTendencyBound() != null);
+			tendenciesCheckBox.setDisable(!group.getGradeSystem().useTendencies());
 			tendenciesCheckBox.selectedProperty()
 					.subscribe(v -> test.getPointsSystem().setTendencyBound(v ? tendencyBoundField.getValue() : null));
 			tendencyBoundField.setValue(test.getPointsSystem().getTendencyBound() == null ? BigDecimal.ZERO

@@ -39,6 +39,7 @@ public class PointsSystem {
 		this.totalPoints.bind(totalPoints);
 		this.setBoundType(gradeSystem.getDefaultBoundType());
 		this.setUseHalfPoints(useHalfPoints);
+		this.setTendencyBound(tendencyBound);
 		this.grades = gradeSystem.getPossibleGradesASC();
 		this.lowerBounds = new ObjectProperty[grades.length];
 		this.upperBounds = new ObjectProperty[grades.length];
@@ -366,7 +367,7 @@ public class PointsSystem {
 				}
 				indexFrom = indexTo;
 			}
-			for (int i = 0; i < bounds.length-1; i++) {
+			for (int i = 0; i < bounds.length - 1; i++) {
 				// this gets scaled one down to avoid rounding errors
 				bounds[i] = bounds[i].setScale(SCALE, RoundingMode.UP);
 			}
