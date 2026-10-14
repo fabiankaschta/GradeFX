@@ -193,7 +193,7 @@ public class GradeSystem {
 				if (avg.compareTo(currentBound) > 0) {
 					return Level.values()[i + 1];
 				}
-				currentBound = currentBound.add(step);
+				currentBound = currentBound.subtract(step);
 			}
 			return Level.values()[steps + 1];
 		}
