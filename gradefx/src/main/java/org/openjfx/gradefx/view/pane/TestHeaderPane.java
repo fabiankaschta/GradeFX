@@ -102,6 +102,7 @@ public class TestHeaderPane extends GridPane {
 		ToggleSwitch showReturnsSwitch = new ToggleSwitch();
 		this.showReturns = new UserInputToggleSwitch(showReturnsSwitch, test.getShowReturns());
 		test.showReturnsProperty().bindBidirectional(this.showReturns.valueProperty());
+		showReturnsSwitch.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(2));
 		this.showReturns.setAlignment(Pos.CENTER);
 		Label showReturnsLabel = new Label(TranslationController.translate("test_showReturns"));
 		showReturnsLabel.setMinWidth(USE_PREF_SIZE);
