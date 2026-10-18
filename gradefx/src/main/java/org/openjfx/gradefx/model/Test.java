@@ -464,6 +464,7 @@ public class Test {
 			"criticalGradesRatio", null);
 	private final ReadOnlyObjectWrapper<BigDecimal> criticalGradesRatioRespectingDate = new ReadOnlyObjectWrapper<BigDecimal>(
 			this, "criticalGradesRatioRespectingDate", null);
+	private final ReadOnlyIntegerWrapper returnedAmount = new ReadOnlyIntegerWrapper(this, "returnedAmount", 0);
 
 	public Test(Group group, String name, String shortName, LocalDate date, BigDecimal weight, BigDecimal maxPoints,
 			boolean onlyDefaultDate, boolean useTasks, boolean usePoints, boolean showReturns) {
@@ -707,6 +708,23 @@ public class Test {
 				this.maxPoints.bind(tasksRoot.maxPoints);
 			}
 		});
+
+		Runnable recalculateReturnedAmount = () -> {
+			this.returnedAmount.unbind();
+			this.returnedAmount.bind(Bindings.createIntegerBinding(() -> {
+				int amount = 0;
+				for (ReadOnlyBooleanWrapper r : this.hasReturned.values()) {
+					Boolean returned = r.get();
+					if (returned != null && returned) {
+						amount++;
+					}
+				}
+				return amount;
+			}, this.hasReturned.values().toArray(n -> new Observable[n])));
+		};
+		this.hasReturned
+				.addListener((MapChangeListener<Student, ReadOnlyBooleanWrapper>) _ -> recalculateReturnedAmount.run());
+		recalculateReturnedAmount.run(); // call once to set initial value
 
 		this.nameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.shortNameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
@@ -1072,6 +1090,14 @@ public class Test {
 
 	public ObservableMap<Student, ReadOnlyBooleanWrapper> getReturns() {
 		return this.hasReturned;
+	}
+
+	public int getReturnsAmount() {
+		return this.returnedAmount.get();
+	}
+
+	public ReadOnlyIntegerProperty returnsAmountProperty() {
+		return this.returnedAmount.getReadOnlyProperty();
 	}
 
 	public BigDecimal getAvgPoints() {

@@ -1,10 +1,8 @@
 package org.openjfx.gradefx.view.pane;
 
 import java.math.BigDecimal;
-import java.util.Map.Entry;
 
 import org.openjfx.gradefx.model.Group;
-import org.openjfx.gradefx.model.Student;
 import org.openjfx.gradefx.model.Test;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
@@ -19,11 +17,6 @@ import org.openjfx.kafx.view.dialog.userinput.UserInputToggleSwitch;
 import org.openjfx.kafx.view.imageview.EmojiImageView;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ReadOnlyBooleanWrapper;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.collections.MapChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.DatePicker;
@@ -40,7 +33,6 @@ public class TestHeaderPane extends GridPane {
 	private final UserInputComparableInput<BigDecimal> weight;
 	private final UserInputComparableInput<BigDecimal> totalPoints;
 	private final UserInputToggleSwitch showReturns;
-	private final IntegerProperty returnsMissingAmount = new SimpleIntegerProperty(this, "returnsAmount", 0);
 //	private final UserInputChoiceBoxTreeItem<TestGroup> testGroupTree;
 
 	public TestHeaderPane(Group group, Test test) {
@@ -119,63 +111,33 @@ public class TestHeaderPane extends GridPane {
 		returnsMissingLabel.setMinWidth(USE_PREF_SIZE);
 		returnsMissingLabel.visibleProperty().bind(test.showReturnsProperty());
 		returnsMissingLabel.textProperty().bind(Bindings.createStringBinding(() -> {
-			if (this.returnsMissingAmount.getValue() == 0) {
+			if (test.getReturnsAmount() == group.getStudents().size()) {
 				return TranslationController.translate("test_returnsMissingNone");
 			} else {
 				return TranslationController.translate("test_returnsMissing");
 			}
-		}, this.returnsMissingAmount));
+		}, test.returnsAmountProperty(), group.getStudents()));
 		Label returnsMissing = new Label();
 		returnsMissing.setMinWidth(USE_PREF_SIZE);
 		returnsMissing.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(2));
 		returnsMissing.setAlignment(Pos.CENTER);
 		returnsMissing.setTextAlignment(TextAlignment.CENTER);
 		EmojiImageView emoji = new EmojiImageView("1F60E", FontSizeController.fontSizeProperty().multiply(2));
-		this.returnsMissingAmount.subscribe(value -> {
-			if (value.intValue() == 0) {
-				returnsMissing.setGraphic(emoji);
-				returnsMissing.setText("");
+		returnsMissing.graphicProperty().bind(Bindings.createObjectBinding(() -> {
+			if (test.getReturnsAmount() == group.getStudents().size()) {
+				return emoji;
 			} else {
-				returnsMissing.setGraphic(null);
-				returnsMissing.setText(value.toString());
+				return null;
 			}
-		});
+		}, test.returnsAmountProperty(), group.getStudents()));
+		returnsMissing.textProperty().bind(Bindings.createStringBinding(() -> {
+			if (test.getReturnsAmount() == group.getStudents().size()) {
+				return "";
+			} else {
+				return String.valueOf(group.getStudents().size() - test.getReturnsAmount());
+			}
+		}, test.returnsAmountProperty(), group.getStudents()));
 		returnsMissing.visibleProperty().bind(test.showReturnsProperty());
-		this.returnsMissingAmount.setValue(test.getReturns().size());
-
-		final ChangeListener<Boolean> updateReturnsListener = (_, _, newValue) -> {
-			if (newValue) {
-				this.returnsMissingAmount.setValue(this.returnsMissingAmount.getValue() - 1);
-			} else {
-				this.returnsMissingAmount.setValue(this.returnsMissingAmount.getValue() + 1);
-			}
-		};
-		// add listeners to all existing returns
-		for (Entry<Student, ReadOnlyBooleanWrapper> e : test.getReturns().entrySet()) {
-			e.getValue().addListener(updateReturnsListener);
-		}
-		// update listener if new student / return is entered
-		test.getReturns().addListener((MapChangeListener<Student, ReadOnlyBooleanWrapper>) c -> {
-			// new mapping
-			if (c.getValueRemoved() == null) {
-				c.getValueAdded().addListener(updateReturnsListener);
-				if (!c.getValueAdded().get()) {
-					this.returnsMissingAmount.setValue(this.returnsMissingAmount.getValue() + 1);
-				}
-			}
-			// mapping was removed
-			else if (c.getValueAdded() == null) {
-				c.getValueRemoved().removeListener(updateReturnsListener);
-				if (!c.getValueRemoved().get()) {
-					this.returnsMissingAmount.setValue(this.returnsMissingAmount.getValue() - 1);
-				}
-			}
-			// mapping was replaced
-			else {
-				c.getValueRemoved().removeListener(updateReturnsListener);
-				c.getValueAdded().addListener(updateReturnsListener);
-			}
-		});
 
 		this.add(returnsMissingLabel, 5, 1);
 		this.add(returnsMissing, 6, 1);
