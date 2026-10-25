@@ -38,4 +38,12 @@ public class TestPane extends ScrollPane {
 		return this.testTableView.getSelectionModel().getSelectedItem();
 	}
 
+	public String getSortOrderString() {
+		return this.testTableView.getSortOrderString();
+	}
+
+	public void setSortOrderString(String sortOrder) {
+		this.testTableView.setSortOrderString(sortOrder);
+	}
+
 }

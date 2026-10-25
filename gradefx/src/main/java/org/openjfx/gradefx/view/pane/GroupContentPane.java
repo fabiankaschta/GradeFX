@@ -56,7 +56,7 @@ public class GroupContentPane extends AddTabPane {
 
 		Styles.subscribeThemeColor(this, group.colorProperty());
 		this.getStyleClass().addAll("tab-pane-selected-bold");
-		
+
 		this.getTabs().addListener((ListChangeListener<Tab>) c -> {
 			while (c.next()) {
 				if (c.wasPermutated()) {
@@ -85,13 +85,7 @@ public class GroupContentPane extends AddTabPane {
 	}
 
 	private void removeTestTab(Test test) {
-		TestTab toRemove = null;
-		for (Tab t : this.getTabs()) {
-			if ((t instanceof TestTab) && ((TestTab) t).getTest() == test) {
-				toRemove = (TestTab) t;
-				break;
-			}
-		}
+		TestTab toRemove = getTab(test);
 		if (toRemove != null) {
 			this.getTabs().remove(toRemove);
 		}
@@ -104,5 +98,18 @@ public class GroupContentPane extends AddTabPane {
 	@Override
 	protected boolean createNewTab() {
 		return new DialogAddTest(this.group).showAndWait().isPresent();
+	}
+
+	public TestTab getTab(Test test) {
+		for (Tab t : this.getTabs()) {
+			if ((t instanceof TestTab) && ((TestTab) t).getTest() == test) {
+				return (TestTab) t;
+			}
+		}
+		return null;
+	}
+
+	public GroupOverviewTab getOverviewTab() {
+		return (GroupOverviewTab) this.getTabs().getFirst();
 	}
 }

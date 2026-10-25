@@ -2,6 +2,7 @@ package org.openjfx.gradefx.view.tab;
 
 import org.openjfx.gradefx.controller.GradeFXController;
 import org.openjfx.gradefx.model.Group;
+import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.view.pane.GroupContentPane;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.view.style.Styles;
@@ -83,6 +84,14 @@ public class GroupTab extends Tab {
 
 	public void select(int index) {
 		this.pane.getSelectionModel().select(index);
+	}
+
+	public TestTab getTab(Test test) {
+		return this.pane.getTab(test);
+	}
+
+	public GroupOverviewTab getOverviewTab() {
+		return this.pane.getOverviewTab();
 	}
 
 }

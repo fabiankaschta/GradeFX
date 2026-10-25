@@ -41,4 +41,12 @@ public class TestTab extends Tab {
 		return this.pane.getSelectStudent();
 	}
 
+	public String getSortOrderString() {
+		return this.pane.getSortOrderString();
+	}
+
+	public void setSortOrderString(String sortOrder) {
+		this.pane.setSortOrderString(sortOrder);
+	}
+
 }

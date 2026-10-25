@@ -23,14 +23,17 @@ public class GroupsPane extends AddTabPane {
 		instance.addTab(new GroupTab(group));
 	}
 
-	public static void removeTab(Group group) {
-		GroupTab toRemove = null;
+	public static GroupTab getTab(Group group) {
 		for (Tab t : instance.getTabs()) {
 			if ((t instanceof GroupTab) && ((GroupTab) t).getGroup() == group) {
-				toRemove = (GroupTab) t;
-				break;
+				return (GroupTab) t;
 			}
 		}
+		return null;
+	}
+
+	public static void removeTab(Group group) {
+		GroupTab toRemove = getTab(group);
 		if (toRemove != null) {
 			instance.getTabs().remove(toRemove);
 		}

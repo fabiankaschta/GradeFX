@@ -1,6 +1,7 @@
 package org.openjfx.gradefx.io;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.openjfx.gradefx.controller.GradeFXController;
@@ -20,6 +21,7 @@ import org.openjfx.gradefx.model.Test.TestTask.TestTaskPointsDecoration;
 import org.openjfx.gradefx.model.TestGroup;
 import org.openjfx.gradefx.model.TestGroup.TestGroupSystem;
 import org.openjfx.gradefx.view.pane.GroupsPane;
+import org.openjfx.gradefx.view.tab.GroupTab;
 import org.openjfx.kafx.controller.ExceptionController;
 import org.openjfx.kafx.io.Data;
 import org.openjfx.kafx.io.DataObject;
@@ -38,7 +40,26 @@ public class GradeFXFileIO extends EncryptedFileIO {
 			((ArrayList<DataObject<TestGroupSystem>>) data.get("testGroupSystems")).forEach(tgs -> tgs.deserialize());
 			((ArrayList<DataObject<Subject>>) data.get("subjects")).forEach(s -> s.deserialize());
 			((ArrayList<DataObject<GradeSystem>>) data.get("gradeSystems")).forEach(gs -> gs.deserialize());
-			((ArrayList<DataObject<Group>>) data.get("groups")).forEach(g -> g.deserialize());
+			ArrayList<Integer> selectedTabs = (ArrayList<Integer>) data.get("selectedTabInGroup");
+			((ArrayList<DataObject<Group>>) data.get("groups")).forEach(g -> {
+				Group group = g.deserialize();
+				// FIXME remove compatibility with pre v2.4
+				if (selectedTabs != null) {
+					GroupsPane.getTab(group).select(selectedTabs.get(Group.getGroups().indexOf(group)));
+				}
+			});
+
+			ArrayList<String> sortOrders = (ArrayList<String>) data.get("sortOrders");
+			// FIXME remove compatibility with pre v2.4
+			if (sortOrders != null) {
+				Iterator<String> sortOrdersIterator = sortOrders.iterator();
+				for (Group g : Group.getGroups()) {
+					GroupsPane.getTab(g).getOverviewTab().setSortOrderString(sortOrdersIterator.next());
+					for (Test test : g.getTests()) {
+						GroupsPane.getTab(g).getTab(test).setSortOrderString(sortOrdersIterator.next());
+					}
+				}
+			}
 
 			GroupsPane.select((int) data.get("selectedGroup"));
 
@@ -87,6 +108,19 @@ public class GradeFXFileIO extends EncryptedFileIO {
 		data.put("gradeSystems", new ArrayList<DataObject<GradeSystem>>(
 				GradeSystem.getGradeSystems().stream().map(gs -> gs.serialize()).toList()));
 		data.put("groups", new ArrayList<>(Group.getGroups().stream().map(g -> g.serialize()).toList()));
+
+		ArrayList<Integer> selectedTabInGroup = new ArrayList<>();
+		ArrayList<String> sortOrders = new ArrayList<>();
+		for (Group g : Group.getGroups()) {
+			GroupTab groupTab = GroupsPane.getTab(g);
+			selectedTabInGroup.add(groupTab.getSelectedTabIndex());
+			sortOrders.add(groupTab.getOverviewTab().getSortOrderString());
+			for (Test test : g.getTests()) {
+				sortOrders.add(groupTab.getTab(test).getSortOrderString());
+			}
+		}
+		data.put("selectedTabInGroup", selectedTabInGroup);
+		data.put("sortOrders", sortOrders);
 
 		data.put("selectedGroup", Group.getGroups().indexOf(GradeFXController.getSelectedGroup()));
 

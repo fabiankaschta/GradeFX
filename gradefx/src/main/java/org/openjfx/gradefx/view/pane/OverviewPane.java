@@ -28,4 +28,12 @@ public class OverviewPane extends ScrollPane {
 		return this.overviewTableView.getSelectionModel().getSelectedItem();
 	}
 
+	public String getSortOrderString() {
+		return this.overviewTableView.getSortOrderString();
+	}
+
+	public void setSortOrderString(String sortOrder) {
+		this.overviewTableView.setSortOrderString(sortOrder);
+	}
+
 }
