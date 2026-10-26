@@ -266,12 +266,12 @@ public class TestGroup extends TreeItem<TestGroup> {
 				}
 				return group.getGradeSystem().calculateAverage(avgs.toArray(n -> new BigDecimal[n]),
 						weights.toArray(n -> new BigDecimal[n]));
-			}, observables.toArray(n -> new Observable[n])));
+			}, observables.stream().filter(o -> o != null).toArray(n -> new Observable[n])));
 		};
 		this.tests.addListener((ListChangeListener<Test>) _ -> this.avgGrades.keySet()
 				.forEach(student -> recalculateGradeAvgStudent.accept(student)));
-		this.getChildren().subscribe(() -> this.avgGrades.keySet()
-				.forEach(student -> recalculateGradeAvgStudent.accept(student)));
+		this.getChildren().subscribe(
+				() -> this.avgGrades.keySet().forEach(student -> recalculateGradeAvgStudent.accept(student)));
 		for (Student student : group.getStudents()) {
 			recalculateGradeAvgStudent.accept(student);
 		}

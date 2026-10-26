@@ -445,6 +445,13 @@ public class GradeSystem {
 
 		@Override
 		public int compare(Grade g1, Grade g2) {
+			if (g1 == null && g2 == null) {
+				return 0;
+			} else if (g1 == null) {
+				return -1;
+			} else if (g2 == null) {
+				return 1;
+			}
 			int compare = g1.getNumericalValue().compareTo(g2.getNumericalValue());
 			if (compare == 0) {
 				return g1.getTendency().compareTo(g2.getTendency());

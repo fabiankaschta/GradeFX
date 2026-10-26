@@ -3,6 +3,7 @@ package org.openjfx.gradefx.view.tableview.test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.openjfx.gradefx.controller.GradeFXController;
 import org.openjfx.gradefx.model.Group;
@@ -11,6 +12,7 @@ import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.Test.TestTask;
 import org.openjfx.gradefx.model.Test.TestTask.TestTaskPointsDecoration;
 import org.openjfx.gradefx.view.tableview.columns.StudentFirstNameColumn;
+import org.openjfx.gradefx.view.tableview.columns.StudentIndexColumn;
 import org.openjfx.gradefx.view.tableview.columns.StudentLastNameColumn;
 import org.openjfx.gradefx.view.tableview.columns.StudentReturnColumn;
 import org.openjfx.gradefx.view.tableview.columns.StudentSubgroupNameColumn;
@@ -26,6 +28,9 @@ import org.openjfx.kafx.view.tableview.TableCellEditControl;
 import org.openjfx.kafx.view.tableview.TableViewKafx;
 
 import javafx.collections.ListChangeListener;
+import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TreeItem;
@@ -34,6 +39,7 @@ import javafx.scene.text.Text;
 
 public class TableViewTest extends TableViewKafx<Student> {
 
+	private final StudentIndexColumn indexColumn;
 	private final StudentReturnColumn returnColumn;
 	private final StudentLastNameColumn lastNameColumn;
 	private final StudentFirstNameColumn firstNameColumn;
@@ -44,9 +50,11 @@ public class TableViewTest extends TableViewKafx<Student> {
 	private final TestGradeColumn gradeColumn;
 	private final TestAnnotationColumn annotationColumn;
 	private final TestDateColumn dateColumn;
+	private final ContextMenu tableMenu;
+	private final Map<Student, MenuItem> tableMenuItems = new HashMap<>();;
 
 	public TableViewTest(Group group, Test test) {
-		super(group.getStudents());
+		super(test.studentsProperty());
 
 		this.setEditable(true);
 		this.setFooterVisible(true);
@@ -59,6 +67,7 @@ public class TableViewTest extends TableViewKafx<Student> {
 
 		this.fixedCellSizeProperty().bind(FontSizeController.fontSizeProperty().multiply(2).add(1));
 
+		this.indexColumn = new StudentIndexColumn(group);
 		this.returnColumn = new StudentReturnColumn(test);
 		this.lastNameColumn = new StudentLastNameColumn(false);
 		this.firstNameColumn = new StudentFirstNameColumn(false);
@@ -88,11 +97,12 @@ public class TableViewTest extends TableViewKafx<Student> {
 			return result;
 		});
 
+		this.getColumns().add(this.indexColumn);
 		this.getColumns().add(this.returnColumn);
 		this.getColumns().add(this.lastNameColumn);
 		this.getColumns().add(this.firstNameColumn);
 		this.getColumns().add(this.subgroupNameColumn);
-		this.setFixedColumnsIndex(3);
+		this.setFixedColumnsIndex(4);
 		this.setFixedColumnsFooterText(TranslationController.translate("tab_test_footer_avg") + ':');
 
 		// DEL / BACKSPACE remove fixed state
@@ -143,6 +153,38 @@ public class TableViewTest extends TableViewKafx<Student> {
 		});
 
 		this.setupTaskColumns(test.getTasksRoot());
+
+		this.setTableMenuButtonVisible(true);
+		this.tableMenu = new ContextMenu();
+		Consumer<Student> addMenuItem = student -> {
+			CheckMenuItem menuItem = new CheckMenuItem(student.getFirstName() + ' ' + student.getLastName());
+			menuItem.setSelected(test.studentsProperty().contains(student));
+			menuItem.selectedProperty().addListener((_, _, selected) -> {
+				if (selected) {
+					test.addStudent(student);
+					this.sort();
+				} else {
+					test.removeStudent(student);
+				}
+			});
+			this.tableMenuItems.put(student, menuItem);
+			this.tableMenu.getItems().add(menuItem);
+		};
+		group.getStudents().forEach(addMenuItem);
+		group.getStudents().addListener((ListChangeListener<Student>) c -> {
+			while (c.next()) {
+				if (c.wasAdded()) {
+					c.getAddedSubList().forEach(addMenuItem);
+				}
+				if (c.wasRemoved()) {
+					c.getRemoved().forEach(student -> {
+						MenuItem menuItem = this.tableMenuItems.remove(student);
+						this.tableMenu.getItems().remove(menuItem);
+					});
+				}
+			}
+		});
+		this.setTableMenuButtonContextMenu(this.tableMenu);
 
 		FontSizeController.bindTableColumnWidthToFontSize(this);
 		this.getStyleClass().addAll("table-view-cell-highlight", "table-view-no-focus", "table-view-hide-empty");

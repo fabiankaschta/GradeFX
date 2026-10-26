@@ -43,6 +43,7 @@ public class GradeFXController extends Controller {
 		ConfigController.putIfNotExists("DEFAULT_GROUP_COLOR", "#e6e6e6");
 		ConfigController.putIfNotExists("TABLECELL_ENTER_MODE", EnterMode.CONFIRM.name());
 		ConfigController.putIfNotExists("DEBUG_MODE", String.valueOf(false));
+		ConfigController.putIfNotExists("LINE_NUMBERS", String.valueOf(false));
 		if (!Boolean.valueOf(ConfigController.get("DEBUG_MODE"))) {
 			LogController.setLevel(Level.WARNING);
 		}

@@ -30,7 +30,8 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.MapChangeListener;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.scene.control.TreeItem;
 import javafx.scene.paint.Color;
@@ -88,9 +89,10 @@ public class Test {
 			this.getChildren().addListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
 			super.setValue(this);
 			this.setExpanded(true);
+			test.students.forEach(student -> this.putStudentPropertiesIfNotExists(student));
 
 			// listen to map changes (students added or removed)
-			MapChangeListener<Student, ObjectProperty<BigDecimal>> avgPointsListener = _ -> {
+			Runnable avgPointsListener = () -> {
 				this.avgPoints.unbind();
 				this.avgPoints.bind(Bindings.createObjectBinding(() -> {
 					BigDecimal sum = BigDecimal.ZERO;
@@ -109,8 +111,8 @@ public class Test {
 					}
 				}, this.points.values().toArray(n -> new Observable[n])));
 			};
-			this.points.addListener(avgPointsListener);
-			avgPointsListener.onChanged(null); // call once to set initial value
+			test.students.addListener((ListChangeListener<Student>) _ -> avgPointsListener.run());
+			avgPointsListener.run(); // call once to set initial value
 		}
 
 		private TestTask getParentTask() {
@@ -202,6 +204,31 @@ public class Test {
 			}
 		}
 
+		private void putStudentPropertiesIfNotExists(Student student) {
+			this.test.putStudentPropertiesIfNotExists(student);
+			if (!this.points.containsKey(student)) {
+				ObjectProperty<BigDecimal> pointsProperty = new SimpleObjectProperty<>(student,
+						"points in test task " + this);
+				pointsProperty.addListener(ChangeController.getConditionalListenerUnsavedChanges(() -> this.isLeaf()));
+				pointsProperty.addListener((_, _, _) -> {
+					this.updatePointsParent(student);
+				});
+				this.points.put(student, pointsProperty);
+
+				ObjectProperty<TestTaskPointsDecoration> pointsDecorationProperty = new SimpleObjectProperty<>(student,
+						"decoration for points in test task " + this, TestTaskPointsDecoration.NONE);
+				pointsDecorationProperty
+						.addListener(ChangeController.getConditionalListenerUnsavedChanges(() -> this.isLeaf()));
+				this.decorations.put(student, pointsDecorationProperty);
+
+				ObjectProperty<Color> decorationColorProperty = new SimpleObjectProperty<>(student,
+						"color for decoration in test task " + this, Color.RED);
+				decorationColorProperty
+						.addListener(ChangeController.getConditionalListenerUnsavedChanges(() -> this.isLeaf()));
+				this.decorationColors.put(student, decorationColorProperty);
+			}
+		}
+
 		public String getName() {
 			return this.name.get();
 		}
@@ -240,34 +267,11 @@ public class Test {
 		}
 
 		private void removeStudent(Student student) {
-			this.points.remove(student);
+			this.points.get(student).set(null);
+			this.decorations.get(student).set(TestTaskPointsDecoration.NONE);
+			this.decorationColors.get(student).set(Color.RED);
 			for (TreeItem<TestTask> child : getChildren()) {
 				((TestTask) child).removeStudent(student);
-			}
-		}
-
-		private void putStudentPropertiesIfNotExists(Student student) {
-			this.test.putStudentPropertiesIfNotExists(student);
-			if (!this.points.containsKey(student)) {
-				ObjectProperty<BigDecimal> pointsProperty = new SimpleObjectProperty<>(student,
-						"points in test task " + this);
-				pointsProperty.addListener(ChangeController.getConditionalListenerUnsavedChanges(() -> this.isLeaf()));
-				pointsProperty.addListener((_, _, _) -> {
-					this.updatePointsParent(student);
-				});
-				this.points.put(student, pointsProperty);
-
-				ObjectProperty<TestTaskPointsDecoration> pointsDecorationProperty = new SimpleObjectProperty<>(student,
-						"decoration for points in test task " + this, TestTaskPointsDecoration.NONE);
-				pointsDecorationProperty
-						.addListener(ChangeController.getConditionalListenerUnsavedChanges(() -> this.isLeaf()));
-				this.decorations.put(student, pointsDecorationProperty);
-
-				ObjectProperty<Color> decorationColorProperty = new SimpleObjectProperty<>(student,
-						"color for decoration in test task " + this, Color.RED);
-				decorationColorProperty
-						.addListener(ChangeController.getConditionalListenerUnsavedChanges(() -> this.isLeaf()));
-				this.decorationColors.put(student, decorationColorProperty);
 			}
 		}
 
@@ -360,15 +364,19 @@ public class Test {
 				this.maxPoints = tt.getMaxPoints();
 				this.isRoot = tt.isRoot();
 				for (Entry<Student, ObjectProperty<BigDecimal>> sg : tt.points.entrySet()) {
-					this.points.put(sg.getKey().serialize(), sg.getValue().getValue());
+					if (tt.test.students.contains(sg.getKey())) {
+						this.points.put(sg.getKey().serialize(), sg.getValue().getValue());
+					}
 				}
 				for (Entry<Student, ObjectProperty<TestTaskPointsDecoration>> st : tt.decorations.entrySet()) {
-					if (st.getValue().getValue() != TestTaskPointsDecoration.NONE) {
-						this.pointsDecorations.put(st.getKey().serialize(), st.getValue().getValue());
-					}
-					if (tt.decorationColors.get(st.getKey()).get() != Color.RED) {
-						this.decorationColors.put(st.getKey().serialize(),
-								Styles.toHexString(tt.decorationColors.get(st.getKey()).get()));
+					if (tt.test.students.contains(st.getKey())) {
+						if (st.getValue().getValue() != TestTaskPointsDecoration.NONE) {
+							this.pointsDecorations.put(st.getKey().serialize(), st.getValue().getValue());
+						}
+						if (tt.decorationColors.get(st.getKey()).get() != Color.RED) {
+							this.decorationColors.put(st.getKey().serialize(),
+									Styles.toHexString(tt.decorationColors.get(st.getKey()).get()));
+						}
 					}
 				}
 				for (TreeItem<TestTask> t : tt.getChildren()) {
@@ -435,6 +443,7 @@ public class Test {
 	private final BooleanProperty showReturns = new SimpleBooleanProperty(this, "showReturns");
 	private final ObjectProperty<PointsSystem> pointsSystem = new SimpleObjectProperty<>(this, "pointsSystem");
 	private final ObjectProperty<TestTask> tasksRoot = new SimpleObjectProperty<>(this, "tasksRoot");
+	private final ObservableList<Student> students = FXCollections.observableArrayList();
 	private final ObservableMap<Student, ReadOnlyBooleanWrapper> totalPointsFixed = FXCollections.observableHashMap();
 	private final ObservableMap<Student, ObjectProperty<BigDecimal>> totalPoints = FXCollections.observableHashMap();
 	private final ObservableMap<Student, ReadOnlyBooleanWrapper> gradesFixed = FXCollections.observableHashMap();
@@ -471,6 +480,7 @@ public class Test {
 		this(group, name, shortName, date, weight, onlyDefaultDate, useTasks, usePoints, showReturns);
 		this.setTasksRoot(TestTask.createRoot(this, maxPoints));
 		this.setPointsSystem(group.getGradeSystem().getDefaultPointsSystem(this.maxPointsProperty()));
+		group.getStudents().forEach(student -> this.addStudent(student));
 	}
 
 	private Test(Group group, String name, String shortName, LocalDate date, BigDecimal weight, boolean onlyDefaultDate,
@@ -530,6 +540,29 @@ public class Test {
 			}
 		});
 
+		this.students.addListener((ListChangeListener<Student>) c -> {
+			while (c.next()) {
+				if (c.wasAdded() && !c.wasPermutated()) {
+					for (Student student : c.getAddedSubList()) {
+						this.putStudentPropertiesIfNotExists(student);
+					}
+				} else if (c.wasRemoved() && !c.wasPermutated()) {
+					for (Student student : c.getRemoved()) {
+						this.grades.get(student).set(null);
+						this.gradesFixed.get(student).set(false);
+						this.totalPoints.get(student).set(null);
+						this.totalPointsFixed.get(student).set(false);
+						this.annotations.get(student).set(null);
+						this.dates.get(student).set(null);
+						this.hasReturned.get(student).set(false);
+						if (this.getTasksRoot() != null) {
+							this.getTasksRoot().removeStudent(student);
+						}
+					}
+				}
+			}
+		});
+
 		// setup for calculated properties
 
 		Runnable recalculateGradeAmounts = () -> {
@@ -578,10 +611,7 @@ public class Test {
 				}, observables.toArray(Observable[]::new)));
 			}
 		};
-		// listen to map changes (students added or removed)
-		this.grades.addListener((MapChangeListener<Student, ObjectProperty<Grade>>) _ -> recalculateGradeAmounts.run());
-		this.dates.addListener(
-				(MapChangeListener<Student, ObjectProperty<LocalDate>>) _ -> recalculateGradeAmounts.run());
+		this.students.addListener((ListChangeListener<Student>) _ -> recalculateGradeAmounts.run());
 
 		group.gradeSystemProperty().subscribe(gradeSystem -> {
 			this.gradeAmounts.clear();
@@ -612,8 +642,7 @@ public class Test {
 				}
 			}, this.totalPoints.values().toArray(n -> new Observable[n])));
 		};
-		this.totalPoints
-				.addListener((MapChangeListener<Student, ObjectProperty<BigDecimal>>) _ -> recalculateAvgPoints.run());
+		this.students.addListener((ListChangeListener<Student>) _ -> recalculateAvgPoints.run());
 		recalculateAvgPoints.run(); // call once to set initial value
 
 		this.avgPointsRatio.bind(Bindings.createObjectBinding(() -> {
@@ -722,8 +751,7 @@ public class Test {
 				return amount;
 			}, this.hasReturned.values().toArray(n -> new Observable[n])));
 		};
-		this.hasReturned
-				.addListener((MapChangeListener<Student, ReadOnlyBooleanWrapper>) _ -> recalculateReturnedAmount.run());
+		this.students.addListener((ListChangeListener<Student>) _ -> recalculateReturnedAmount.run());
 		recalculateReturnedAmount.run(); // call once to set initial value
 
 		this.nameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
@@ -734,6 +762,67 @@ public class Test {
 		this.useTasksProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.usePointsProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.showReturnsProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+		this.studentsProperty().addListener(ChangeController.LISTLISTENER_UNSAVED_CHANGES);
+	}
+
+	private void putStudentPropertiesIfNotExists(Student student) {
+		if (!this.grades.containsKey(student)) {
+			ObjectProperty<Grade> gradeProperty = new SimpleObjectProperty<>(student, "grade in test " + this);
+			ReadOnlyBooleanWrapper gradeFixedProperty = new ReadOnlyBooleanWrapper(student,
+					"gradeFixed in test " + this, false);
+			ObjectProperty<BigDecimal> totalPointsProperty = new SimpleObjectProperty<>(student,
+					"totalPoints in test " + this);
+			ReadOnlyBooleanWrapper totalPointsFixedProperty = new ReadOnlyBooleanWrapper(student,
+					"totalPointsFixed in test " + this, false);
+			StringProperty annotationProperty = new SimpleStringProperty(student, "annotation in test " + this);
+			ObjectProperty<LocalDate> dateProperty = new SimpleObjectProperty<>(student, "date in test " + this);
+			ReadOnlyBooleanWrapper hasReturnedProperty = new ReadOnlyBooleanWrapper(student,
+					"hasReturned in test " + this, false);
+
+			gradeProperty.addListener(ChangeController
+					.getConditionalListenerUnsavedChanges(() -> this.isGradeFixed(student) || !this.getUsePoints()));
+			gradeFixedProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+			totalPointsProperty.addListener(ChangeController.getConditionalListenerUnsavedChanges(
+					() -> this.isTotalPointsFixed(student) || !this.getUseTasks()));
+			totalPointsFixedProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+			annotationProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+			dateProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+			hasReturnedProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+
+			gradeProperty.addListener((_, _, newValue) -> {
+				if (newValue == null && gradeFixedProperty.get()) {
+					this.setGradeFixed(student, false);
+				}
+			});
+
+			gradeFixedProperty.addListener((_, oldValue, newValue) -> {
+				if (oldValue && !newValue) {
+					this.calculateGrade(student);
+				}
+			});
+
+			totalPointsProperty.addListener((_, _, _) -> this.calculateGrade(student));
+
+			totalPointsFixedProperty.addListener((_, oldValue, newValue) -> {
+				if (oldValue && !newValue) {
+					this.calculateTotalPoints(student);
+				}
+			});
+
+			this.grades.put(student, gradeProperty);
+			this.gradesFixed.put(student, gradeFixedProperty);
+			this.totalPoints.put(student, totalPointsProperty);
+			this.totalPointsFixed.put(student, totalPointsFixedProperty);
+			this.annotations.put(student, annotationProperty);
+			this.dates.put(student, dateProperty);
+			this.hasReturned.put(student, hasReturnedProperty);
+			if (this.getTasksRoot() != null) {
+				this.getTasksRoot().putStudentPropertiesIfNotExists(student);
+			}
+
+			this.calculateTotalPoints(student);
+			this.calculateGrade(student);
+		}
 	}
 
 	public String getName() {
@@ -848,6 +937,7 @@ public class Test {
 
 	private void setTasksRoot(TestTask tasksRoot) {
 		this.tasksRoot.set(tasksRoot);
+		this.students.forEach(student -> tasksRoot.putStudentPropertiesIfNotExists(student));
 		if (this.pointsSystem.get() != null) {
 			this.pointsSystem.get().totalPointsProperty().unbind();
 			this.pointsSystem.get().totalPointsProperty().bind(this.tasksRoot.get().maxPointsProperty());
@@ -876,100 +966,44 @@ public class Test {
 		}
 	}
 
-	public void removeStudent(Student student) {
-		this.grades.remove(student);
-		this.gradesFixed.remove(student);
-		this.totalPoints.remove(student);
-		this.totalPointsFixed.remove(student);
-		this.annotations.remove(student);
-		this.dates.remove(student);
-		this.hasReturned.remove(student);
-		this.tasksRoot.get().removeStudent(student);
+	public void addStudent(Student student) {
+		this.students.add(student);
 	}
 
-	private void putStudentPropertiesIfNotExists(Student student) {
-		if (!this.grades.containsKey(student)) {
-			ObjectProperty<Grade> gradeProperty = new SimpleObjectProperty<>(student, "grade in test " + this);
-			ReadOnlyBooleanWrapper gradeFixedProperty = new ReadOnlyBooleanWrapper(student,
-					"gradeFixed in test " + this, false);
-			ObjectProperty<BigDecimal> totalPointsProperty = new SimpleObjectProperty<>(student,
-					"totalPoints in test " + this);
-			ReadOnlyBooleanWrapper totalPointsFixedProperty = new ReadOnlyBooleanWrapper(student,
-					"totalPointsFixed in test " + this, false);
-			StringProperty annotationProperty = new SimpleStringProperty(student, "annotation in test " + this);
-			ObjectProperty<LocalDate> dateProperty = new SimpleObjectProperty<>(student, "date in test " + this);
-			ReadOnlyBooleanWrapper hasReturnedProperty = new ReadOnlyBooleanWrapper(student,
-					"hasReturned in test " + this, false);
+	public void removeStudent(Student student) {
+		this.students.remove(student);
+	}
 
-			gradeProperty.addListener(ChangeController
-					.getConditionalListenerUnsavedChanges(() -> this.isGradeFixed(student) || !this.getUsePoints()));
-			gradeFixedProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
-			totalPointsProperty.addListener(ChangeController.getConditionalListenerUnsavedChanges(
-					() -> this.isTotalPointsFixed(student) || !this.getUseTasks()));
-			totalPointsFixedProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
-			annotationProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
-			dateProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
-			hasReturnedProperty.addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
-
-			gradeProperty.addListener((_, _, newValue) -> {
-				if (newValue == null && gradeFixedProperty.get()) {
-					this.setGradeFixed(student, false);
-				}
-			});
-
-			gradeFixedProperty.addListener((_, oldValue, newValue) -> {
-				if (oldValue && !newValue) {
-					this.calculateGrade(student);
-				}
-			});
-
-			totalPointsProperty.addListener((_, _, _) -> this.calculateGrade(student));
-
-			totalPointsFixedProperty.addListener((_, oldValue, newValue) -> {
-				if (oldValue && !newValue) {
-					this.calculateTotalPoints(student);
-				}
-			});
-
-			this.grades.put(student, gradeProperty);
-			this.gradesFixed.put(student, gradeFixedProperty);
-			this.totalPoints.put(student, totalPointsProperty);
-			this.totalPointsFixed.put(student, totalPointsFixedProperty);
-			this.annotations.put(student, annotationProperty);
-			this.dates.put(student, dateProperty);
-			this.hasReturned.put(student, hasReturnedProperty);
-
-			this.calculateTotalPoints(student);
-			this.calculateGrade(student);
-		}
+	public ObservableList<Student> studentsProperty() {
+		return this.students;
 	}
 
 	private void calculateTotalPoints() {
 		if (this.getTasksRoot() != null) {
-			for (Student student : this.grades.keySet()) {
+			for (Student student : this.students) {
 				calculateTotalPoints(student);
 			}
 		}
 	}
 
 	private void calculateTotalPoints(Student student) {
+		this.putStudentPropertiesIfNotExists(student);
 		if (this.getTasksRoot() != null && !isTotalPointsFixed(student) && getUseTasks()) {
-			this.putStudentPropertiesIfNotExists(student);
 			this.totalPoints.get(student).set(this.getTasksRoot().getPoints(student));
 		}
 	}
 
 	private void calculateGrades() {
 		if (this.getTasksRoot() != null) {
-			for (Student student : this.grades.keySet()) {
+			for (Student student : this.students) {
 				calculateGrade(student);
 			}
 		}
 	}
 
 	private void calculateGrade(Student student) {
+		this.putStudentPropertiesIfNotExists(student);
 		if (this.getPointsSystem() != null && !isGradeFixed(student) && getUsePoints()) {
-			this.putStudentPropertiesIfNotExists(student);
 			BigDecimal totalPoints = this.getTotalPoints(student);
 			if (totalPoints == null) {
 				this.grades.get(student).set(null);
@@ -1197,6 +1231,7 @@ public class Test {
 		private final boolean useTasks;
 		private final boolean usePoints;
 		private final boolean showReturns;
+		private final List<DataObject<Student>> students = new ArrayList<>();
 		private final DataObject<PointsSystem> pointsSystem;
 		private final DataObject<TestTask> tasksRoot;
 		private final Map<DataObject<Student>, Grade> grades = new HashMap<>();
@@ -1219,34 +1254,47 @@ public class Test {
 			showReturns = t.getShowReturns();
 			useTasks = t.getUseTasks();
 			usePoints = t.getUsePoints();
+			for (Student s : t.students) {
+				this.students.add(s.serialize());
+			}
 			pointsSystem = t.getPointsSystem().serialize();
 			tasksRoot = t.getTasksRoot().serialize();
 			for (Entry<Student, ObjectProperty<BigDecimal>> st : t.totalPoints.entrySet()) {
-				if (t.isTotalPointsFixed(st.getKey())) {
-					this.totalPoints.put(st.getKey().serialize(), st.getValue().getValue());
-					this.totalPointsFixed.put(st.getKey().serialize(), true);
-				} else if (!t.getUseTasks()) {
-					this.totalPoints.put(st.getKey().serialize(), st.getValue().getValue());
-					this.totalPointsFixed.put(st.getKey().serialize(), false);
+				if (t.students.contains(st.getKey())) {
+					if (t.isTotalPointsFixed(st.getKey())) {
+						this.totalPoints.put(st.getKey().serialize(), st.getValue().getValue());
+						this.totalPointsFixed.put(st.getKey().serialize(), true);
+					} else if (!t.getUseTasks()) {
+						this.totalPoints.put(st.getKey().serialize(), st.getValue().getValue());
+						this.totalPointsFixed.put(st.getKey().serialize(), false);
+					}
 				}
 			}
 			for (Entry<Student, ObjectProperty<Grade>> sg : t.grades.entrySet()) {
-				if (t.isGradeFixed(sg.getKey())) {
-					this.grades.put(sg.getKey().serialize(), sg.getValue().getValue());
-					this.gradesFixed.put(sg.getKey().serialize(), true);
-				} else if (!t.getUsePoints()) {
-					this.grades.put(sg.getKey().serialize(), sg.getValue().getValue());
-					this.gradesFixed.put(sg.getKey().serialize(), false);
+				if (t.students.contains(sg.getKey())) {
+					if (t.isGradeFixed(sg.getKey())) {
+						this.grades.put(sg.getKey().serialize(), sg.getValue().getValue());
+						this.gradesFixed.put(sg.getKey().serialize(), true);
+					} else if (!t.getUsePoints()) {
+						this.grades.put(sg.getKey().serialize(), sg.getValue().getValue());
+						this.gradesFixed.put(sg.getKey().serialize(), false);
+					}
 				}
 			}
 			for (Entry<Student, StringProperty> sa : t.annotations.entrySet()) {
-				this.annotations.put(sa.getKey().serialize(), sa.getValue().getValue());
+				if (t.students.contains(sa.getKey())) {
+					this.annotations.put(sa.getKey().serialize(), sa.getValue().getValue());
+				}
 			}
 			for (Entry<Student, ObjectProperty<LocalDate>> sd : t.dates.entrySet()) {
-				this.dates.put(sd.getKey().serialize(), sd.getValue().getValue());
+				if (t.students.contains(sd.getKey())) {
+					this.dates.put(sd.getKey().serialize(), sd.getValue().getValue());
+				}
 			}
 			for (Entry<Student, ReadOnlyBooleanWrapper> sr : t.hasReturned.entrySet()) {
-				this.hasReturned.put(sr.getKey().serialize(), sr.getValue().getValue());
+				if (t.students.contains(sr.getKey())) {
+					this.hasReturned.put(sr.getKey().serialize(), sr.getValue().getValue());
+				}
 			}
 			test = t;
 		}
@@ -1255,13 +1303,20 @@ public class Test {
 			if (test == null) {
 				test = new Test((Group) params[0], name, shortName, date, weight, onlyDefaultDate, useTasks, usePoints,
 						showReturns);
+				// FIXME remove compatibility with pre v2.4.1
+				if (students == null) {
+					test.students.addAll(((Group) params[0]).getStudents());
+				} else {
+					for (DataObject<Student> s : students) {
+						test.students.add(s.deserialize());
+					}
+				}
 				tasksRoot.deserialize(test);
 				test.setPointsSystem(pointsSystem.deserialize());
 				test.calculateTotalPoints();
 				test.calculateGrades();
 				for (Entry<DataObject<Student>, BigDecimal> st : totalPoints.entrySet()) {
 					Student student = st.getKey().deserialize();
-					test.putStudentPropertiesIfNotExists(student);
 					test.setTotalPoints(student, st.getValue());
 					if (totalPointsFixed.get(st.getKey())) {
 						test.setTotalPointsFixed(student, true);
@@ -1269,7 +1324,6 @@ public class Test {
 				}
 				for (Entry<DataObject<Student>, Grade> sg : grades.entrySet()) {
 					Student student = sg.getKey().deserialize();
-					test.putStudentPropertiesIfNotExists(student);
 					test.setGrade(student, sg.getValue());
 					if (gradesFixed.get(sg.getKey())) {
 						test.setGradeFixed(student, true);
@@ -1277,17 +1331,14 @@ public class Test {
 				}
 				for (Entry<DataObject<Student>, String> sa : annotations.entrySet()) {
 					Student student = sa.getKey().deserialize();
-					test.putStudentPropertiesIfNotExists(student);
 					test.setAnnotation(student, sa.getValue());
 				}
 				for (Entry<DataObject<Student>, LocalDate> sd : dates.entrySet()) {
 					Student student = sd.getKey().deserialize();
-					test.putStudentPropertiesIfNotExists(student);
 					test.setDate(student, sd.getValue());
 				}
 				for (Entry<DataObject<Student>, Boolean> sr : hasReturned.entrySet()) {
 					Student student = sr.getKey().deserialize();
-					test.putStudentPropertiesIfNotExists(student);
 					test.setHasReturned(student, sr.getValue());
 				}
 			}

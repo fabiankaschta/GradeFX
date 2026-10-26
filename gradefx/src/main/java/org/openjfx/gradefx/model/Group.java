@@ -368,10 +368,10 @@ public class Group {
 				group = new Group(name, subject.deserialize(), useSubgroups, gradeSystem.deserialize(),
 						testGroupSystem == null ? TestGroupSystem.NONE : testGroupSystem.deserialize(),
 						Color.web(color));
-				group.testGroupRoot.set(testGroupRoot.deserialize(group));
 				for (DataObject<Student> s : students) {
 					group.students.add(s.deserialize());
 				}
+				group.testGroupRoot.set(testGroupRoot.deserialize(group));
 				for (DataObject<Test> t : tests) {
 					group.tests.add(t.deserialize(group));
 				}

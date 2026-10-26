@@ -44,11 +44,17 @@ public class TestGradeColumn extends TableColumnFooter<Student, Grade> {
 							if (fixedSubscription != null) {
 								fixedSubscription.unsubscribe();
 							}
-							if (student != null) {
+							if (student != null && test.gradeFixedProperty(student) != null) {
 								fixedSubscription = test.gradeFixedProperty(student).subscribe(fixed -> this
 										.pseudoClassStateChanged(PseudoClass.getPseudoClass("fixed-value"), fixed));
 							}
 						});
+						this.editableProperty().unbind();
+						this.editableProperty()
+								.bind(Bindings.createBooleanBinding(
+										() -> test.studentsProperty().contains(row.getItem()), test.studentsProperty(),
+										row.itemProperty()));
+						// TODO make this visible for overview table?
 					}
 				});
 			}
@@ -71,6 +77,9 @@ public class TestGradeColumn extends TableColumnFooter<Student, Grade> {
 		this.setSortable(true);
 		this.setReorderable(false);
 		this.setOnEditCommit(e -> {
+			if (!test.studentsProperty().contains(e.getRowValue())) {
+				test.addStudent(e.getRowValue());
+			}
 			if (e.getNewValue() != e.getOldValue() && (e.getNewValue() == null && e.getOldValue() != null
 					|| e.getNewValue() != null && e.getOldValue() == null
 					|| gradeSystem.getGradeComparator().compare(e.getNewValue(), e.getOldValue()) != 0)) {

@@ -111,12 +111,12 @@ public class TestHeaderPane extends GridPane {
 		returnsMissingLabel.setMinWidth(USE_PREF_SIZE);
 		returnsMissingLabel.visibleProperty().bind(test.showReturnsProperty());
 		returnsMissingLabel.textProperty().bind(Bindings.createStringBinding(() -> {
-			if (test.getReturnsAmount() == group.getStudents().size()) {
+			if (test.getReturnsAmount() == test.studentsProperty().size()) {
 				return TranslationController.translate("test_returnsMissingNone");
 			} else {
 				return TranslationController.translate("test_returnsMissing");
 			}
-		}, test.returnsAmountProperty(), group.getStudents()));
+		}, test.returnsAmountProperty(), test.studentsProperty()));
 		Label returnsMissing = new Label();
 		returnsMissing.setMinWidth(USE_PREF_SIZE);
 		returnsMissing.prefWidthProperty().bind(FontSizeController.fontSizeProperty().multiply(2));
@@ -124,19 +124,19 @@ public class TestHeaderPane extends GridPane {
 		returnsMissing.setTextAlignment(TextAlignment.CENTER);
 		EmojiImageView emoji = new EmojiImageView("1F60E", FontSizeController.fontSizeProperty().multiply(2));
 		returnsMissing.graphicProperty().bind(Bindings.createObjectBinding(() -> {
-			if (test.getReturnsAmount() == group.getStudents().size()) {
+			if (test.getReturnsAmount() == test.studentsProperty().size()) {
 				return emoji;
 			} else {
 				return null;
 			}
-		}, test.returnsAmountProperty(), group.getStudents()));
+		}, test.returnsAmountProperty(), test.studentsProperty()));
 		returnsMissing.textProperty().bind(Bindings.createStringBinding(() -> {
-			if (test.getReturnsAmount() == group.getStudents().size()) {
+			if (test.getReturnsAmount() == test.studentsProperty().size()) {
 				return "";
 			} else {
-				return String.valueOf(group.getStudents().size() - test.getReturnsAmount());
+				return String.valueOf(test.studentsProperty().size() - test.getReturnsAmount());
 			}
-		}, test.returnsAmountProperty(), group.getStudents()));
+		}, test.returnsAmountProperty(), test.studentsProperty()));
 		returnsMissing.visibleProperty().bind(test.showReturnsProperty());
 
 		this.add(returnsMissingLabel, 5, 1);

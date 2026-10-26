@@ -30,12 +30,15 @@ public class TableViewPointsSystem extends TableViewFullSize<Grade> {
 
 		this.setPadding(new Insets(0));
 
-		ObservableList<Student> baseList = FXCollections.observableArrayList(student -> new Observable[] {
-				test.onlyDefaultDateProperty(), test.dateProperty(), test.dateProperty(student) });
-		baseList.addAll(group.getStudents());
+		ObservableList<Student> baseList = FXCollections.observableArrayList(
+				student -> test.studentsProperty().contains(student)
+						? new Observable[] { test.onlyDefaultDateProperty(), test.dateProperty(),
+								test.dateProperty(student) }
+						: new Observable[] {});
+		baseList.addAll(test.studentsProperty());
 		this.students = new FilteredList<>(baseList, student -> !test.isOnlyDefaultDate() || test.getDate() == null
 				|| test.getDate(student) == null || test.getDate(student).equals(test.getDate()));
-		group.getStudents().addListener((ListChangeListener<Student>) c -> {
+		test.studentsProperty().addListener((ListChangeListener<Student>) c -> {
 			while (c.next()) {
 				if (c.wasAdded()) {
 					baseList.addAll(c.getAddedSubList());

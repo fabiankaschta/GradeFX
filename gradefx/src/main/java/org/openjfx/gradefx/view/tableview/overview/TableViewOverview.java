@@ -11,6 +11,7 @@ import org.openjfx.gradefx.model.Test;
 import org.openjfx.gradefx.model.TestGroup;
 import org.openjfx.gradefx.view.dialog.DialogAddStudent;
 import org.openjfx.gradefx.view.tableview.columns.StudentFirstNameColumn;
+import org.openjfx.gradefx.view.tableview.columns.StudentIndexColumn;
 import org.openjfx.gradefx.view.tableview.columns.StudentLastNameColumn;
 import org.openjfx.gradefx.view.tableview.columns.StudentSubgroupNameColumn;
 import org.openjfx.gradefx.view.tableview.overview.columns.OverviewAvgColumn;
@@ -21,6 +22,7 @@ import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
 import org.openjfx.kafx.view.tableview.TableViewKafx;
 
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
@@ -35,8 +37,22 @@ public class TableViewOverview extends TableViewKafx<Student> {
 	private final Map<Test, TestGradeColumn> testColumns = new HashMap<>();
 
 	public TableViewOverview(Group group) {
-		super(group.getStudents());
+		super(FXCollections.observableArrayList(group.getStudents()));
 		this.group = group;
+		this.group.getStudents().addListener((ListChangeListener<Student>) c -> {
+			while (c.next()) {
+				if (c.wasAdded()) {
+					for (Student student : c.getAddedSubList()) {
+						this.getItems().add(student);
+					}
+				}
+				if (c.wasRemoved()) {
+					for (Student student : c.getRemoved()) {
+						this.getItems().remove(student);
+					}
+				}
+			}
+		});
 
 		this.setEditable(true);
 		this.setFooterVisible(true);
@@ -50,17 +66,20 @@ public class TableViewOverview extends TableViewKafx<Student> {
 
 		this.fixedCellSizeProperty().bind(FontSizeController.fontSizeProperty().multiply(2).add(1));
 
+		StudentIndexColumn indexCol = new StudentIndexColumn(group);
 		StudentLastNameColumn lastNameCol = new StudentLastNameColumn(true);
 		StudentFirstNameColumn firstNameCol = new StudentFirstNameColumn(true);
 		StudentSubgroupNameColumn subgroupNameCol = new StudentSubgroupNameColumn(group, true);
+		this.getColumns().add(indexCol);
 		this.getColumns().add(lastNameCol);
 		this.getColumns().add(firstNameCol);
 		this.getColumns().add(subgroupNameCol);
-		this.setFixedColumnsIndex(2);
+		this.setFixedColumnsIndex(3);
 		this.setFixedColumnsFooterText(TranslationController.translate("tab_overview_footer_avg") + ':');
 
 		this.group.testGroupRootProperty().subscribe(root -> {
-			this.getColumns().removeIf(c -> c != lastNameCol && c != firstNameCol && c != subgroupNameCol);
+			this.getColumns()
+					.removeIf(c -> c != indexCol && c != lastNameCol && c != firstNameCol && c != subgroupNameCol);
 			this.testGroupColumns.clear();
 			this.testColumns.clear();
 			this.group.getTestsInTestGroup(root).addListener(new TestsChangedListener());

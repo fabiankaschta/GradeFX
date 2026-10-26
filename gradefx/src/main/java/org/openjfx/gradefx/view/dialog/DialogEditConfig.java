@@ -36,6 +36,7 @@ public class DialogEditConfig extends DialogUserInput<Boolean> {
 	private final UserInputCheckBox useAutoSave;
 	private final UserInputSpinner<Integer> autoSaveInterval;
 	private final UserInputChoiceBox<EnterMode> tableEnterMode;
+	private final UserInputCheckBox lineNumbers;
 	private final UserInputComparableInput<BigDecimal> tendencyBound;
 	private final UserInputColorPicker groupColor;
 
@@ -70,6 +71,11 @@ public class DialogEditConfig extends DialogUserInput<Boolean> {
 		this.tableEnterMode.valueProperty()
 				.subscribe(mode -> ConfigController.set("TABLECELL_ENTER_MODE", mode.name()));
 		super.addInput(this.tableEnterMode, TranslationController.translate("configOption_tableEnterMode"));
+
+		this.lineNumbers = new UserInputCheckBox(new CheckBox(), Boolean.valueOf(ConfigController.get("LINE_NUMBERS")));
+		this.lineNumbers.valueProperty()
+				.subscribe(lineNumbers -> ConfigController.set("LINE_NUMBERS", String.valueOf(lineNumbers)));
+		super.addInput(this.lineNumbers, TranslationController.translate("configOption_lineNumbers"));
 
 		this.useHalfPoints = new UserInputCheckBox(new CheckBox(),
 				Boolean.valueOf(ConfigController.get("USE_HALF_POINTS")));
