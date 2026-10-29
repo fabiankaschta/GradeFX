@@ -14,6 +14,7 @@ public class TableViewTestPrint extends TableViewTest {
 		// create a new list, so that sorting is not reflected to the "real" list
 		// adding/removing is not supported (no need to)
 		this.setItems(FXCollections.observableArrayList(group.getStudents()));
+		this.setTableMenuButtonVisible(false);
 		this.getStyleClass().add("table-view-full-size");
 		this.skinProperty().addListener((_, _, _) -> {
 			ScrollBar scrollBarVertical = (ScrollBar) this
@@ -37,6 +38,7 @@ public class TableViewTestPrint extends TableViewTest {
 		this.setSelectionModel(null);
 		this.setMinWidth(USE_PREF_SIZE);
 		this.setMaxWidth(USE_PREF_SIZE);
+		// FIXME these do throw when creating, although no visible bug
 		this.setMinHeight(USE_PREF_SIZE);
 		this.setMaxHeight(USE_PREF_SIZE);
 	}
