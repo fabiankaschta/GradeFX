@@ -43,7 +43,7 @@ public class DialogImportStudentsFromGroup extends DialogCustom<Boolean> {
 
 		this.setResultConverter(button -> {
 			if (button == IMPORT) {
-				for (Student student : this.fromGroup.getValue().getStudents()) {
+				for (Student student : this.fromGroup.getValue().getStudentsUnmodifiable()) {
 					this.toGroup.addStudent(student);
 				}
 				return true;

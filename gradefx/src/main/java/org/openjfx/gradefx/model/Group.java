@@ -109,40 +109,7 @@ public class Group {
 		this.setColor(color);
 		groups.add(this);
 
-		Runnable recalculateAvgGrade = () -> {
-			List<Observable> observables = new ArrayList<>();
-			observables.add(this.gradeSystem);
-			this.students.forEach(student -> observables.add(this.getTestGroupRoot().avgGrade(student)));
-			this.avgGrade.bind(Bindings.createObjectBinding(() -> {
-				int sum = 0;
-				int amount = 0;
-				for (Student student : this.students) {
-					BigDecimal avg = this.testGroupRoot.get().getAvgGrade(student);
-					if (avg != null) {
-						Grade grade = this.gradeSystem.get().calculateGrade(avg);
-						sum += grade.getNumericalValue();
-						amount++;
-					}
-				}
-				if (amount == 0) {
-					return null;
-				} else {
-					return BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(amount), 7, RoundingMode.DOWN);
-				}
-			}, observables.toArray(Observable[]::new)));
-		};
-
-		this.testGroupRoot.subscribe(() -> recalculateAvgGrade.run());
-		this.students.addListener((ListChangeListener<Student>) c -> {
-			while (c.next()) {
-				if (c.wasRemoved()) {
-					for (Student student : c.getRemoved()) {
-						this.tests.forEach(test -> test.removeStudent(student));
-					}
-				}
-			}
-			recalculateAvgGrade.run();
-		});
+		this.testGroupRoot.subscribe(() -> recalculateAvgGrade());
 
 		this.nameProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.subjectProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
@@ -153,6 +120,29 @@ public class Group {
 		this.testGroupSystemProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.testGroupRootProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
 		this.colorProperty().addListener(ChangeController.LISTENER_UNSAVED_CHANGES);
+	}
+
+	private void recalculateAvgGrade() {
+		List<Observable> observables = new ArrayList<>();
+		observables.add(this.gradeSystem);
+		this.students.forEach(student -> observables.add(this.getTestGroupRoot().avgGrade(student)));
+		this.avgGrade.bind(Bindings.createObjectBinding(() -> {
+			int sum = 0;
+			int amount = 0;
+			for (Student student : this.students) {
+				BigDecimal avg = this.testGroupRoot.get().getAvgGrade(student);
+				if (avg != null) {
+					Grade grade = this.gradeSystem.get().calculateGrade(avg);
+					sum += grade.getNumericalValue();
+					amount++;
+				}
+			}
+			if (amount == 0) {
+				return null;
+			} else {
+				return BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(amount), 7, RoundingMode.DOWN);
+			}
+		}, observables.toArray(Observable[]::new)));
 	}
 
 	public String getName() {
@@ -191,8 +181,8 @@ public class Group {
 		this.useSubgroups.set(useSubgroups);
 	}
 
-	public ObservableList<Student> getStudents() {
-		return students;
+	public ObservableList<Student> getStudentsUnmodifiable() {
+		return FXCollections.unmodifiableObservableList(this.students);
 	}
 
 	public void addStudentsListener(ListChangeListener<? super Student> listener) {
@@ -203,8 +193,15 @@ public class Group {
 		this.students.add(student);
 	}
 
+	public void moveStudent(int from, int to) {
+		Student student = this.students.remove(from);
+		this.students.add(to, student);
+	}
+
 	public void removeStudent(Student student) {
 		this.students.remove(student);
+		this.tests.forEach(test -> test.removeStudent(student));
+		recalculateAvgGrade();
 	}
 
 	public ObservableList<Test> getTests() {

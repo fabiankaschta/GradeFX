@@ -14,7 +14,7 @@ public class StudentIndexColumn extends TableColumn<Student, String> {
 
 	public StudentIndexColumn(Group group) {
 		this.setCellValueFactory(data -> Bindings
-				.createIntegerBinding(() -> 1 + group.getStudents().indexOf(data.getValue()), group.getStudents())
+				.createIntegerBinding(() -> 1 + group.getStudentsUnmodifiable().indexOf(data.getValue()), group.getStudentsUnmodifiable())
 				.asString("%02d"));
 		this.setCellFactory(TableCellCustom.forTableColumn(Pos.CENTER));
 		this.setSortable(true);

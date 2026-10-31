@@ -13,7 +13,7 @@ public class TableViewTestPrint extends TableViewTest {
 		super(group, test);
 		// create a new list, so that sorting is not reflected to the "real" list
 		// adding/removing is not supported (no need to)
-		this.setItems(FXCollections.observableArrayList(group.getStudents()));
+		this.setItems(FXCollections.observableArrayList(test.studentsProperty()));
 		this.setTableMenuButtonVisible(false);
 		this.getStyleClass().add("table-view-full-size");
 		this.skinProperty().addListener((_, _, _) -> {

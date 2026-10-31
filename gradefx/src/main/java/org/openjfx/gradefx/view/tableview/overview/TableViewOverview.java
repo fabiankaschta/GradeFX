@@ -20,15 +20,20 @@ import org.openjfx.gradefx.view.tableview.overview.columns.OverviewTestGroupColu
 import org.openjfx.gradefx.view.tableview.test.columns.TestGradeColumn;
 import org.openjfx.kafx.controller.FontSizeController;
 import org.openjfx.kafx.controller.TranslationController;
+import org.openjfx.kafx.view.tableview.TableCellCustom;
+import org.openjfx.kafx.view.tableview.TableCellEditConverter;
 import org.openjfx.kafx.view.tableview.TableViewKafx;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.geometry.Pos;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TreeItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.text.Text;
+import javafx.util.converter.DefaultStringConverter;
 
 public class TableViewOverview extends TableViewKafx<Student> {
 
@@ -37,9 +42,11 @@ public class TableViewOverview extends TableViewKafx<Student> {
 	private final Map<Test, TestGradeColumn> testColumns = new HashMap<>();
 
 	public TableViewOverview(Group group) {
-		super(FXCollections.observableArrayList(group.getStudents()));
+		// create a new list, so that sorting is not reflected to the "real" list
+		// adding/removing is not supported (no need to)
+		super(FXCollections.observableArrayList(group.getStudentsUnmodifiable()));
 		this.group = group;
-		this.group.getStudents().addListener((ListChangeListener<Student>) c -> {
+		this.group.addStudentsListener((ListChangeListener<Student>) c -> {
 			while (c.next()) {
 				if (c.wasAdded()) {
 					for (Student student : c.getAddedSubList()) {
@@ -52,6 +59,7 @@ public class TableViewOverview extends TableViewKafx<Student> {
 					}
 				}
 			}
+			this.sort();
 		});
 
 		this.setEditable(true);
@@ -67,8 +75,26 @@ public class TableViewOverview extends TableViewKafx<Student> {
 		this.fixedCellSizeProperty().bind(FontSizeController.fontSizeProperty().multiply(2).add(1));
 
 		StudentIndexColumn indexCol = new StudentIndexColumn(group);
+		indexCol.setCellFactory(_ -> {
+			TableCell<Student, String> cell = new TableCellCustom<>(Pos.CENTER);
+			this.addDragAndDropFeature(cell, () -> this.setSortOrderString("+:0"),
+					(from, to) -> this.group.moveStudent(from, to));
+			return cell;
+		});
 		StudentLastNameColumn lastNameCol = new StudentLastNameColumn(true);
+		lastNameCol.setCellFactory(_ -> {
+			TableCell<Student, String> cell = new TableCellEditConverter<>(new DefaultStringConverter());
+			this.addDragAndDropFeature(cell, () -> this.setSortOrderString("+:0"),
+					(from, to) -> this.group.moveStudent(from, to));
+			return cell;
+		});
 		StudentFirstNameColumn firstNameCol = new StudentFirstNameColumn(true);
+		firstNameCol.setCellFactory(_ -> {
+			TableCell<Student, String> cell = new TableCellEditConverter<>(new DefaultStringConverter());
+			this.addDragAndDropFeature(cell, () -> this.setSortOrderString("+:0"),
+					(from, to) -> this.group.moveStudent(from, to));
+			return cell;
+		});
 		StudentSubgroupNameColumn subgroupNameCol = new StudentSubgroupNameColumn(group, true);
 		this.getColumns().add(indexCol);
 		this.getColumns().add(lastNameCol);

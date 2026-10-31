@@ -480,7 +480,7 @@ public class Test {
 		this(group, name, shortName, date, weight, onlyDefaultDate, useTasks, usePoints, showReturns);
 		this.setTasksRoot(TestTask.createRoot(this, maxPoints));
 		this.setPointsSystem(group.getGradeSystem().getDefaultPointsSystem(this.maxPointsProperty()));
-		group.getStudents().forEach(student -> this.addStudent(student));
+		group.getStudentsUnmodifiable().forEach(student -> this.addStudent(student));
 	}
 
 	private Test(Group group, String name, String shortName, LocalDate date, BigDecimal weight, boolean onlyDefaultDate,
@@ -1305,7 +1305,7 @@ public class Test {
 						showReturns);
 				// FIXME remove compatibility with pre v2.4.1
 				if (students == null) {
-					test.students.addAll(((Group) params[0]).getStudents());
+					test.students.addAll(((Group) params[0]).getStudentsUnmodifiable());
 				} else {
 					for (DataObject<Student> s : students) {
 						test.students.add(s.deserialize());

@@ -2,7 +2,6 @@ package org.openjfx.gradefx.view.tableview.overview;
 
 import org.openjfx.gradefx.model.Group;
 
-import javafx.collections.FXCollections;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.control.ScrollBar;
 
@@ -10,9 +9,6 @@ public class TableViewOverviewPrint extends TableViewOverview {
 
 	public TableViewOverviewPrint(Group group) {
 		super(group);
-		// create a new list, so that sorting is not reflected to the "real" list
-		// adding/removing is not supported (no need to)
-		this.setItems(FXCollections.observableArrayList(group.getStudents()));
 		this.getStyleClass().add("table-view-full-size");
 		this.skinProperty().addListener((_, _, _) -> {
 			ScrollBar scrollBarVertical = (ScrollBar) this

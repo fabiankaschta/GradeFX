@@ -3,7 +3,6 @@ package org.openjfx.gradefx.view.tableview.test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import org.openjfx.gradefx.controller.GradeFXController;
 import org.openjfx.gradefx.model.Group;
@@ -39,6 +38,7 @@ import javafx.scene.text.Text;
 
 public class TableViewTest extends TableViewKafx<Student> {
 
+	private final Test test;
 	private final StudentIndexColumn indexColumn;
 	private final StudentReturnColumn returnColumn;
 	private final StudentLastNameColumn lastNameColumn;
@@ -55,6 +55,7 @@ public class TableViewTest extends TableViewKafx<Student> {
 
 	public TableViewTest(Group group, Test test) {
 		super(test.studentsProperty());
+		this.test = test;
 
 		this.setEditable(true);
 		this.setFooterVisible(true);
@@ -156,33 +157,17 @@ public class TableViewTest extends TableViewKafx<Student> {
 
 		this.setTableMenuButtonVisible(true);
 		this.tableMenu = new ContextMenu();
-		Consumer<Student> addMenuItem = student -> {
-			CheckMenuItem menuItem = new CheckMenuItem(student.getFirstName() + ' ' + student.getLastName());
-			menuItem.setSelected(test.studentsProperty().contains(student));
-			menuItem.selectedProperty().addListener((_, _, selected) -> {
-				if (selected) {
-					test.addStudent(student);
-					this.sort();
-				} else {
-					test.removeStudent(student);
-				}
-			});
-			this.tableMenuItems.put(student, menuItem);
-			this.tableMenu.getItems().add(menuItem);
-		};
-		group.getStudents().forEach(addMenuItem);
-		group.getStudents().addListener((ListChangeListener<Student>) c -> {
+		group.getStudentsUnmodifiable().forEach(student -> addMenuItem(student));
+		group.addStudentsListener((ListChangeListener<Student>) c -> {
 			while (c.next()) {
 				if (c.wasAdded()) {
-					c.getAddedSubList().forEach(addMenuItem);
+					c.getAddedSubList().forEach(student -> addMenuItem(student));
 				}
 				if (c.wasRemoved()) {
-					c.getRemoved().forEach(student -> {
-						MenuItem menuItem = this.tableMenuItems.remove(student);
-						this.tableMenu.getItems().remove(menuItem);
-					});
+					c.getRemoved().forEach(student -> removeMenuItem(student));
 				}
 			}
+			this.sort();
 		});
 		this.setTableMenuButtonContextMenu(this.tableMenu);
 
@@ -204,6 +189,33 @@ public class TableViewTest extends TableViewKafx<Student> {
 				}
 			}
 		});
+	}
+
+	private void addMenuItem(Student student) {
+		MenuItem oldItem = this.tableMenuItems.get(student);
+		if (oldItem != null) {
+			this.tableMenu.getItems().remove(oldItem);
+		}
+		CheckMenuItem menuItem = new CheckMenuItem(student.getFirstName() + ' ' + student.getLastName());
+		menuItem.setSelected(test.studentsProperty().contains(student));
+		menuItem.selectedProperty().addListener((_, _, selected) -> {
+			if (selected) {
+				test.addStudent(student);
+				this.sort();
+			} else {
+				test.removeStudent(student);
+			}
+		});
+		this.tableMenuItems.put(student, menuItem);
+		this.tableMenu.getItems().add(menuItem);
+	}
+
+	private void removeMenuItem(Student student) {
+		MenuItem oldItem = this.tableMenuItems.get(student);
+		if (oldItem != null) {
+			this.tableMenu.getItems().remove(oldItem);
+			this.tableMenuItems.remove(student);
+		}
 	}
 
 	public StudentReturnColumn getReturnColumn() {

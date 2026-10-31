@@ -272,10 +272,10 @@ public class TestGroup extends TreeItem<TestGroup> {
 				.forEach(student -> recalculateGradeAvgStudent.accept(student)));
 		this.getChildren().subscribe(
 				() -> this.avgGrades.keySet().forEach(student -> recalculateGradeAvgStudent.accept(student)));
-		for (Student student : group.getStudents()) {
+		for (Student student : group.getStudentsUnmodifiable()) {
 			recalculateGradeAvgStudent.accept(student);
 		}
-		group.getStudents().addListener((ListChangeListener<Student>) c -> {
+		group.addStudentsListener((ListChangeListener<Student>) c -> {
 			while (c.next()) {
 				if (c.wasRemoved()) {
 					for (Student student : c.getRemoved()) {
